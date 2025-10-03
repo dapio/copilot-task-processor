@@ -1,329 +1,346 @@
 # 🚀 Copilot Task Processor
 
-> **Enterprise-grade automated development workflow orchestrator**  
-> From Jira ticket → Mockups → Implementation → Tests → Pull Request
+**Enterprise-grade task automation system with AI integration**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+Automates the complete development workflow from Jira ticket analysis to tested pull request creation using GitHub Copilot and MCP (Model Context Protocol).
 
-## 🎯 What is This?
+## ✨ Features
 
-A universal, AI-powered task processor that automates your entire development workflow:
+- 🎯 **Automated Workflow**: Jira → Analysis → Mockups → Code → Tests → PR
+- 🤖 **AI Integration**: GitHub Copilot + MCP for intelligent code generation  
+- 🏗️ **Enterprise Architecture**: Type-safe, tested, monitored, scalable
+- 🔄 **Batch Processing**: Handle multiple tickets simultaneously
+- 📊 **Comprehensive Metrics**: Coverage, complexity, performance tracking
+- 🛡️ **Security First**: Rate limiting, validation, error handling
 
-- 📋 **Jira Integration**: Automatically fetches and processes Jira tickets
-- 🎨 **Smart Mockups**: Generates detailed UI/UX mockups before coding
-- 🔄 **Git Automation**: Creates feature branches (`feat/{KEY}-{summary}`)
-- 🧪 **TDD Workflow**: Tests-first development with 80%+ coverage
-- 🔍 **Code Review**: AI-powered quality checks
-- 🚢 **Auto PR**: Creates pull requests to development branch
+## 🏁 Quick Start
+
+### 1. Installation
+
+```bash
+# Clone and setup
+git clone <your-repo>
+cd copilot-task-processor
+npm install
+
+# Copy environment template
+cp .env.example .env
+```
+
+### 2. Configuration
+
+Edit `.env` file with your credentials:
+
+```bash
+# Jira
+JIRA_HOST=https://your-domain.atlassian.net
+JIRA_EMAIL=your-email@company.com
+JIRA_API_TOKEN=your-jira-token
+
+# GitHub  
+GITHUB_TOKEN=your-github-token
+GITHUB_OWNER=your-username
+GITHUB_REPO=your-repo-name
+```
+
+### 3. Process Your First Task
+
+```bash
+# Single task processing
+npm run start process PROJ-123
+
+# Batch processing  
+npm run start batch --query "project = PROJ AND status = 'To Do'"
+
+# Health check
+npm run start health
+```
+
+## 🎯 Workflow Process
+
+### Automated Steps
+
+1. **📋 Jira Analysis** - Fetch and analyze ticket requirements
+2. **🎨 Mockup Generation** - Create UI wireframes and user flows  
+3. **🌿 Branch Creation** - Generate feature branch: `feat/PROJ-123-feature-name`
+4. **💻 Code Generation** - AI-powered implementation with best practices
+5. **🧪 Test Creation** - Comprehensive test suite (unit + integration + E2E)
+6. **✅ Quality Validation** - Automated code quality and security checks
+7. **📤 PR Creation** - Generate pull request to `development` branch
+8. **🔄 Jira Update** - Update ticket status and add PR link
+
+### Generated Branch Structure
+
+```
+feat/PROJ-123-user-authentication/
+├── src/features/user-auth/
+│   ├── index.ts                 # Main implementation
+│   ├── types.ts                 # Type definitions  
+│   ├── service.ts               # Business logic
+│   └── utils.ts                 # Helper functions
+├── tests/
+│   ├── unit/user-auth.test.ts   # Unit tests
+│   ├── integration/auth.test.ts # Integration tests  
+│   └── e2e/auth-flow.spec.ts    # E2E tests
+└── docs/
+    ├── mockups.md               # Generated UI mockups
+    └── architecture.md          # Implementation notes
+```
+
+## 🔧 CLI Commands
+
+### Core Operations
+
+```bash
+# Process single task
+npm run start process <ISSUE-KEY> [options]
+  --dry-run          # Preview without changes
+  --verbose          # Detailed logging
+
+# Batch processing
+npm run start batch [options]
+  --query <JQL>      # Custom JQL query
+  --limit <N>        # Max tasks to process
+
+# System management  
+npm run start health          # Health checks
+npm run start config --show   # Show configuration
+```
+
+### Development
+
+```bash
+# Development server
+npm run dev
+
+# Testing
+npm test              # Unit tests
+npm run test:e2e      # E2E tests  
+npm run test:watch    # Watch mode
+
+# Code quality
+npm run lint          # ESLint
+npm run format        # Prettier
+npm run typecheck     # TypeScript
+```
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────┐
-│  Jira Ticket    │
-└────────┬────────┘
-         │
-    ┌────▼─────┐
-    │ Processor │◄──── Your Documentation
-    └────┬─────┘
-         │
-    ┌────▼────────────────────────┐
-    │ 1. Analyze Requirements     │
-    │ 2. Generate Mockups         │
-    │ 3. Create Git Branch        │
-    │ 4. Write Tests (TDD)        │
-    │ 5. Implement Features       │
-    │ 6. Run Quality Checks       │
-    │ 7. Create Pull Request      │
-    └─────────────────────────────┘
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-```bash
-node >= 20.0.0
-npm >= 10.0.0
-git >= 2.40.0
-```
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/dapio/copilot-task-processor.git
-cd copilot-task-processor
-
-# Install dependencies
-npm install
-
-# Configure MCP servers
-cp .mcp-config.example.json .mcp-config.json
-# Edit with your Atlassian credentials
-
-# Configure processor
-cp config/processor.example.yaml config/processor.yaml
-# Edit with your project settings
-```
-
-### Usage
-
-```bash
-# Process a single Jira ticket
-npm run process -- --ticket PROJ-123
-
-# Process with custom documentation
-npm run process -- --ticket PROJ-123 --docs ./my-docs
-
-# Batch process multiple tickets
-npm run process:batch -- --filter "sprint = 'Sprint 42'"
-
-# Interactive mode
-npm run process:interactive
-```
-
-## 📁 Project Structure
+### Enterprise-Grade Structure
 
 ```
 copilot-task-processor/
 ├── src/
-│   ├── core/                 # Core processor engine
-│   │   ├── orchestrator.ts   # Main workflow orchestrator
-│   │   ├── task-analyzer.ts  # Requirement analysis
-│   │   └── quality-gate.ts   # Quality checks
-│   ├── integrations/         # External integrations
-│   │   ├── jira/            # Atlassian Jira MCP
-│   │   ├── git/             # Git operations
-│   │   └── github/          # GitHub API
-│   ├── generators/          # Code generators
-│   │   ├── mockup/          # UI mockup generator
-│   │   ├── test/            # Test generator
-│   │   └── code/            # Implementation generator
-│   └── utils/               # Utilities
-├── templates/               # Task templates
-│   ├── default/            # Default workflow
-│   ├── frontend/           # Frontend-specific
-│   ├── backend/            # Backend-specific
-│   └── fullstack/          # Full-stack workflow
-├── config/                 # Configuration
-│   ├── processor.yaml      # Main config
-│   └── quality-rules.yaml  # Quality gates
-├── docs/                   # Documentation
-└── tests/                  # Test suites
+│   ├── index.ts                    # Main CLI entry
+│   ├── processors/
+│   │   └── task-processor.ts       # Core workflow engine
+│   ├── integrations/
+│   │   ├── jira-integration.ts     # Jira API client
+│   │   └── github-integration.ts   # GitHub API client
+│   ├── mcp/
+│   │   └── mcp-server.ts          # MCP server for Copilot
+│   ├── generators/
+│   │   ├── mockup-generator.ts    # UI mockup generation
+│   │   ├── code-generator.ts      # AI code generation
+│   │   └── test-generator.ts      # Test suite generation
+│   ├── utils/
+│   │   ├── logger.ts              # Enterprise logging
+│   │   ├── retry-manager.ts       # Retry logic
+│   │   └── rate-limiter.ts        # API rate limiting
+│   └── config/
+│       └── config-manager.ts      # Configuration management
+├── tests/
+│   ├── unit/           # Unit tests
+│   ├── integration/    # Integration tests  
+│   └── e2e/           # End-to-end tests
+└── docs/              # Documentation
 ```
 
-## 🎨 Workflow Steps
+### Technology Stack
 
-### Step 1: Requirement Analysis
-```typescript
-✓ Fetch Jira ticket details
-✓ Parse acceptance criteria
-✓ Analyze technical requirements
-✓ Load project documentation
-✓ Generate task breakdown
-```
+- **Runtime**: Node.js 18+ with TypeScript 5.0+
+- **AI Integration**: GitHub Copilot + MCP SDK
+- **APIs**: Jira REST API v3, GitHub REST API v4  
+- **Testing**: Jest (unit/integration) + Playwright (E2E)
+- **Code Quality**: ESLint + Prettier + Husky
+- **Monitoring**: Winston logging + Health checks
 
-### Step 2: Mockup Generation
-```typescript
-✓ Analyze UI/UX requirements
-✓ Generate wireframes (Mermaid/SVG)
-✓ Create interaction flows
-✓ Generate design system specs
-✓ Review & approve mockups
-```
+## 📊 Metrics & Quality
 
-### Step 3: Git Branch Creation
-```typescript
-✓ Validate branch naming: feat/{TICKET}-{summary}
-✓ Create from development branch
-✓ Push to remote
-✓ Link to Jira ticket
-```
+### Automated Quality Assurance
 
-### Step 4: Test Generation (TDD)
-```typescript
-✓ Generate unit tests
-✓ Generate integration tests
-✓ Generate E2E tests
-✓ Setup test fixtures
-✓ Ensure 80%+ coverage target
-```
+- ✅ **Test Coverage**: Minimum 80% required
+- ✅ **Type Safety**: Strict TypeScript enforcement
+- ✅ **Code Quality**: ESLint with enterprise rules
+- ✅ **Security**: Automated vulnerability scanning
+- ✅ **Performance**: Bundle size and execution time monitoring
 
-### Step 5: Implementation
-```typescript
-✓ Generate boilerplate code
-✓ Implement business logic
-✓ Apply SOLID principles
-✓ Add comprehensive error handling
-✓ Document with JSDoc/TSDoc
-```
+### Generated Metrics
 
-### Step 6: Quality Gates
-```typescript
-✓ TypeScript strict checks
-✓ ESLint + Prettier
-✓ Run all tests
-✓ Check code coverage
-✓ Security scan (npm audit)
-✓ Performance profiling
-```
-
-### Step 7: Pull Request
-```typescript
-✓ Create PR to development
-✓ Auto-fill description with ticket details
-✓ Add labels & reviewers
-✓ Link to Jira ticket
-✓ Trigger CI/CD pipeline
-```
-
-## ⚙️ Configuration
-
-### processor.yaml
-
-```yaml
-project:
-  name: "my-awesome-project"
-  repository: "owner/repo"
-  baseBranch: "development"
-  
-jira:
-  server: "https://your-domain.atlassian.net"
-  project: "PROJ"
-  
-workflow:
-  steps:
-    - analyze
-    - mockup
-    - branch
-    - tests
-    - implement
-    - quality
-    - pr
-    
-  mockup:
-    generateWireframes: true
-    generateFlows: true
-    format: "mermaid"
-    
-  testing:
-    coverageThreshold: 80
-    frameworks:
-      - jest
-      - playwright
-      
-  quality:
-    strictTypeScript: true
-    linting: true
-    securityScan: true
-    
-github:
-  defaultReviewers:
-    - "@senior-dev"
-    - "@tech-lead"
-  labels:
-    - "auto-generated"
-    - "needs-review"
-```
-
-## 🔌 MCP Integration
-
-### Atlassian Jira Server
+Each processed task provides:
 
 ```json
 {
-  "mcpServers": {
-    "atlassian": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-atlassian"
-      ],
-      "env": {
-        "ATLASSIAN_INSTANCE_URL": "https://your-domain.atlassian.net",
-        "ATLASSIAN_USER_EMAIL": "your-email@company.com",
-        "ATLASSIAN_API_TOKEN": "your-api-token",
-        "ATLASSIAN_CLOUD_ID": "your-cloud-id"
-      }
-    }
+  "task": "PROJ-123",
+  "metrics": {
+    "processingTime": "2.3s",
+    "linesOfCode": 247,
+    "testCoverage": 87,
+    "complexity": 6,
+    "securityIssues": 0,
+    "performanceScore": 95
   }
 }
 ```
 
-Get your credentials:
-- API Token: https://id.atlassian.com/manage-profile/security/api-tokens
-- Cloud ID: Check docs/ATLASSIAN_SETUP.md
+## 🛠️ Configuration
 
-## 🧪 Testing
+### Environment Variables
 
-```bash
-# Run all tests
-npm test
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `JIRA_HOST` | Atlassian instance URL | ✅ |
+| `JIRA_EMAIL` | Jira user email | ✅ |  
+| `JIRA_API_TOKEN` | Jira API token | ✅ |
+| `GITHUB_TOKEN` | GitHub personal access token | ✅ |
+| `GITHUB_OWNER` | Repository owner | ✅ |
+| `GITHUB_REPO` | Repository name | ✅ |
+| `OPENAI_API_KEY` | OpenAI API key for AI features | ⚪ |
 
-# Watch mode
-npm run test:watch
-
-# Coverage report
-npm run test:coverage
-
-# E2E tests
-npm run test:e2e
-
-# Test specific workflow
-npm run test -- --testPathPattern=orchestrator
-```
-
-## 📊 Quality Metrics
+### Advanced Configuration
 
 ```typescript
-✓ Code Coverage: >= 80%
-✓ TypeScript Strict: Enabled
-✓ ESLint Errors: 0
-✓ Security Vulnerabilities: 0 critical/high
-✓ Performance: < 5s per workflow step
-✓ Documentation: 100% public APIs
+// Custom processor configuration
+const config = {
+  workflow: {
+    autoCreateBranches: true,
+    autoCreatePRs: true,  
+    requireTests: true,
+    minTestCoverage: 80,
+    targetBranch: 'development'
+  },
+  ai: {
+    model: 'gpt-4',
+    temperature: 0.3,
+    maxTokens: 4000
+  }
+};
 ```
 
-## 🎯 Example Workflow
+## 🔐 Security
+
+### Enterprise Security Features
+
+- 🛡️ **API Rate Limiting**: Prevents API abuse
+- 🔒 **Token Validation**: Secure credential handling  
+- 📝 **Audit Logging**: Complete operation tracking
+- ⚠️ **Error Sanitization**: No sensitive data in logs
+- 🚫 **Input Validation**: Zod schema validation
+
+## 📈 Monitoring
+
+### Health Checks
 
 ```bash
-# Start processing ticket PROJ-123
-npm run process -- --ticket PROJ-123
+npm run start health
+```
 
-# Output:
-# ✓ Fetched Jira ticket: PROJ-123
-# ✓ Analyzed requirements (12 acceptance criteria)
-# ✓ Generated mockups → ./output/PROJ-123/mockups/
-#   - wireframe-main.svg
-#   - user-flow.mermaid
-#   - component-specs.md
-# ✓ Created branch: feat/PROJ-123-user-authentication
-# ✓ Generated 24 tests (unit + integration + e2e)
-# ✓ Implemented 8 modules
-# ✓ Quality checks passed (coverage: 87%)
-# ✓ Created PR #42 → development
-#
-# 🎉 Task completed in 8m 34s
-# 📋 PR: https://github.com/owner/repo/pull/42
+Monitors:
+- ✅ Jira connectivity and permissions
+- ✅ GitHub API access and rate limits  
+- ✅ MCP server status
+- ✅ Configuration validity
+- ✅ System resources
+
+### Logging
+
+Enterprise-grade structured logging:
+
+```typescript
+{
+  "timestamp": "2024-10-03T20:21:25.000Z",
+  "level": "info", 
+  "service": "copilot-task-processor",
+  "message": "Task PROJ-123 processed successfully",
+  "metadata": {
+    "issueKey": "PROJ-123",
+    "duration": 2300,
+    "branch": "feat/PROJ-123-user-auth",
+    "pullRequest": "https://github.com/owner/repo/pull/456"
+  }
+}
+```
+
+## 🚀 Deployment
+
+### Docker Support
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY dist/ ./dist/
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+### CI/CD Pipeline
+
+```yaml
+# .github/workflows/ci.yml
+name: CI/CD Pipeline
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint  
+      - run: npm test
+      - run: npm run test:e2e
 ```
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+### Development Workflow
+
+1. **Fork & Clone**: Fork repo and clone locally
+2. **Branch**: Create feature branch from `main`
+3. **Develop**: Write code following TypeScript/ESLint standards
+4. **Test**: Ensure 80%+ coverage with `npm test`  
+5. **Commit**: Use conventional commits (`feat:`, `fix:`, etc.)
+6. **PR**: Submit pull request to `main` branch
+
+### Code Standards
+
+- **TypeScript**: Strict mode enabled
+- **Testing**: Jest + Playwright with 80%+ coverage
+- **Linting**: ESLint with enterprise rules
+- **Formatting**: Prettier with consistent style
+- **Commits**: Conventional commit format
 
 ## 📄 License
 
-MIT © 2025 dapio
+MIT License - see [LICENSE](LICENSE) file
 
-## 🙏 Acknowledgments
+## 🆘 Support  
 
-- GitHub Copilot for AI assistance
-- Model Context Protocol for extensibility
-- Atlassian for Jira integration
+### Documentation
+- 📚 [API Documentation](docs/api/)
+- 🔧 [Configuration Guide](docs/configuration.md)
+- 🚀 [Deployment Guide](docs/deployment.md)
+
+### Issues & Support
+- 🐛 [Report Bugs](https://github.com/dapio/copilot-task-processor/issues)  
+- 💡 [Request Features](https://github.com/dapio/copilot-task-processor/discussions)
+- 📧 Email: support@your-domain.com
 
 ---
 
-**Built with ❤️ by developers, for developers**
+**Built with ❤️ using GitHub Copilot and enterprise-grade practices**
