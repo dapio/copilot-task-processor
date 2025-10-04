@@ -2,10 +2,10 @@
   "name": "copilot-task-processor",
   "version": "1.0.0",
   "description": "Enterprise-grade task processor with Copilot AI - automates development workflow from Jira ticket to tested PR",
-  "author": "dapio <dapio@example.com>",
+  "author": "dapio",
   "license": "MIT",
   "keywords": [
-    "copilot", "ai", "automation", "jira", "task-processor", "enterprise", "mcp", "typescript"
+    "copilot", "ai", "automation", "jira", "task-processor", "enterprise", "mcp", "typescript", "bitbucket"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,22 +15,32 @@
   },
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts",
-    "build": "npm run clean && tsc && npm run bundle",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "build": "npm run clean && tsc && npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
     "clean": "rimraf dist coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.{ts,json,md}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
-    "workflow:process": "tsx src/scripts/process-workflow.ts",
-    "jira:sync": "tsx src/scripts/sync-jira.ts",
-    "mcp:start": "node dist/mcp-server.js"
+    "workflow:process": "tsx scripts/process-workflow.ts",
+    "jira:sync": "tsx scripts/sync-jira.ts",
+    "bitbucket:sync": "tsx scripts/sync-bitbucket.ts",
+    "mcp:start": "node dist/mcp-server.js",
+    "docker:build": "docker build -t copilot-task-processor .",
+    "prepare": "husky install",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.4.0",
     "atlassian-js-api": "^2.0.0",
+    "@octokit/rest": "^20.0.2",
+    "bitbucket": "^2.8.0",
     "axios": "^1.6.0",
     "zod": "^3.22.4",
     "winston": "^3.11.0",
@@ -39,12 +49,14 @@
     "inquirer": "^9.2.12",
     "chalk": "^5.3.0",
     "simple-git": "^3.20.0",
-    "p-queue": "^7.4.1",
-    "p-retry": "^6.1.0"
+    "p-retry": "^6.1.0",
+    "fs-extra": "^11.1.1",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.8.0",
     "@types/jest": "^29.5.6",
+    "@types/fs-extra": "^11.0.3",
     "@typescript-eslint/eslint-plugin": "^6.8.0",
     "@typescript-eslint/parser": "^6.8.0",
     "@playwright/test": "^1.39.0",
@@ -58,18 +70,5 @@
     "rimraf": "^5.0.5",
     "husky": "^8.0.3",
     "lint-staged": "^15.0.2"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "collectCoverageFrom": ["src/**/*.ts"],
-    "coverageThreshold": {
-      "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
-    }
   }
 }

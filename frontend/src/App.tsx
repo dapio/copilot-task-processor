@@ -1,176 +1,182 @@
 import React, { useState } from 'react';
 import { DocumentUploader } from './components/DocumentUploader';
-import { ParameterForm } from './components/ParameterForm';
+import { DocumentationGenerator } from './components/DocumentationGenerator';
+import { MockupGenerator } from './components/MockupGenerator';
+import { FeedbackChat } from './components/FeedbackChat';
 import { TaskGenerator } from './components/TaskGenerator';
 import { ProcessingDashboard } from './components/ProcessingDashboard';
+import { Sidebar } from './components/Sidebar';
+import { Header } from './components/Header';
+import { AppState, ProcessingStep } from './types/app.types';
 import './App.css';
 
-interface AppState {
-  step: 'upload' | 'configure' | 'generate' | 'process';
-  documents: File[];
-  parameters: ProcessorParameters;
-  tasks: JiraTask[];
-  processingStatus: ProcessingStatus;
-}
-
-interface ProcessorParameters {
-  jira: {
-    host: string;
-    email: string;
-    token: string;
-    projectKey: string;
-  };
-  github: {
-    token: string;
-    owner: string;
-    repo: string;
-    branch: string;
-  };
-  ai: {
-    openaiKey: string;
-    model: string;
-    temperature: number;
-  };
-  workflow: {
-    autoCreateBranches: boolean;
-    autoCreatePRs: boolean;
-    requireTests: boolean;
-    minCoverage: number;
-  };
-}
-
-interface JiraTask {
-  id: string;
-  title: string;
-  description: string;
-  type: 'Story' | 'Task' | 'Bug' | 'Epic';
-  priority: 'High' | 'Medium' | 'Low';
-  estimatedHours: number;
-  dependencies: string[];
-  acceptanceCriteria: string[];
-}
-
-interface ProcessingStatus {
-  currentTask: string;
-  completed: number;
-  total: number;
-  status: 'idle' | 'analyzing' | 'creating-tasks' | 'processing' | 'completed';
-  results: ProcessingResult[];
-}
-
-/**
- * Main Application Component
- */
-export const App: React.FC = () => {
-  const [state, setState] = useState<AppState>({
-    step: 'upload',
-    documents: [],
-    parameters: getDefaultParameters(),
-    tasks: [],
-    processingStatus: {
-      currentTask: '',
-      completed: 0,
-      total: 0,
-      status: 'idle',
-      results: []
+const initialState: AppState = {
+  currentStep: 'upload',
+  documents: [],
+  generatedDocs: null,
+  mockups: null,
+  feedback: [],
+  tasks: [],
+  processingStatus: {
+    currentTask: '',
+    completed: 0,
+    total: 0,
+    status: 'idle',
+    results: []
+  },
+  parameters: {
+    jira: { host: '', email: '', token: '', projectKey: '' },
+    bitbucket: { username: '', appPassword: '', workspace: '', repo: '' },
+    ai: { openaiKey: '', model: 'gpt-4', temperature: 0.3 },
+    workflow: {
+      autoCreateBranches: true,
+      autoCreatePRs: true,
+      requireTests: true,
+      minCoverage: 80,
+      continuousIntegration: true
     }
-  });
+  }
+};
 
-  const handleDocumentsUploaded = (documents: File[]) => {
-    setState(prev => ({
-      ...prev,
-      documents,
-      step: 'configure'
-    }));
+export const App: React.FC = () => {
+  const [state, setState] = useState<AppState>(initialState);
+
+  const updateState = (updates: Partial<AppState>) => {
+    setState(prev => ({ ...prev, ...updates }));
   };
 
-  const handleParametersConfigured = (parameters: ProcessorParameters) => {
-    setState(prev => ({
-      ...prev,
-      parameters,
-      step: 'generate'
-    }));
+  const nextStep = (step: ProcessingStep) => {
+    updateState({ currentStep: step });
   };
 
-  const handleTasksGenerated = (tasks: JiraTask[]) => {
+  const addFeedback = (feedback: { type: 'documentation' | 'mockup'; content: string; timestamp: Date }) => {
     setState(prev => ({
       ...prev,
-      tasks,
-      step: 'process'
-    }));
-  };
-
-  const handleProcessingUpdate = (status: ProcessingStatus) => {
-    setState(prev => ({
-      ...prev,
-      processingStatus: status
+      feedback: [...prev.feedback, feedback]
     }));
   };
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>🚀 Copilot Task Processor</h1>
-        <p>Enterprise Document-to-Code Automation</p>
-      </header>
+      <Header currentStep={state.currentStep} />
+      
+      <div className="app-body">
+        <Sidebar 
+          currentStep={state.currentStep} 
+          onStepClick={nextStep}
+          processingStatus={state.processingStatus}
+        />
+        
+        <main className="app-main">
+          {state.currentStep === 'upload' && (
+            <DocumentUploader
+              documents={state.documents}
+              onDocumentsUploaded={(docs) => {
+                updateState({ documents: docs });
+                nextStep('documentation');
+              }}
+            />
+          )}
 
-      <main className="app-main">
-        {state.step === 'upload' && (
-          <DocumentUploader onDocumentsUploaded={handleDocumentsUploaded} />
-        )}
+          {state.currentStep === 'documentation' && (
+            <DocumentationGenerator
+              documents={state.documents}
+              parameters={state.parameters}
+              onDocumentationGenerated={(docs) => {
+                updateState({ generatedDocs: docs });
+                nextStep('mockups');
+              }}
+            />
+          )}
 
-        {state.step === 'configure' && (
-          <ParameterForm
-            documents={state.documents}
-            onParametersConfigured={handleParametersConfigured}
-          />
-        )}
+          {state.currentStep === 'mockups' && (
+            <MockupGenerator
+              documents={state.documents}
+              documentation={state.generatedDocs}
+              parameters={state.parameters}
+              onMockupsGenerated={(mockups) => {
+                updateState({ mockups });
+                nextStep('feedback');
+              }}
+            />
+          )}
 
-        {state.step === 'generate' && (
-          <TaskGenerator
-            documents={state.documents}
-            parameters={state.parameters}
-            onTasksGenerated={handleTasksGenerated}
-          />
-        )}
+          {state.currentStep === 'feedback' && (
+            <div className="feedback-stage">
+              <div className="content-review">
+                <div className="documentation-review">
+                  <h2>📋 Generated Documentation</h2>
+                  {state.generatedDocs && (
+                    <div className="doc-sections">
+                      <div className="doc-section">
+                        <h3>🏢 Business Analysis</h3>
+                        <div className="doc-content">{state.generatedDocs.businessAnalysis}</div>
+                      </div>
+                      <div className="doc-section">
+                        <h3>⚙️ System Analysis</h3>
+                        <div className="doc-content">{state.generatedDocs.systemAnalysis}</div>
+                      </div>
+                      <div className="doc-section">
+                        <h3>🏗️ Architecture</h3>
+                        <div className="doc-content">{state.generatedDocs.architecture}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-        {state.step === 'process' && (
-          <ProcessingDashboard
-            tasks={state.tasks}
-            parameters={state.parameters}
-            status={state.processingStatus}
-            onStatusUpdate={handleProcessingUpdate}
-          />
-        )}
-      </main>
+                <div className="mockups-review">
+                  <h2>🎨 Generated Mockups</h2>
+                  {state.mockups && (
+                    <div className="mockup-gallery">
+                      {state.mockups.wireframes.map((mockup, index) => (
+                        <div key={index} className="mockup-item">
+                          <h4>{mockup.name}</h4>
+                          <div className="mockup-preview">
+                            {mockup.svgContent ? (
+                              <div dangerouslySetInnerHTML={{ __html: mockup.svgContent }} />
+                            ) : (
+                              <div className="mockup-placeholder">{mockup.description}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <FeedbackChat
+                feedback={state.feedback}
+                onFeedbackSubmit={addFeedback}
+                onApprovalComplete={() => nextStep('tasks')}
+              />
+            </div>
+          )}
+
+          {state.currentStep === 'tasks' && (
+            <TaskGenerator
+              documents={state.documents}
+              documentation={state.generatedDocs}
+              mockups={state.mockups}
+              feedback={state.feedback}
+              parameters={state.parameters}
+              onTasksGenerated={(tasks) => {
+                updateState({ tasks });
+                nextStep('processing');
+              }}
+            />
+          )}
+
+          {state.currentStep === 'processing' && (
+            <ProcessingDashboard
+              tasks={state.tasks}
+              parameters={state.parameters}
+              status={state.processingStatus}
+              onStatusUpdate={(status) => updateState({ processingStatus: status })}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 };
-
-function getDefaultParameters(): ProcessorParameters {
-  return {
-    jira: {
-      host: 'https://your-domain.atlassian.net',
-      email: '',
-      token: '',
-      projectKey: 'PROJ'
-    },
-    github: {
-      token: '',
-      owner: 'dapio',
-      repo: '',
-      branch: 'development'
-    },
-    ai: {
-      openaiKey: '',
-      model: 'gpt-4',
-      temperature: 0.3
-    },
-    workflow: {
-      autoCreateBranches: true,
-      autoCreatePRs: true,
-      requireTests: true,
-      minCoverage: 80
-    }
-  };
-}
