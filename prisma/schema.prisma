@@ -1,6 +1,3 @@
-// ThinkCode AI Platform - Multi-Agent Team Database Schema
-// Comprehensive persistence layer for AI agent orchestration system
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -11,292 +8,235 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// Agent definitions and current state
 model Agent {
-  id              String   @id @default(cuid())
-  name            String   @unique
-  role            String
-  description     String?
-  capabilities    String   // JSON array of capabilities
-  isActive        Boolean  @default(true)
-  currentWorkload Float    @default(0.0) // 0.0 to 1.0 scale
-  metadata        String?  // JSON object for additional data
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  // Relations
-  sentCommunications     AgentCommunication[] @relation("SenderAgent")
-  receivedCommunications AgentCommunication[] @relation("ReceiverAgent")
+  id                     String                   @id @default(cuid())
+  name                   String                   @unique
+  role                   String
+  description            String?
+  capabilities           String
+  isActive               Boolean                  @default(true)
+  currentWorkload        Float                    @default(0.0)
+  metadata               String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  receivedCommunications AgentCommunication[]     @relation("ReceiverAgent")
+  sentCommunications     AgentCommunication[]     @relation("SenderAgent")
   decisions              AgentDecision[]
-  workflowSteps          WorkflowStep[]
   instructionConfigs     AgentInstructionConfig[]
   ruleChecks             InstructionRuleCheck[]
-  
+  workflowSteps          WorkflowStep[]
+
   @@index([name])
   @@index([role])
   @@index([isActive])
 }
 
-// Inter-agent communication logs
 model AgentCommunication {
   id          String   @id @default(cuid())
   fromAgentId String
   toAgentId   String
-  messageType String   // 'request', 'response', 'notification', 'broadcast'
+  messageType String
   content     String
-  priority    String   @default("medium") // 'low', 'medium', 'high', 'urgent'
+  priority    String   @default("medium")
   isRead      Boolean  @default(false)
-  metadata    String?  // JSON object for additional data
-  
+  metadata    String?
   timestamp   DateTime @default(now())
-  
-  // Relations
-  fromAgent   Agent    @relation("SenderAgent", fields: [fromAgentId], references: [id], onDelete: Cascade)
   toAgent     Agent    @relation("ReceiverAgent", fields: [toAgentId], references: [id], onDelete: Cascade)
-  
+  fromAgent   Agent    @relation("SenderAgent", fields: [fromAgentId], references: [id], onDelete: Cascade)
+
   @@index([fromAgentId])
   @@index([toAgentId])
   @@index([messageType])
   @@index([timestamp])
 }
 
-// Agent decision tracking and audit
 model AgentDecision {
-  id            String   @id @default(cuid())
-  agentId       String
-  decisionType  String   // 'task_assignment', 'workflow_step', 'resource_allocation', 'escalation'
-  context       String   // Description of situation requiring decision
-  options       String   // JSON array of considered options
-  chosenOption  String   // Selected option
-  reasoning     String   // Agent's reasoning process
-  confidence    Float    // 0.0 to 1.0 confidence score
-  outcome       String?  // Result after decision implementation
-  isReversed    Boolean  @default(false)
-  
-  timestamp     DateTime @default(now())
-  
-  // Relations
-  agent         Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  
+  id           String   @id @default(cuid())
+  agentId      String
+  decisionType String
+  context      String
+  options      String
+  chosenOption String
+  reasoning    String
+  confidence   Float
+  outcome      String?
+  isReversed   Boolean  @default(false)
+  timestamp    DateTime @default(now())
+  agent        Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
   @@index([agentId])
   @@index([decisionType])
   @@index([timestamp])
 }
 
-// Workflow definitions and execution tracking
 model Workflow {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   name        String
   description String?
-  type        String   // 'feature_development', 'testing', 'deployment', 'maintenance'
-  status      String   @default("draft") // 'draft', 'active', 'paused', 'completed', 'cancelled'
-  priority    String   @default("medium")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  type        String
+  status      String         @default("draft")
+  priority    String         @default("medium")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   startedAt   DateTime?
   completedAt DateTime?
-  
-  // Relations
-  steps       WorkflowStep[]
-  project     Project? @relation(fields: [projectId], references: [id])
   projectId   String?
-  
+  project     Project?       @relation(fields: [projectId], references: [id])
+  steps       WorkflowStep[]
+
   @@index([name])
   @@index([type])
   @@index([status])
 }
 
-// Individual workflow step execution
 model WorkflowStep {
-  id            String   @id @default(cuid())
-  workflowId    String
-  stepNumber    Int      // Order within workflow
-  name          String
-  description   String?
+  id              String                 @id @default(cuid())
+  workflowId      String
+  stepNumber      Int
+  name            String
+  description     String?
   assignedAgentId String?
-  status        String   @default("pending") // 'pending', 'in_progress', 'completed', 'failed', 'skipped'
-  
-  startedAt     DateTime?
-  completedAt   DateTime?
-  
-  inputs        String?  // JSON object of step inputs
-  outputs       String?  // JSON object of step outputs
-  errors        String?  // JSON array of errors encountered
-  
-  // Relations
-  workflow      Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  assignedAgent Agent?   @relation(fields: [assignedAgentId], references: [id])
-  ruleChecks    InstructionRuleCheck[]
-  
+  status          String                 @default("pending")
+  startedAt       DateTime?
+  completedAt     DateTime?
+  inputs          String?
+  outputs         String?
+  errors          String?
+  ruleChecks      InstructionRuleCheck[]
+  assignedAgent   Agent?                 @relation(fields: [assignedAgentId], references: [id])
+  workflow        Workflow               @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, stepNumber])
   @@index([workflowId])
   @@index([assignedAgentId])
   @@index([status])
-  @@unique([workflowId, stepNumber])
 }
 
-// Project management and tracking
 model Project {
-  id          String   @id @default(cuid())
+  id          String                 @id @default(cuid())
   name        String
   description String?
-  type        String   // 'web_app', 'mobile_app', 'api', 'library', 'integration'
-  status      String   @default("planning") // 'planning', 'active', 'on_hold', 'completed', 'cancelled'
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  type        String
+  status      String                 @default("planning")
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
   startedAt   DateTime?
   completedAt DateTime?
-  
-  metadata    String?  // JSON object for project-specific data
-  
-  // Relations
-  workflows   Workflow[]
-  feedback    UserFeedback[]
+  metadata    String?
   ruleChecks  InstructionRuleCheck[]
-  
+  feedback    UserFeedback[]
+  workflows   Workflow[]
+
   @@index([name])
   @@index([type])
   @@index([status])
 }
 
-// User feedback and system improvement tracking
 model UserFeedback {
-  id          String   @id @default(cuid())
-  projectId   String?
-  feedbackType String  // 'bug_report', 'feature_request', 'improvement', 'praise', 'complaint'
-  title       String
-  description String
-  priority    String   @default("medium")
-  status      String   @default("open") // 'open', 'in_progress', 'resolved', 'closed'
-  
-  createdAt   DateTime @default(now())
-  resolvedAt  DateTime?
-  
-  metadata    String?  // JSON object for additional feedback data
-  
-  // Relations
-  project     Project? @relation(fields: [projectId], references: [id])
-  
+  id           String    @id @default(cuid())
+  projectId    String?
+  feedbackType String
+  title        String
+  description  String
+  priority     String    @default("medium")
+  status       String    @default("open")
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+  metadata     String?
+  project      Project?  @relation(fields: [projectId], references: [id])
+
   @@index([projectId])
   @@index([feedbackType])
   @@index([status])
 }
 
-// Agent instruction templates and best practices
 model AgentInstruction {
-  id            String   @id @default(cuid())
-  name          String   // "Code Quality Standards", "Accessibility Guidelines", "Performance Rules"
-  category      String   // 'code_quality', 'architecture', 'accessibility', 'performance', 'security', 'testing'
-  targetRole    String?  // Specific agent role this applies to, null for universal rules
-  priority      Int      @default(100) // 1-999, lower numbers = higher priority
-  isActive      Boolean  @default(true)
-  version       String   @default("1.0.0")
-  
-  // Instruction content
-  title         String
-  description   String
-  instructions  String   // Detailed best practices and rules
-  examples      String?  // Code examples and usage patterns
-  violations    String?  // Common mistakes and what to avoid
-  
-  // Enforcement settings
-  enforcementLevel String @default("warning") // 'error', 'warning', 'info', 'suggestion'
-  autoApply     Boolean  @default(false) // Whether to automatically apply these rules
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?  // Who created this instruction set
-  
-  // Relations
-  agentConfigs  AgentInstructionConfig[]
-  ruleChecks    InstructionRuleCheck[]
-  
+  id               String                   @id @default(cuid())
+  name             String
+  category         String
+  targetRole       String?
+  priority         Int                      @default(100)
+  isActive         Boolean                  @default(true)
+  version          String                   @default("1.0.0")
+  title            String
+  description      String
+  instructions     String
+  examples         String?
+  violations       String?
+  enforcementLevel String                   @default("warning")
+  autoApply        Boolean                  @default(false)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  createdBy        String?
+  agentConfigs     AgentInstructionConfig[]
+  ruleChecks       InstructionRuleCheck[]
+
+  @@unique([name, version])
   @@index([category])
   @@index([targetRole])
   @@index([priority])
   @@index([isActive])
-  @@unique([name, version])
 }
 
-// Configuration linking agents to their instruction sets
 model AgentInstructionConfig {
-  id              String   @id @default(cuid())
-  agentId         String
-  instructionId   String
-  isEnabled       Boolean  @default(true)
-  customSettings  String?  // JSON object for agent-specific customizations
-  
-  assignedAt      DateTime @default(now())
-  lastApplied     DateTime?
-  
-  // Relations
-  agent           Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  instruction     AgentInstruction @relation(fields: [instructionId], references: [id], onDelete: Cascade)
-  
+  id             String           @id @default(cuid())
+  agentId        String
+  instructionId  String
+  isEnabled      Boolean          @default(true)
+  customSettings String?
+  assignedAt     DateTime         @default(now())
+  lastApplied    DateTime?
+  instruction    AgentInstruction @relation(fields: [instructionId], references: [id], onDelete: Cascade)
+  agent          Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, instructionId])
   @@index([agentId])
   @@index([instructionId])
-  @@unique([agentId, instructionId])
 }
 
-// Tracking rule compliance and violations
 model InstructionRuleCheck {
-  id              String   @id @default(cuid())
-  instructionId   String
-  agentId         String
-  projectId       String?
-  workflowStepId  String?
-  
-  ruleType        String   // 'pre_execution', 'post_execution', 'code_review', 'quality_gate'
-  checkResult     String   // 'passed', 'warning', 'failed', 'skipped'
-  findings        String?  // JSON array of specific findings/violations
-  autoFixed       Boolean  @default(false)
-  
-  checkedAt       DateTime @default(now())
-  
-  // Relations
-  instruction     AgentInstruction @relation(fields: [instructionId], references: [id], onDelete: Cascade)
-  agent           Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  project         Project?        @relation(fields: [projectId], references: [id])
-  workflowStep    WorkflowStep?   @relation(fields: [workflowStepId], references: [id])
-  
+  id             String           @id @default(cuid())
+  instructionId  String
+  agentId        String
+  projectId      String?
+  workflowStepId String?
+  ruleType       String
+  checkResult    String
+  findings       String?
+  autoFixed      Boolean          @default(false)
+  checkedAt      DateTime         @default(now())
+  workflowStep   WorkflowStep?    @relation(fields: [workflowStepId], references: [id])
+  project        Project?         @relation(fields: [projectId], references: [id])
+  agent          Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  instruction    AgentInstruction @relation(fields: [instructionId], references: [id], onDelete: Cascade)
+
   @@index([instructionId])
   @@index([agentId])
   @@index([checkResult])
   @@index([checkedAt])
 }
 
-// Best practices knowledge base with hierarchical organization
 model BestPractice {
-  id            String   @id @default(cuid())
-  parentId      String?  // For hierarchical organization
-  
-  title         String
-  category      String   // 'typescript', 'react', 'accessibility', 'performance', 'security', 'testing'
-  subcategory   String?  // 'hooks', 'components', 'services', 'styling', 'validation'
-  tags          String?  // JSON array of tags for flexible categorization
-  
-  // Content
-  description   String
-  rule          String   // The actual rule or guideline
-  rationale     String   // Why this practice is important
-  goodExamples  String?  // Code examples of correct implementation
-  badExamples   String?  // Code examples of what NOT to do
-  resources     String?  // JSON array of links and references
-  
-  // Metadata
-  difficulty    String   @default("medium") // 'beginner', 'intermediate', 'advanced', 'expert'
-  impact        String   @default("medium") // 'low', 'medium', 'high', 'critical'
-  
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  // Relations
-  parent        BestPractice?  @relation("BestPracticeHierarchy", fields: [parentId], references: [id])
-  children      BestPractice[] @relation("BestPracticeHierarchy")
-  
+  id           String         @id @default(cuid())
+  parentId     String?
+  title        String
+  category     String
+  subcategory  String?
+  tags         String?
+  description  String
+  rule         String
+  rationale    String
+  goodExamples String?
+  badExamples  String?
+  resources    String?
+  difficulty   String         @default("medium")
+  impact       String         @default("medium")
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  parent       BestPractice?  @relation("BestPracticeHierarchy", fields: [parentId], references: [id])
+  children     BestPractice[] @relation("BestPracticeHierarchy")
+
   @@index([category])
   @@index([subcategory])
   @@index([difficulty])
