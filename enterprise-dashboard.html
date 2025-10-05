@@ -149,6 +149,277 @@
         }
       }
 
+      /* Knowledge Feed System Styles */
+      .nav-subtab {
+        transition: all 0.3s ease;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-subtab:hover {
+        color: #8b5cf6 !important;
+      }
+
+      .feed-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .feed-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+        border-color: #d4c5f9;
+      }
+
+      .feed-type-badge {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 3px 8px;
+        border-radius: 12px;
+      }
+
+      .feed-priority-badge {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        padding: 3px 6px;
+        border-radius: 6px;
+      }
+
+      .knowledge-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .stat-card {
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: scale(0);
+        transition: transform 0.6s ease;
+      }
+
+      .stat-card:hover::before {
+        transform: scale(2);
+      }
+
+      .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+      }
+
+      .quick-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+      }
+
+      .quick-actions .btn {
+        font-size: 13px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .activity-feed {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid #8b5cf6;
+      }
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        font-size: 14px;
+        color: #495057;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .activity-item:last-child {
+        border-bottom: none;
+      }
+
+      .activity-item i {
+        width: 16px;
+        color: #8b5cf6;
+      }
+
+      .search-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+
+      .search-filters select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+        background: white;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+      }
+
+      .search-filters select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+      }
+
+      .analytics-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+      }
+
+      .analytics-card h6 {
+        margin-bottom: 15px;
+        color: #2c3e50;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .progress-bar {
+        background: #e9ecef;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 8px 0;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #059669);
+        transition: width 0.8s ease;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        width: 500px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease;
+      }
+
+      @keyframes modalSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+      }
+
       .content-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -158,6 +429,7 @@
 
       .card {
         background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         border-radius: 15px;
         padding: 25px;
@@ -526,6 +798,54 @@
             `${this.agentsURL}/api/teams/recommend?projectType=${encodeURIComponent(projectType)}`
           );
         },
+
+        // KNOWLEDGE BASE API calls - Integration from complete-dashboard
+        async searchKnowledge(query, agentId, options = {}) {
+          // Mock implementation for now - replace with real service
+          return new Promise(resolve => {
+            setTimeout(() => {
+              resolve({
+                success: true,
+                results: [
+                  {
+                    document: {
+                      id: '1',
+                      title: `Knowledge about: ${query}`,
+                      content: `This is mock knowledge content for query: ${query}. In real implementation, this would connect to the knowledge base service.`,
+                      type: 'solution',
+                      tags: ['react', 'typescript', 'dashboard'],
+                      author: 'System',
+                      department: 'Engineering',
+                      createdAt: new Date().toISOString(),
+                    },
+                    relevanceScore: 0.85,
+                  },
+                ],
+              });
+            }, 500);
+          });
+        },
+
+        async addKnowledgeDocument(feedId, document) {
+          // Mock implementation
+          return new Promise(resolve => {
+            setTimeout(() => {
+              resolve({ success: true, documentId: Date.now() });
+            }, 300);
+          });
+        },
+
+        async getKnowledgeStats() {
+          return new Promise(resolve => {
+            setTimeout(() => {
+              resolve({
+                totalDocuments: 156,
+                activeFeeds: 8,
+                totalSearches: 342,
+              });
+            }, 200);
+          });
+        },
       };
 
       // Status Hook
@@ -571,11 +891,47 @@
       // Dashboard Component
       function Dashboard() {
         const [activeTab, setActiveTab] = useState('dashboard');
+        const [selectedProject, setSelectedProject] = useState(null);
+        const [projectSubTab, setProjectSubTab] = useState('overview');
         const [agents, setAgents] = useState([]);
         const [projects, setProjects] = useState([]);
         const [loading, setLoading] = useState(false);
         const [alert, setAlert] = useState(null);
         const { status, checkStatus } = useSystemStatus();
+
+        // KNOWLEDGE BASE STATE - Integration from complete-dashboard
+        const [knowledgeStats, setKnowledgeStats] = useState(null);
+        const [searchQuery, setSearchQuery] = useState('');
+        const [searchResults, setSearchResults] = useState(null);
+
+        // DOCUMENT ANALYSIS STATE
+        const [selectedFiles, setSelectedFiles] = useState([]);
+        const [documentAnalysis, setDocumentAnalysis] = useState({
+          isAnalyzing: false,
+          result: null,
+        });
+
+        // TASK GENERATION STATE
+        const [taskGeneration, setTaskGeneration] = useState({
+          isGenerating: false,
+          result: null,
+        });
+        const [selectedTasks, setSelectedTasks] = useState([]);
+
+        // PROJECT DATA STATE
+        const [projectData, setProjectData] = useState({
+          name: 'ThinkCode AI Platform',
+          description:
+            'Advanced task processing and document generation system',
+          requirements: [
+            'Document processing and analysis',
+            'Task generation and management',
+            'Backend API integration',
+            'Frontend dashboard with real-time updates',
+            'Knowledge Base for agent learning',
+          ],
+          technologies: ['React', 'TypeScript', 'Node.js', 'Express.js'],
+        });
 
         const showAlert = (message, type = 'success') => {
           setAlert({ message, type });
@@ -586,6 +942,7 @@
         useEffect(() => {
           loadAgents();
           loadProjects();
+          loadKnowledgeStats();
         }, []);
 
         const loadAgents = async () => {
@@ -605,8 +962,162 @@
             const response = await apiService.getProjects();
             setProjects(response.data || []);
           } catch (error) {
-            showAlert('Błąd ładowania projektów: ' + error.message, 'error');
+            // Fallback do danych przykładowych
+            setProjects([
+              {
+                id: 'project-1',
+                name: 'ThinkCode AI Platform',
+                type: 'AI/ML Platform',
+                status: 'active',
+                description:
+                  'Główny projekt platformy ThinkCode AI z zaawansowanymi funkcjami automatyzacji',
+              },
+              {
+                id: 'project-2',
+                name: 'Task Processor',
+                type: 'Backend Service',
+                status: 'active',
+                description:
+                  'Serwis przetwarzania zadań i integracji z zewnętrznymi API',
+              },
+              {
+                id: 'project-3',
+                name: 'Knowledge Base',
+                type: 'Data Management',
+                status: 'development',
+                description:
+                  'System zarządzania bazą wiedzy i wyszukiwania semantycznego',
+              },
+            ]);
+            showAlert(
+              'Ładowanie projektów - używam danych przykładowych',
+              'warning'
+            );
           }
+        };
+
+        // KNOWLEDGE BASE HANDLERS
+        const loadKnowledgeStats = async () => {
+          try {
+            const stats = await apiService.getKnowledgeStats();
+            setKnowledgeStats(stats);
+          } catch (error) {
+            showAlert(
+              'Błąd ładowania statystyk bazy wiedzy: ' + error.message,
+              'error'
+            );
+          }
+        };
+
+        const handleKnowledgeSearch = async () => {
+          if (!searchQuery.trim()) return;
+
+          try {
+            setLoading(true);
+            const results = await apiService.searchKnowledge(
+              searchQuery,
+              'dashboard-agent-001',
+              {
+                maxResults: 10,
+                minRelevance: 0.3,
+              }
+            );
+            setSearchResults(results);
+          } catch (error) {
+            showAlert('Błąd wyszukiwania wiedzy: ' + error.message, 'error');
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        const handleAddKnowledgeDocument = async (
+          title,
+          content,
+          type,
+          tags
+        ) => {
+          try {
+            const result = await apiService.addKnowledgeDocument(
+              'global-feed',
+              {
+                title,
+                content,
+                type,
+                format: 'markdown',
+                tags,
+                author: 'Dashboard User',
+                department: 'Engineering',
+              }
+            );
+
+            if (result.success) {
+              showAlert('Dokument został dodany do bazy wiedzy', 'success');
+              loadKnowledgeStats(); // Refresh stats
+            }
+          } catch (error) {
+            showAlert('Błąd dodawania dokumentu: ' + error.message, 'error');
+          }
+        };
+
+        // DOCUMENT ANALYSIS HANDLERS
+        const handleFileSelect = event => {
+          const files = Array.from(event.target.files || []);
+          setSelectedFiles(files);
+        };
+
+        const handleAnalyzeDocuments = async () => {
+          if (selectedFiles.length === 0) {
+            showAlert('Wybierz pliki do analizy', 'error');
+            return;
+          }
+
+          try {
+            setDocumentAnalysis({ isAnalyzing: true, result: null });
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('files', file));
+            formData.append(
+              'options',
+              JSON.stringify({
+                includeMetadata: true,
+                extractKeywords: true,
+                generateSummary: true,
+              })
+            );
+
+            const result = await apiService.analyzeDocuments(formData);
+            setDocumentAnalysis({ isAnalyzing: false, result });
+            showAlert('Analiza dokumentów zakończona', 'success');
+          } catch (error) {
+            setDocumentAnalysis({ isAnalyzing: false, result: null });
+            showAlert('Błąd analizy dokumentów: ' + error.message, 'error');
+          }
+        };
+
+        // TASK GENERATION HANDLERS
+        const handleGenerateTasks = async () => {
+          try {
+            setTaskGeneration({ isGenerating: true, result: null });
+
+            const result = await apiService.generateTasks({
+              project: projectData,
+              analysis: documentAnalysis.result,
+            });
+
+            setTaskGeneration({ isGenerating: false, result });
+            showAlert('Zadania zostały wygenerowane', 'success');
+          } catch (error) {
+            setTaskGeneration({ isGenerating: false, result: null });
+            showAlert('Błąd generowania zadań: ' + error.message, 'error');
+          }
+        };
+
+        const toggleTaskSelection = taskId => {
+          setSelectedTasks(prev =>
+            prev.includes(taskId)
+              ? prev.filter(id => id !== taskId)
+              : [...prev, taskId]
+          );
         };
 
         const runIntegrationTests = async () => {
@@ -766,114 +1277,1717 @@
           </div>
         );
 
-        const renderProjects = () => (
-          <div className="card">
-            <div className="card-header">
-              <div
-                className="card-icon"
-                style={{
-                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                }}
-              >
-                <i className="fas fa-project-diagram"></i>
+        // KNOWLEDGE BASE RENDER FUNCTION - Rozszerzona wersja z systemem feedów
+        const renderKnowledge = () => {
+          const [knowledgeTab, setKnowledgeTab] = React.useState('overview');
+          const [feeds, setFeeds] = React.useState([]);
+          const [selectedFeed, setSelectedFeed] = React.useState(null);
+          const [createFeedModal, setCreateFeedModal] = React.useState(false);
+          const [newFeedForm, setNewFeedForm] = React.useState({
+            name: '',
+            description: '',
+            type: 'global',
+            department: '',
+            priority: 'medium',
+          });
+
+          // Load feeds
+          React.useEffect(() => {
+            loadKnowledgeFeeds();
+          }, []);
+
+          const loadKnowledgeFeeds = async () => {
+            try {
+              setLoading(true);
+              // Mock data for now - will connect to real API
+              const mockFeeds = [
+                {
+                  id: 'feed-1',
+                  name: 'Company Standards & Guidelines',
+                  description:
+                    'Globalne standardy kodowania, architektura i best practices organizacji',
+                  type: 'global',
+                  priority: 'high',
+                  isActive: true,
+                  _count: {
+                    documents: 15,
+                    codeSnippets: 8,
+                    processDefinitions: 3,
+                    knowledgePractices: 12,
+                  },
+                },
+                {
+                  id: 'feed-2',
+                  name: 'React Development Feed',
+                  description:
+                    'Specjalistyczna wiedza na temat rozwoju aplikacji React',
+                  type: 'departmental',
+                  department: 'Frontend',
+                  priority: 'high',
+                  isActive: true,
+                  _count: {
+                    documents: 8,
+                    codeSnippets: 25,
+                    processDefinitions: 2,
+                    knowledgePractices: 18,
+                  },
+                },
+                {
+                  id: 'feed-3',
+                  name: 'Backend API Guidelines',
+                  description: 'Standardy i praktyki dla rozwoju API backend',
+                  type: 'departmental',
+                  department: 'Backend',
+                  priority: 'medium',
+                  isActive: true,
+                  _count: {
+                    documents: 12,
+                    codeSnippets: 15,
+                    processDefinitions: 5,
+                    knowledgePractices: 10,
+                  },
+                },
+              ];
+              setFeeds(mockFeeds);
+            } catch (error) {
+              showAlert('Błąd ładowania feedów: ' + error.message, 'error');
+            } finally {
+              setLoading(false);
+            }
+          };
+
+          const createKnowledgeFeed = async () => {
+            try {
+              setLoading(true);
+              // Mock implementation - will connect to real API
+              const newFeed = {
+                id: `feed-${Date.now()}`,
+                ...newFeedForm,
+                isActive: true,
+                createdAt: new Date().toISOString(),
+                _count: {
+                  documents: 0,
+                  codeSnippets: 0,
+                  processDefinitions: 0,
+                  knowledgePractices: 0,
+                },
+              };
+
+              setFeeds([...feeds, newFeed]);
+              setCreateFeedModal(false);
+              setNewFeedForm({
+                name: '',
+                description: '',
+                type: 'global',
+                department: '',
+                priority: 'medium',
+              });
+              showAlert('Feed wiedzy został utworzony!', 'success');
+            } catch (error) {
+              showAlert('Błąd tworzenia feeda: ' + error.message, 'error');
+            } finally {
+              setLoading(false);
+            }
+          };
+
+          return (
+            <div className="content-grid">
+              {/* Header z nawigacją */}
+              <div className="card">
+                <div className="card-header">
+                  <div
+                    className="card-icon"
+                    style={{
+                      background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                    }}
+                  >
+                    <i className="fas fa-brain"></i>
+                  </div>
+                  <div className="card-title">
+                    🧠 System Feedów Wiedzy dla Agentów
+                  </div>
+                </div>
+
+                {/* Sub-navigation */}
+                <div
+                  style={{
+                    padding: '0 20px',
+                    borderBottom: '1px solid #e9ecef',
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '20px' }}>
+                    {[
+                      {
+                        key: 'overview',
+                        label: 'Przegląd',
+                        icon: 'fas fa-chart-bar',
+                      },
+                      {
+                        key: 'feeds',
+                        label: 'Feedy Wiedzy',
+                        icon: 'fas fa-rss',
+                      },
+                      {
+                        key: 'search',
+                        label: 'Wyszukiwanie',
+                        icon: 'fas fa-search',
+                      },
+                      {
+                        key: 'analytics',
+                        label: 'Analityka',
+                        icon: 'fas fa-analytics',
+                      },
+                    ].map(tab => (
+                      <button
+                        key={tab.key}
+                        className={`nav-subtab ${knowledgeTab === tab.key ? 'active' : ''}`}
+                        onClick={() => setKnowledgeTab(tab.key)}
+                        style={{
+                          padding: '12px 0',
+                          border: 'none',
+                          background: 'none',
+                          borderBottom:
+                            knowledgeTab === tab.key
+                              ? '2px solid #8b5cf6'
+                              : '2px solid transparent',
+                          color: knowledgeTab === tab.key ? '#8b5cf6' : '#666',
+                          cursor: 'pointer',
+                          fontWeight: knowledgeTab === tab.key ? '600' : '400',
+                        }}
+                      >
+                        <i className={tab.icon}></i> {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Content based on selected tab */}
+                <div style={{ padding: '20px' }}>
+                  {knowledgeTab === 'overview' && (
+                    <div>
+                      <h4>📊 Przegląd Systemu Wiedzy</h4>
+
+                      {/* Stats Cards */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns:
+                            'repeat(auto-fit, minmax(200px, 1fr))',
+                          gap: '15px',
+                          marginBottom: '30px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            background:
+                              'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '28px',
+                              fontWeight: 'bold',
+                              marginBottom: '5px',
+                            }}
+                          >
+                            {feeds.length}
+                          </div>
+                          <div style={{ opacity: 0.9 }}>Aktywne Feedy</div>
+                        </div>
+
+                        <div
+                          style={{
+                            background:
+                              'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                            color: 'white',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '28px',
+                              fontWeight: 'bold',
+                              marginBottom: '5px',
+                            }}
+                          >
+                            {feeds.reduce(
+                              (sum, feed) => sum + feed._count.documents,
+                              0
+                            )}
+                          </div>
+                          <div style={{ opacity: 0.9 }}>Dokumenty</div>
+                        </div>
+
+                        <div
+                          style={{
+                            background:
+                              'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                            color: 'white',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '28px',
+                              fontWeight: 'bold',
+                              marginBottom: '5px',
+                            }}
+                          >
+                            {feeds.reduce(
+                              (sum, feed) => sum + feed._count.codeSnippets,
+                              0
+                            )}
+                          </div>
+                          <div style={{ opacity: 0.9 }}>Fragmenty Kodu</div>
+                        </div>
+
+                        <div
+                          style={{
+                            background:
+                              'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                            color: 'white',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '28px',
+                              fontWeight: 'bold',
+                              marginBottom: '5px',
+                            }}
+                          >
+                            {feeds.reduce(
+                              (sum, feed) =>
+                                sum + feed._count.knowledgePractices,
+                              0
+                            )}
+                          </div>
+                          <div style={{ opacity: 0.9 }}>Best Practices</div>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div style={{ marginBottom: '30px' }}>
+                        <h5>🚀 Szybkie Akcje</h5>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '10px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => setCreateFeedModal(true)}
+                          >
+                            <i className="fas fa-plus"></i> Nowy Feed
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => setKnowledgeTab('search')}
+                          >
+                            <i className="fas fa-search"></i> Przeszukaj Wiedzę
+                          </button>
+                          <button className="btn btn-success">
+                            <i className="fas fa-download"></i> Import
+                            Dokumentów
+                          </button>
+                          <button className="btn btn-info">
+                            <i className="fas fa-cogs"></i> Inicjalizuj Domyślne
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Recent Activity */}
+                      <div>
+                        <h5>📈 Ostatnia Aktywność</h5>
+                        <div
+                          style={{
+                            background: '#f8f9fa',
+                            padding: '15px',
+                            borderRadius: '8px',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#666',
+                              marginBottom: '10px',
+                            }}
+                          >
+                            <i className="fas fa-clock"></i> Dziś, 14:30 - Agent
+                            "CodeReviewer" użył "React Best Practices"
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#666',
+                              marginBottom: '10px',
+                            }}
+                          >
+                            <i className="fas fa-plus"></i> Dziś, 12:15 - Dodano
+                            nowy dokument do "Company Standards"
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#666' }}>
+                            <i className="fas fa-search"></i> Wczoraj, 16:45 -
+                            12 wyszukiwań w "Backend Guidelines"
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {knowledgeTab === 'feeds' && (
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '20px',
+                        }}
+                      >
+                        <h4>📚 Zarządzanie Feedami Wiedzy</h4>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => setCreateFeedModal(true)}
+                        >
+                          <i className="fas fa-plus"></i> Nowy Feed
+                        </button>
+                      </div>
+
+                      {/* Feeds Grid */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns:
+                            'repeat(auto-fill, minmax(350px, 1fr))',
+                          gap: '20px',
+                        }}
+                      >
+                        {feeds.map(feed => (
+                          <div
+                            key={feed.id}
+                            style={{
+                              border: '1px solid #e9ecef',
+                              borderRadius: '12px',
+                              padding: '20px',
+                              background: 'white',
+                              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                              transition: 'transform 0.2s',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => setSelectedFeed(feed)}
+                            onMouseEnter={e =>
+                              (e.currentTarget.style.transform =
+                                'translateY(-2px)')
+                            }
+                            onMouseLeave={e =>
+                              (e.currentTarget.style.transform =
+                                'translateY(0)')
+                            }
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                marginBottom: '15px',
+                              }}
+                            >
+                              <div>
+                                <h6
+                                  style={{
+                                    margin: 0,
+                                    color: '#2c3e50',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  {feed.name}
+                                </h6>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    gap: '10px',
+                                    alignItems: 'center',
+                                    marginTop: '5px',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      background:
+                                        feed.type === 'global'
+                                          ? '#e8f5e8'
+                                          : feed.type === 'departmental'
+                                            ? '#e3f2fd'
+                                            : '#fff3e0',
+                                      color:
+                                        feed.type === 'global'
+                                          ? '#2e7d32'
+                                          : feed.type === 'departmental'
+                                            ? '#1976d2'
+                                            : '#f57c00',
+                                      padding: '2px 8px',
+                                      borderRadius: '12px',
+                                      fontSize: '12px',
+                                      fontWeight: '500',
+                                    }}
+                                  >
+                                    {feed.type === 'global'
+                                      ? 'Globalny'
+                                      : feed.type === 'departmental'
+                                        ? 'Departament'
+                                        : 'Agent'}
+                                  </span>
+                                  {feed.department && (
+                                    <span
+                                      style={{
+                                        fontSize: '12px',
+                                        color: '#666',
+                                      }}
+                                    >
+                                      {feed.department}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span
+                                style={{
+                                  background:
+                                    feed.priority === 'high'
+                                      ? '#ffebee'
+                                      : feed.priority === 'medium'
+                                        ? '#f3e5f5'
+                                        : '#e8f5e8',
+                                  color:
+                                    feed.priority === 'high'
+                                      ? '#c62828'
+                                      : feed.priority === 'medium'
+                                        ? '#7b1fa2'
+                                        : '#2e7d32',
+                                  padding: '4px 8px',
+                                  borderRadius: '8px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                }}
+                              >
+                                {feed.priority}
+                              </span>
+                            </div>
+
+                            <p
+                              style={{
+                                margin: '0 0 15px 0',
+                                color: '#666',
+                                fontSize: '14px',
+                                lineHeight: '1.4',
+                                minHeight: '40px',
+                              }}
+                            >
+                              {feed.description}
+                            </p>
+
+                            {/* Content Stats */}
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(4, 1fr)',
+                                gap: '8px',
+                                marginTop: '15px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  textAlign: 'center',
+                                  padding: '8px',
+                                  background: '#f8f9fa',
+                                  borderRadius: '6px',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    color: '#495057',
+                                  }}
+                                >
+                                  {feed._count.documents}
+                                </div>
+                                <div
+                                  style={{ fontSize: '11px', color: '#6c757d' }}
+                                >
+                                  Docs
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  textAlign: 'center',
+                                  padding: '8px',
+                                  background: '#f8f9fa',
+                                  borderRadius: '6px',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    color: '#495057',
+                                  }}
+                                >
+                                  {feed._count.codeSnippets}
+                                </div>
+                                <div
+                                  style={{ fontSize: '11px', color: '#6c757d' }}
+                                >
+                                  Code
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  textAlign: 'center',
+                                  padding: '8px',
+                                  background: '#f8f9fa',
+                                  borderRadius: '6px',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    color: '#495057',
+                                  }}
+                                >
+                                  {feed._count.processDefinitions}
+                                </div>
+                                <div
+                                  style={{ fontSize: '11px', color: '#6c757d' }}
+                                >
+                                  Process
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  textAlign: 'center',
+                                  padding: '8px',
+                                  background: '#f8f9fa',
+                                  borderRadius: '6px',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    color: '#495057',
+                                  }}
+                                >
+                                  {feed._count.knowledgePractices}
+                                </div>
+                                <div
+                                  style={{ fontSize: '11px', color: '#6c757d' }}
+                                >
+                                  Practices
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {knowledgeTab === 'search' && (
+                    <div>
+                      <h4>🔍 Wyszukiwanie w Bazie Wiedzy</h4>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '10px',
+                          marginBottom: '20px',
+                        }}
+                      >
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          placeholder="Wyszukaj dokumenty, kod, procesy, best practices..."
+                          style={{
+                            flex: 1,
+                            padding: '12px',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                          }}
+                          onKeyPress={e =>
+                            e.key === 'Enter' && handleKnowledgeSearch()
+                          }
+                        />
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleKnowledgeSearch}
+                        >
+                          <i className="fas fa-search"></i> Szukaj
+                        </button>
+                      </div>
+
+                      {/* Search Filters */}
+                      <div
+                        style={{
+                          marginBottom: '20px',
+                          display: 'flex',
+                          gap: '10px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <select
+                          style={{
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #ddd',
+                          }}
+                        >
+                          <option value="">Wszystkie feedy</option>
+                          <option value="global">Tylko globalne</option>
+                          <option value="departmental">Departamentalne</option>
+                        </select>
+                        <select
+                          style={{
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #ddd',
+                          }}
+                        >
+                          <option value="">Wszystkie typy</option>
+                          <option value="document">Dokumenty</option>
+                          <option value="code">Fragmenty kodu</option>
+                          <option value="practice">Best practices</option>
+                          <option value="tool">Narzędzia</option>
+                        </select>
+                      </div>
+
+                      {searchResults && (
+                        <div>
+                          <h5>
+                            Wyniki wyszukiwania (
+                            {searchResults.results?.length || 0}):
+                          </h5>
+                          {searchResults.results?.map((result, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                border: '1px solid #e9ecef',
+                                borderRadius: '8px',
+                                padding: '15px',
+                                marginBottom: '10px',
+                                background: 'white',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <h6 style={{ margin: 0, color: '#2c3e50' }}>
+                                  {result.document?.title}
+                                </h6>
+                                <span
+                                  style={{
+                                    background: '#f8f9fa',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    color: '#6c757d',
+                                  }}
+                                >
+                                  {(result.relevanceScore * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                              <p
+                                style={{
+                                  margin: '10px 0',
+                                  color: '#495057',
+                                  fontSize: '14px',
+                                }}
+                              >
+                                {result.document?.content?.substring(0, 200)}...
+                              </p>
+                              <div
+                                style={{ fontSize: '12px', color: '#6c757d' }}
+                              >
+                                Typ: {result.document?.type} | Tagi:{' '}
+                                {result.document?.tags?.join(', ')}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {knowledgeTab === 'analytics' && (
+                    <div>
+                      <h4>📈 Analityka Wykorzystania Wiedzy</h4>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns:
+                            'repeat(auto-fit, minmax(300px, 1fr))',
+                          gap: '20px',
+                        }}
+                      >
+                        {/* Najpopularniejsze feedy */}
+                        <div
+                          style={{
+                            background: '#f8f9fa',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <h6>🏆 Najpopularniejsze Feedy</h6>
+                          <div style={{ marginTop: '15px' }}>
+                            {feeds.slice(0, 3).map((feed, index) => (
+                              <div
+                                key={feed.id}
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  padding: '8px 0',
+                                  borderBottom:
+                                    index < 2 ? '1px solid #e9ecef' : 'none',
+                                }}
+                              >
+                                <span style={{ fontSize: '14px' }}>
+                                  {feed.name}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    color: '#8b5cf6',
+                                  }}
+                                >
+                                  {Math.floor(Math.random() * 100) + 50} użyć
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Aktywność agentów */}
+                        <div
+                          style={{
+                            background: '#f8f9fa',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <h6>🤖 Aktywność Agentów</h6>
+                          <div style={{ marginTop: '15px' }}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '8px 0',
+                                borderBottom: '1px solid #e9ecef',
+                              }}
+                            >
+                              <span style={{ fontSize: '14px' }}>
+                                CodeReviewer
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '14px',
+                                  fontWeight: 'bold',
+                                  color: '#10b981',
+                                }}
+                              >
+                                24 interakcje
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '8px 0',
+                                borderBottom: '1px solid #e9ecef',
+                              }}
+                            >
+                              <span style={{ fontSize: '14px' }}>
+                                DocumentGenerator
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '14px',
+                                  fontWeight: 'bold',
+                                  color: '#10b981',
+                                }}
+                              >
+                                18 interakcji
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '8px 0',
+                              }}
+                            >
+                              <span style={{ fontSize: '14px' }}>QAAgent</span>
+                              <span
+                                style={{
+                                  fontSize: '14px',
+                                  fontWeight: 'bold',
+                                  color: '#10b981',
+                                }}
+                              >
+                                12 interakcji
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Skuteczność uczenia */}
+                        <div
+                          style={{
+                            background: '#f8f9fa',
+                            padding: '20px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <h6>📊 Skuteczność Uczenia</h6>
+                          <div style={{ marginTop: '15px' }}>
+                            <div style={{ marginBottom: '10px' }}>
+                              <div
+                                style={{
+                                  fontSize: '14px',
+                                  marginBottom: '5px',
+                                }}
+                              >
+                                Średnia skuteczność
+                              </div>
+                              <div
+                                style={{
+                                  background: '#e9ecef',
+                                  height: '8px',
+                                  borderRadius: '4px',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    background: '#10b981',
+                                    width: '87%',
+                                    height: '100%',
+                                  }}
+                                ></div>
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  marginTop: '5px',
+                                }}
+                              >
+                                87%
+                              </div>
+                            </div>
+
+                            <div style={{ marginTop: '15px' }}>
+                              <div style={{ fontSize: '14px', color: '#666' }}>
+                                📈 +12% w porównaniu do poprzedniego tygodnia
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="card-title">Zarządzanie Projektami</div>
-            </div>
-            <div className="projects-list">
-              {projects.map((project, index) => (
-                <div key={project.id || index} className="project-item">
-                  <div className="project-info">
-                    <h3>{project.name}</h3>
-                    <p>{project.description}</p>
+
+              {/* Modal for creating new feed */}
+              {createFeedModal && (
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: 'white',
+                      padding: '30px',
+                      borderRadius: '12px',
+                      width: '500px',
+                      maxWidth: '90vw',
+                    }}
+                  >
+                    <h5 style={{ marginBottom: '20px' }}>
+                      🆕 Utwórz Nowy Feed Wiedzy
+                    </h5>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '5px',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Nazwa Feeda
+                      </label>
+                      <input
+                        type="text"
+                        value={newFeedForm.name}
+                        onChange={e =>
+                          setNewFeedForm({
+                            ...newFeedForm,
+                            name: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #ddd',
+                          borderRadius: '6px',
+                        }}
+                        placeholder="np. Backend Security Guidelines"
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '5px',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Opis
+                      </label>
+                      <textarea
+                        value={newFeedForm.description}
+                        onChange={e =>
+                          setNewFeedForm({
+                            ...newFeedForm,
+                            description: e.target.value,
+                          })
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '1px solid #ddd',
+                          borderRadius: '6px',
+                          minHeight: '80px',
+                          resize: 'vertical',
+                        }}
+                        placeholder="Opis zawartości i przeznaczenia tego feeda..."
+                      />
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '15px',
+                        marginBottom: '15px',
+                      }}
+                    >
+                      <div>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '5px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Typ Feeda
+                        </label>
+                        <select
+                          value={newFeedForm.type}
+                          onChange={e =>
+                            setNewFeedForm({
+                              ...newFeedForm,
+                              type: e.target.value,
+                            })
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                          }}
+                        >
+                          <option value="global">Globalny</option>
+                          <option value="departmental">Departamentalny</option>
+                          <option value="agent-specific">
+                            Specyficzny dla Agenta
+                          </option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '5px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Priorytet
+                        </label>
+                        <select
+                          value={newFeedForm.priority}
+                          onChange={e =>
+                            setNewFeedForm({
+                              ...newFeedForm,
+                              priority: e.target.value,
+                            })
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                          }}
+                        >
+                          <option value="low">Niski</option>
+                          <option value="medium">Średni</option>
+                          <option value="high">Wysoki</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {newFeedForm.type === 'departmental' && (
+                      <div style={{ marginBottom: '15px' }}>
+                        <label
+                          style={{
+                            display: 'block',
+                            marginBottom: '5px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Departament
+                        </label>
+                        <input
+                          type="text"
+                          value={newFeedForm.department}
+                          onChange={e =>
+                            setNewFeedForm({
+                              ...newFeedForm,
+                              department: e.target.value,
+                            })
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                          }}
+                          placeholder="np. Frontend, Backend, QA, DevOps"
+                        />
+                      </div>
+                    )}
+
                     <div
                       style={{
                         display: 'flex',
                         gap: '10px',
-                        marginTop: '10px',
+                        justifyContent: 'flex-end',
+                        marginTop: '25px',
                       }}
                     >
                       <button
-                        className="btn btn-primary"
-                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                        className="btn btn-secondary"
+                        onClick={() => setCreateFeedModal(false)}
                       >
-                        <i className="fas fa-chart-bar"></i>
-                        Analizuj Dokumenty
+                        Anuluj
                       </button>
                       <button
-                        className="btn btn-secondary"
-                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                        className="btn btn-primary"
+                        onClick={createKnowledgeFeed}
+                        disabled={!newFeedForm.name.trim()}
                       >
-                        <i className="fas fa-tasks"></i>
-                        Zadania
+                        <i className="fas fa-plus"></i> Utwórz Feed
                       </button>
                     </div>
                   </div>
-                  <div className="project-status status-active">Aktywny</div>
-                </div>
-              ))}
-              {projects.length === 0 && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '40px',
-                    color: '#666',
-                  }}
-                >
-                  <i
-                    className="fas fa-inbox"
-                    style={{ fontSize: '48px', marginBottom: '20px' }}
-                  ></i>
-                  <p>Brak projektów. Utwórz pierwszy projekt!</p>
                 </div>
               )}
             </div>
-            <div className="action-buttons">
-              <button className="btn btn-primary" onClick={loadProjects}>
-                <i className="fas fa-sync-alt"></i>
-                Odśwież Projekty
-              </button>
-              <button className="btn btn-secondary">
-                <i className="fas fa-plus"></i>
-                Nowy Projekt
-              </button>
+          );
+        };
+
+        // AGENTS RENDER FUNCTION
+        const renderAgents = () => (
+          <div className="content-grid">
+            <div className="card">
+              <div className="card-header">
+                <div
+                  className="card-icon"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                  }}
+                >
+                  <i className="fas fa-robot"></i>
+                </div>
+                <div className="card-title">Agenci AI</div>
+              </div>
+
+              <div style={{ padding: '20px' }}>
+                <div
+                  className="agents-grid"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '20px',
+                  }}
+                >
+                  {agents.map((agent, index) => (
+                    <div
+                      key={agent.id || index}
+                      className="agent-card"
+                      style={{
+                        border: '1px solid #e9ecef',
+                        borderRadius: '8px',
+                        padding: '20px',
+                        background: 'white',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          marginBottom: '15px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            background:
+                              'linear-gradient(135deg, #10b981, #059669)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginRight: '15px',
+                            color: 'white',
+                            fontSize: '16px',
+                          }}
+                        >
+                          <i className="fas fa-robot"></i>
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, color: '#2c3e50' }}>
+                            {agent.name}
+                          </h4>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: '#7f8c8d',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {agent.type}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p
+                        style={{
+                          color: '#495057',
+                          fontSize: '14px',
+                          marginBottom: '15px',
+                        }}
+                      >
+                        {agent.description || 'Opis agenta niedostępny'}
+                      </p>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span
+                          style={{
+                            background:
+                              agent.status === 'active' ? '#d4edda' : '#f8d7da',
+                            color:
+                              agent.status === 'active' ? '#155724' : '#721c24',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {agent.status === 'active' ? 'Aktywny' : 'Nieaktywny'}
+                        </span>
+
+                        <button
+                          className="btn btn-secondary"
+                          style={{ fontSize: '12px' }}
+                        >
+                          <i className="fas fa-cog"></i> Konfiguruj
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {agents.length === 0 && (
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      color: '#666',
+                      padding: '40px',
+                    }}
+                  >
+                    <i
+                      className="fas fa-robot"
+                      style={{ fontSize: '48px', marginBottom: '20px' }}
+                    ></i>
+                    <p>Brak dostępnych agentów</p>
+                    <button className="btn btn-primary" onClick={loadAgents}>
+                      <i className="fas fa-sync-alt"></i> Odśwież listę
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
 
-        const renderTasks = () => (
-          <div className="card">
-            <div className="card-header">
-              <div
-                className="card-icon"
-                style={{
-                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                }}
-              >
-                <i className="fas fa-tasks"></i>
+        // PROJECTS RENDER FUNCTION
+        const renderProjects = () => {
+          if (!selectedProject) {
+            // Lista projektów
+            return (
+              <div className="content-grid">
+                <div className="card">
+                  <div className="card-header">
+                    <div
+                      className="card-icon"
+                      style={{
+                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      }}
+                    >
+                      <i className="fas fa-folder-open"></i>
+                    </div>
+                    <div className="card-title">Projekty</div>
+                  </div>
+
+                  <div style={{ padding: '20px' }}>
+                    <div
+                      className="projects-grid"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                          'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: '20px',
+                      }}
+                    >
+                      {projects.map((project, index) => (
+                        <div
+                          key={project.id || index}
+                          className="project-card"
+                          style={{
+                            border: '1px solid #e9ecef',
+                            borderRadius: '8px',
+                            padding: '20px',
+                            background: 'white',
+                            transition: 'transform 0.2s ease',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              marginBottom: '15px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '8px',
+                                background:
+                                  'linear-gradient(135deg, #f59e0b, #d97706)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginRight: '15px',
+                                color: 'white',
+                                fontSize: '16px',
+                              }}
+                            >
+                              <i className="fas fa-folder-open"></i>
+                            </div>
+                            <div>
+                              <h4 style={{ margin: 0, color: '#2c3e50' }}>
+                                {project.name}
+                              </h4>
+                              <p
+                                style={{
+                                  margin: 0,
+                                  color: '#7f8c8d',
+                                  fontSize: '14px',
+                                }}
+                              >
+                                {project.type}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p
+                            style={{
+                              color: '#495057',
+                              fontSize: '14px',
+                              marginBottom: '15px',
+                            }}
+                          >
+                            {project.description || 'Opis projektu niedostępny'}
+                          </p>
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span
+                              style={{
+                                background:
+                                  project.status === 'active'
+                                    ? '#d4edda'
+                                    : '#fff3cd',
+                                color:
+                                  project.status === 'active'
+                                    ? '#155724'
+                                    : '#856404',
+                                padding: '4px 8px',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                              }}
+                            >
+                              {project.status === 'active'
+                                ? 'Aktywny'
+                                : 'W trakcie'}
+                            </span>
+
+                            <button
+                              className="btn btn-primary"
+                              style={{ fontSize: '12px' }}
+                            >
+                              <i className="fas fa-external-link-alt"></i>{' '}
+                              Otwórz
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {projects.length === 0 && (
+                      <div
+                        style={{
+                          textAlign: 'center',
+                          color: '#666',
+                          padding: '40px',
+                        }}
+                      >
+                        <i
+                          className="fas fa-folder-plus"
+                          style={{ fontSize: '48px', marginBottom: '20px' }}
+                        ></i>
+                        <p>Brak projektów</p>
+                        <button
+                          className="btn btn-primary"
+                          onClick={loadProjects}
+                        >
+                          <i className="fas fa-plus"></i> Dodaj projekt
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="card-title">Zarządzanie Zadaniami</div>
-            </div>
-            <div
-              style={{ padding: '20px', textAlign: 'center', color: '#666' }}
-            >
-              <i
-                className="fas fa-clipboard-list"
-                style={{ fontSize: '48px', marginBottom: '20px' }}
-              ></i>
-              <p>Lista zadań będzie dostępna po wyborze projektu</p>
-              <p style={{ fontSize: '14px', marginTop: '10px' }}>
-                Przejdź do zakładki Projekty i wybierz projekt aby zobaczyć
-                zadania
-              </p>
-            </div>
-            <div className="action-buttons">
+            );
+          } else {
+            // Szczegóły wybranego projektu z sub-nawigacją
+            return (
+              <div className="content-grid">
+                <div className="card">
+                  <div className="card-header">
+                    <button
+                      className="btn btn-secondary"
+                      style={{ marginRight: '15px' }}
+                      onClick={() => setSelectedProject(null)}
+                    >
+                      <i className="fas fa-arrow-left"></i> Powrót
+                    </button>
+                    <div
+                      className="card-icon"
+                      style={{
+                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      }}
+                    >
+                      <i className="fas fa-folder-open"></i>
+                    </div>
+                    <div className="card-title">{selectedProject.name}</div>
+                  </div>
+
+                  {/* Sub-nawigacja projektu */}
+                  <div
+                    style={{
+                      borderBottom: '1px solid #e9ecef',
+                      display: 'flex',
+                      gap: '0px',
+                    }}
+                  >
+                    <button
+                      className={`btn ${projectSubTab === 'overview' ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ borderRadius: '0px' }}
+                      onClick={() => setProjectSubTab('overview')}
+                    >
+                      <i className="fas fa-info-circle"></i> Przegląd
+                    </button>
+                    <button
+                      className={`btn ${projectSubTab === 'documents' ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ borderRadius: '0px' }}
+                      onClick={() => setProjectSubTab('documents')}
+                    >
+                      <i className="fas fa-file-alt"></i> Dokumenty
+                    </button>
+                    <button
+                      className={`btn ${projectSubTab === 'tasks' ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ borderRadius: '0px' }}
+                      onClick={() => setProjectSubTab('tasks')}
+                    >
+                      <i className="fas fa-tasks"></i> Zadania
+                    </button>
+                  </div>
+
+                  <div style={{ padding: '20px' }}>
+                    {projectSubTab === 'overview' && (
+                      <div>
+                        <h3>Informacje o projekcie</h3>
+                        <p>
+                          <strong>Nazwa:</strong> {selectedProject.name}
+                        </p>
+                        <p>
+                          <strong>Typ:</strong> {selectedProject.type}
+                        </p>
+                        <p>
+                          <strong>Status:</strong> {selectedProject.status}
+                        </p>
+                        <p>
+                          <strong>Opis:</strong>{' '}
+                          {selectedProject.description || 'Brak opisu'}
+                        </p>
+                      </div>
+                    )}
+
+                    {projectSubTab === 'documents' &&
+                      renderDocumentsForProject()}
+                    {projectSubTab === 'tasks' && renderTasksForProject()}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        };
+
+        // RENDER DOCUMENTS FOR SELECTED PROJECT
+        const renderDocumentsForProject = () => (
+          <div>
+            <h4>📄 Dokumenty projektu: {selectedProject.name}</h4>
+            <div style={{ marginBottom: '20px' }}>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                accept=".js,.ts,.tsx,.jsx,.md,.txt,.json,.yaml,.yml,.py,.java,.cpp,.c,.cs,.go,.rs"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '2px dashed #bdc3c7',
+                  borderRadius: '8px',
+                  background: '#f8f9fa',
+                  marginBottom: '15px',
+                }}
+              />
+
+              {selectedFiles.length > 0 && (
+                <div style={{ marginBottom: '15px' }}>
+                  <strong>Wybrane pliki:</strong>
+                  <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                    {selectedFiles.map((file, index) => (
+                      <li key={index} style={{ color: '#7f8c8d' }}>
+                        {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <button
-                className="btn btn-secondary"
-                onClick={() => setActiveTab('projects')}
+                className="btn btn-primary"
+                onClick={handleAnalyzeDocuments}
+                disabled={
+                  selectedFiles.length === 0 || documentAnalysis.isAnalyzing
+                }
               >
-                <i className="fas fa-arrow-left"></i>
-                Przejdź do Projektów
+                {documentAnalysis.isAnalyzing ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Analizuję...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-search"></i> Analizuj Dokumenty
+                  </>
+                )}
               </button>
+
+              {documentAnalysis.result && (
+                <div style={{ marginTop: '20px' }}>
+                  <h5>Wyniki analizy:</h5>
+                  <div
+                    style={{
+                      background: '#f8f9fa',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+                      {JSON.stringify(documentAnalysis.result, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+        // RENDER TASKS FOR SELECTED PROJECT
+        const renderTasksForProject = () => (
+          <div>
+            <h4>✅ Zadania projektu: {selectedProject.name}</h4>
+            <div style={{ marginBottom: '20px' }}>
+              <button
+                className="btn btn-primary"
+                onClick={handleGenerateTasks}
+                disabled={taskGeneration.isGenerating}
+              >
+                {taskGeneration.isGenerating ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Generuję
+                    zadania...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-plus"></i> Generuj nowe zadania
+                  </>
+                )}
+              </button>
+
+              <div style={{ marginTop: '20px' }}>
+                {taskGeneration.result && taskGeneration.result.tasks ? (
+                  <div>
+                    <h5>
+                      Wygenerowane zadania ({taskGeneration.result.tasks.length}
+                      ):
+                    </h5>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gap: '15px',
+                        marginTop: '15px',
+                      }}
+                    >
+                      {taskGeneration.result.tasks.map((task, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            border: '1px solid #e9ecef',
+                            borderRadius: '8px',
+                            padding: '15px',
+                            background: 'white',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <h6 style={{ margin: 0, color: '#2c3e50' }}>
+                              {task.title}
+                            </h6>
+                            <span
+                              style={{
+                                background: '#e3f2fd',
+                                color: '#1976d2',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                              }}
+                            >
+                              {task.priority || 'Średni'}
+                            </span>
+                          </div>
+                          <p
+                            style={{
+                              margin: '10px 0',
+                              color: '#495057',
+                              fontSize: '14px',
+                            }}
+                          >
+                            {task.description}
+                          </p>
+                          <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                            Czas: {task.estimatedTime} | Kategoria:{' '}
+                            {task.category}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ color: '#666', fontStyle: 'italic' }}>
+                    Brak wygenerowanych zadań. Kliknij przycisk powyżej aby
+                    wygenerować zadania dla tego projektu.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -888,35 +3002,50 @@
               <nav className="nav-menu">
                 <div
                   className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('dashboard')}
+                  onClick={() => {
+                    setActiveTab('dashboard');
+                    setSelectedProject(null);
+                  }}
                 >
                   <i className="fas fa-tachometer-alt"></i>
                   Dashboard
                 </div>
                 <div
                   className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('projects')}
+                  onClick={() => {
+                    setActiveTab('projects');
+                    // Nie resetujemy selectedProject tutaj, żeby można było wrócić do szczegółów
+                  }}
                 >
                   <i className="fas fa-project-diagram"></i>
                   Projekty
                 </div>
                 <div
                   className={`nav-item ${activeTab === 'agents' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('agents')}
+                  onClick={() => {
+                    setActiveTab('agents');
+                    setSelectedProject(null);
+                  }}
                 >
                   <i className="fas fa-robot"></i>
                   Agenci AI
                 </div>
                 <div
-                  className={`nav-item ${activeTab === 'tasks' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('tasks')}
+                  className={`nav-item ${activeTab === 'knowledge' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('knowledge');
+                    setSelectedProject(null);
+                  }}
                 >
-                  <i className="fas fa-tasks"></i>
-                  Zadania
+                  <i className="fas fa-brain"></i>
+                  Baza Wiedzy
                 </div>
                 <div
                   className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('settings')}
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setSelectedProject(null);
+                  }}
                 >
                   <i className="fas fa-cog"></i>
                   Ustawienia
@@ -930,7 +3059,7 @@
                   {activeTab === 'dashboard' && 'Dashboard'}
                   {activeTab === 'projects' && 'Projekty'}
                   {activeTab === 'agents' && 'Agenci AI'}
-                  {activeTab === 'tasks' && 'Zadania'}
+                  {activeTab === 'knowledge' && 'Baza Wiedzy'}
                   {activeTab === 'settings' && 'Ustawienia'}
                 </h1>
                 <div className="status-indicator">
@@ -947,8 +3076,8 @@
               <div className="content">
                 {activeTab === 'dashboard' && renderDashboard()}
                 {activeTab === 'projects' && renderProjects()}
-                {activeTab === 'agents' && renderDashboard()}
-                {activeTab === 'tasks' && renderTasks()}
+                {activeTab === 'agents' && renderAgents()}
+                {activeTab === 'knowledge' && renderKnowledge()}
                 {activeTab === 'settings' && (
                   <div className="card">
                     <div className="card-header">

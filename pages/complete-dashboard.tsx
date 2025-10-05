@@ -8,6 +8,8 @@ import {
   GeneratedTask,
   IntegrationTestResult,
 } from '../src/services/backendApiService';
+import { knowledgeBaseService } from '../src/services/knowledge-base.service';
+import { useAgentKnowledge } from '../src/hooks/useAgentKnowledge';
 
 interface ProjectData {
   name: string;
@@ -33,8 +35,14 @@ export default function CompleteDashboard() {
 
   // Local state
   const [currentView, setCurrentView] = useState<
-    'dashboard' | 'documents' | 'tasks' | 'settings'
+    'dashboard' | 'documents' | 'tasks' | 'knowledge' | 'settings'
   >('dashboard');
+
+  // Knowledge Base integration
+  const agentKnowledge = useAgentKnowledge('dashboard-agent-001');
+  const [knowledgeStats, setKnowledgeStats] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [projectData, setProjectData] = useState<ProjectData>({
     name: 'ThinkCode AI Platform',
@@ -55,6 +63,20 @@ export default function CompleteDashboard() {
     const interval = setInterval(checkConnection, 30000); // Check every 30s
     return () => clearInterval(interval);
   }, [checkConnection]);
+
+  // Load Knowledge Base statistics
+  useEffect(() => {
+    const loadKnowledgeStats = async () => {
+      try {
+        const stats = await knowledgeBaseService.getKnowledgeStats();
+        setKnowledgeStats(stats);
+      } catch (error) {
+        console.error('Failed to load knowledge stats:', error);
+      }
+    };
+
+    loadKnowledgeStats();
+  }, []);
 
   // File handling
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +111,51 @@ export default function CompleteDashboard() {
     );
     await generateTasks(request);
   }, [projectData, documentAnalysis.result, generateTasks]);
+
+  // Knowledge Base handlers
+  const handleKnowledgeSearch = useCallback(async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const results = await knowledgeBaseService.searchRelevantKnowledge(
+        searchQuery,
+        'dashboard-agent-001',
+        { maxResults: 10, minRelevance: 0.3 }
+      );
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Knowledge search failed:', error);
+    }
+  }, [searchQuery]);
+
+  const handleAddKnowledgeDocument = useCallback(
+    async (title: string, content: string, type: string, tags: string[]) => {
+      try {
+        // Get or create global feed
+        const feeds = await knowledgeBaseService.listAllFeeds();
+        const globalFeed = feeds.find(f => f.type === 'global');
+
+        if (globalFeed) {
+          await knowledgeBaseService.addDocumentToFeed(globalFeed.id, {
+            title,
+            content,
+            type: type as any,
+            format: 'markdown' as const,
+            tags,
+            author: 'Dashboard User',
+            department: 'Engineering',
+          });
+
+          // Refresh stats
+          const stats = await knowledgeBaseService.getKnowledgeStats();
+          setKnowledgeStats(stats);
+        }
+      } catch (error) {
+        console.error('Failed to add document:', error);
+      }
+    },
+    []
+  );
 
   const handleProcessTask = useCallback(
     async (task: GeneratedTask) => {
@@ -196,6 +263,7 @@ export default function CompleteDashboard() {
               { key: 'dashboard', label: '📊 Dashboard', icon: '📊' },
               { key: 'documents', label: '📄 Documents', icon: '📄' },
               { key: 'tasks', label: '📋 Tasks', icon: '📋' },
+              { key: 'knowledge', label: '🧠 Knowledge Base', icon: '🧠' },
               { key: 'settings', label: '⚙️ Settings', icon: '⚙️' },
             ].map(item => (
               <button
@@ -354,6 +422,18 @@ export default function CompleteDashboard() {
             onToggleTask={toggleTaskSelection}
             onProcessTask={handleProcessTask}
             onGenerateTasks={handleGenerateTasks}
+          />
+        )}
+
+        {currentView === 'knowledge' && (
+          <KnowledgeBaseView
+            knowledgeStats={knowledgeStats}
+            searchQuery={searchQuery}
+            searchResults={searchResults}
+            onSearchQueryChange={setSearchQuery}
+            onSearch={handleKnowledgeSearch}
+            onAddDocument={handleAddKnowledgeDocument}
+            agentKnowledge={agentKnowledge}
           />
         )}
 
@@ -847,3 +927,519 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     </div>
   </div>
 );
+
+// Knowledge Base View Component
+interface KnowledgeBaseViewProps {
+  knowledgeStats: any;
+  searchQuery: string;
+  searchResults: any;
+  onSearchQueryChange: (query: string) => void;
+  onSearch: () => void;
+  onAddDocument: (
+    title: string,
+    content: string,
+    type: string,
+    tags: string[]
+  ) => void;
+  agentKnowledge: any;
+}
+
+const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
+  knowledgeStats,
+  searchQuery,
+  searchResults,
+  onSearchQueryChange,
+  onSearch,
+  onAddDocument,
+  agentKnowledge,
+}) => {
+  const [newDocumentForm, setNewDocumentForm] = useState({
+    title: '',
+    content: '',
+    type: 'solution',
+    tags: '',
+  });
+
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleAddDocument = () => {
+    if (!newDocumentForm.title.trim() || !newDocumentForm.content.trim()) {
+      alert('Title and content are required');
+      return;
+    }
+
+    const tags = newDocumentForm.tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+
+    onAddDocument(
+      newDocumentForm.title,
+      newDocumentForm.content,
+      newDocumentForm.type,
+      tags
+    );
+
+    // Reset form
+    setNewDocumentForm({
+      title: '',
+      content: '',
+      type: 'solution',
+      tags: '',
+    });
+    setShowAddForm(false);
+  };
+
+  return (
+    <div className="knowledge-base-view">
+      {/* Header with Stats */}
+      <div
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '12px',
+          padding: '2rem',
+          marginBottom: '2rem',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+        }}
+      >
+        <h2 style={{ margin: '0 0 1.5rem 0', color: '#2c3e50' }}>
+          🧠 Knowledge Base Management
+        </h2>
+
+        {knowledgeStats && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <div
+              style={{
+                background: '#e8f5e8',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#2e7d32',
+                }}
+              >
+                {knowledgeStats.totalDocuments || 0}
+              </div>
+              <div style={{ fontSize: '14px', color: '#4a4a4a' }}>
+                Total Documents
+              </div>
+            </div>
+            <div
+              style={{
+                background: '#e3f2fd',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#1976d2',
+                }}
+              >
+                {knowledgeStats.activeFeeds || 0}
+              </div>
+              <div style={{ fontSize: '14px', color: '#4a4a4a' }}>
+                Active Feeds
+              </div>
+            </div>
+            <div
+              style={{
+                background: '#fff3e0',
+                padding: '1rem',
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#f57c00',
+                }}
+              >
+                {knowledgeStats.totalSearches || 0}
+              </div>
+              <div style={{ fontSize: '14px', color: '#4a4a4a' }}>
+                Total Searches
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Search Section */}
+        <div style={{ marginTop: '1.5rem' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '0.5rem',
+              fontWeight: '600',
+              color: '#2c3e50',
+            }}
+          >
+            🔍 Search Knowledge Base:
+          </label>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => onSearchQueryChange(e.target.value)}
+              placeholder="Enter search terms..."
+              onKeyPress={e => e.key === 'Enter' && onSearch()}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                border: '1px solid #bdc3c7',
+                borderRadius: '4px',
+                fontSize: '14px',
+              }}
+            />
+            <ActionButton onClick={onSearch} disabled={!searchQuery.trim()}>
+              🔍 Search
+            </ActionButton>
+          </div>
+        </div>
+      </div>
+
+      {/* Search Results */}
+      {searchResults && (
+        <div
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '12px',
+            padding: '2rem',
+            marginBottom: '2rem',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          }}
+        >
+          <h3 style={{ margin: '0 0 1rem 0', color: '#2c3e50' }}>
+            📋 Search Results ({searchResults.results?.length || 0})
+          </h3>
+
+          {searchResults.results?.length > 0 ? (
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
+              {searchResults.results.map((result: any, index: number) => (
+                <div
+                  key={index}
+                  style={{
+                    border: '1px solid #e9ecef',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    background: 'white',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    <h4 style={{ margin: 0, color: '#2c3e50' }}>
+                      {result.document?.title || 'Untitled'}
+                    </h4>
+                    <span
+                      style={{
+                        background: '#f8f9fa',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        color: '#6c757d',
+                      }}
+                    >
+                      Score: {(result.relevanceScore * 100).toFixed(1)}%
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color: '#6c757d',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Type: {result.document?.type} | Department:{' '}
+                    {result.document?.department}
+                  </div>
+
+                  <p
+                    style={{
+                      margin: '0.5rem 0',
+                      color: '#495057',
+                      fontSize: '14px',
+                      lineHeight: '1.4',
+                    }}
+                  >
+                    {result.document?.content?.substring(0, 200)}
+                    {result.document?.content?.length > 200 && '...'}
+                  </p>
+
+                  {result.document?.tags?.length > 0 && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      {result.document.tags.map(
+                        (tag: string, tagIndex: number) => (
+                          <span
+                            key={tagIndex}
+                            style={{
+                              display: 'inline-block',
+                              background: '#e9ecef',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              marginRight: '0.5rem',
+                              color: '#495057',
+                            }}
+                          >
+                            #{tag}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: '#6c757d', fontStyle: 'italic' }}>
+              No results found for "{searchQuery}"
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Add Document Section */}
+      <div
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '12px',
+          padding: '2rem',
+          marginBottom: '2rem',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1rem',
+          }}
+        >
+          <h3 style={{ margin: 0, color: '#2c3e50' }}>
+            📝 Add New Knowledge Document
+          </h3>
+          <ActionButton
+            onClick={() => setShowAddForm(!showAddForm)}
+            primary={showAddForm}
+          >
+            {showAddForm ? '❌ Cancel' : '➕ Add Document'}
+          </ActionButton>
+        </div>
+
+        {showAddForm && (
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+          >
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                }}
+              >
+                Document Title:
+              </label>
+              <input
+                type="text"
+                value={newDocumentForm.title}
+                onChange={e =>
+                  setNewDocumentForm(prev => ({
+                    ...prev,
+                    title: e.target.value,
+                  }))
+                }
+                placeholder="Enter document title..."
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #bdc3c7',
+                  borderRadius: '4px',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                }}
+              >
+                Document Type:
+              </label>
+              <select
+                value={newDocumentForm.type}
+                onChange={e =>
+                  setNewDocumentForm(prev => ({
+                    ...prev,
+                    type: e.target.value,
+                  }))
+                }
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #bdc3c7',
+                  borderRadius: '4px',
+                }}
+              >
+                <option value="solution">Solution</option>
+                <option value="best-practice">Best Practice</option>
+                <option value="troubleshooting">Troubleshooting</option>
+                <option value="documentation">Documentation</option>
+                <option value="code-example">Code Example</option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                }}
+              >
+                Content:
+              </label>
+              <textarea
+                value={newDocumentForm.content}
+                onChange={e =>
+                  setNewDocumentForm(prev => ({
+                    ...prev,
+                    content: e.target.value,
+                  }))
+                }
+                placeholder="Enter document content..."
+                rows={6}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #bdc3c7',
+                  borderRadius: '4px',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                }}
+              >
+                Tags (comma-separated):
+              </label>
+              <input
+                type="text"
+                value={newDocumentForm.tags}
+                onChange={e =>
+                  setNewDocumentForm(prev => ({
+                    ...prev,
+                    tags: e.target.value,
+                  }))
+                }
+                placeholder="react, typescript, debugging..."
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #bdc3c7',
+                  borderRadius: '4px',
+                }}
+              />
+            </div>
+
+            <ActionButton onClick={handleAddDocument} primary>
+              💾 Save Document
+            </ActionButton>
+          </div>
+        )}
+      </div>
+
+      {/* Agent Knowledge Integration */}
+      {agentKnowledge && (
+        <div
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '12px',
+            padding: '2rem',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          }}
+        >
+          <h3 style={{ margin: '0 0 1rem 0', color: '#2c3e50' }}>
+            🤖 Agent Knowledge Integration
+          </h3>
+
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <div
+              style={{
+                background: '#f8f9fa',
+                padding: '1rem',
+                borderRadius: '8px',
+              }}
+            >
+              <strong>Agent ID:</strong>{' '}
+              {agentKnowledge.agentId || 'dashboard-agent-001'}
+            </div>
+
+            <div
+              style={{
+                background: '#f8f9fa',
+                padding: '1rem',
+                borderRadius: '8px',
+              }}
+            >
+              <strong>Knowledge Integration Status:</strong>{' '}
+              <span style={{ color: '#28a745' }}>✅ Active</span>
+            </div>
+
+            <div
+              style={{
+                background: '#f8f9fa',
+                padding: '1rem',
+                borderRadius: '8px',
+              }}
+            >
+              <strong>Available Features:</strong>
+              <ul style={{ margin: '0.5rem 0 0 1.5rem', color: '#6c757d' }}>
+                <li>Knowledge search and retrieval</li>
+                <li>Contextual suggestions during task processing</li>
+                <li>Institutional learning integration</li>
+                <li>Agent performance enhancement</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

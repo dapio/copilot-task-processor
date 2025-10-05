@@ -34,6 +34,12 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8080') do (
 
 timeout /t 2 /nobreak >nul
 
+REM Post-stop cleanup to free up space and remove temporary files
+echo.
+echo 🧹 Czyszczenie systemu po zatrzymaniu usług...
+call npx tsx scripts/cleanup-system.ts
+echo.
+
 echo.
 echo ================================================================================
 echo                        ✅ ALL SERVICES STOPPED SUCCESSFULLY!

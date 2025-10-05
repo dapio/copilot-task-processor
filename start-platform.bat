@@ -7,6 +7,11 @@ echo                    🚀 THINKCODE AI PLATFORM LAUNCHER 🚀
 echo ================================================================================
 echo.
 
+REM Pre-start cleanup to ensure optimal performance
+echo 🧹 Czyszczenie systemu przed uruchomieniem...
+call npx tsx scripts/cleanup-system.ts
+echo.
+
 REM Check if we're in the correct directory
 if not exist "package.json" (
     echo ❌ Error: package.json not found in current directory
@@ -59,7 +64,7 @@ echo 🎯 Opening Dashboard in Browser...
 timeout /t 3 /nobreak >nul
 
 REM Open the dashboard in default browser
-start http://localhost:8080/demo-dashboard.html
+start http://localhost:8080/enterprise-dashboard.html
 
 echo.
 echo ================================================================================
