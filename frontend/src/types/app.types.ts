@@ -1,139 +1,123 @@
-export type ProcessingStep = 
-  | 'upload' 
-  | 'documentation' 
-  | 'mockups' 
-  | 'feedback' 
-  | 'tasks' 
-  | 'processing';
+// Git providers
+export type GitProvider = 'github' | 'bitbucket' | 'azure-repos' | 'gitlab';
 
-export interface UploadedDocument {
-  file: File;
-  name: string;
-  size: number;
-  type: string;
-  uploadedAt: Date;
-  status: 'uploaded' | 'analyzed';
-  preview?: string;
-  contentType?: string;
-}
-
-export interface ProcessorParameters {
-  jira: {
-    host: string;
-    email: string;
-    token: string;
-    projectKey: string;
-  };
-  bitbucket: {
-    username: string;
-    appPassword: string;
-    workspace: string;
-    repo: string;
-  };
-  ai: {
-    openaiKey: string;
-    model: string;
-    temperature: number;
-  };
-  workflow: {
-    autoCreateBranches: boolean;
-    autoCreatePRs: boolean;
-    requireTests: boolean;
-    minCoverage: number;
-    continuousIntegration: boolean;
-  };
-}
-
-export interface GeneratedDocumentation {
-  businessAnalysis: string;
-  systemAnalysis: string;
-  architecture: string;
-  summary: {
-    totalFeatures: number;
-    complexityScore: number;
-    estimatedDuration: number;
-    riskLevel: 'low' | 'medium' | 'high';
-  };
-}
-
-export interface Wireframe {
-  name: string;
-  description: string;
-  svgContent?: string;
-  components: string[];
-}
-
-export interface UserFlow {
-  name: string;
-  description: string;
-  steps: string[];
-}
-
-export interface ComponentSpec {
-  name: string;
-  type: string;
-  description: string;
-  props?: string[];
-}
-
-export interface GeneratedMockups {
-  wireframes: Wireframe[];
-  userFlows: UserFlow[];
-  components: ComponentSpec[];
-  designSystem: {
-    colors: string[];
-    typography: {
-      primary: string;
-      secondary: string;
-    };
-    spacing: number[];
-    breakpoints: string[];
-  };
-}
-
-export interface FeedbackItem {
-  type: 'documentation' | 'mockup';
-  content: string;
-  timestamp: Date;
-}
-
-export interface JiraTask {
+// Project types
+export interface Project {
   id: string;
+  name: string;
+  description?: string;
+  provider: GitProvider;
+  repositoryUrl: string;
+  branch: string;
+  lastUpdate: string;
+  status: 'active' | 'archived' | 'paused';
+  tasksCount: number;
+  completedTasks: number;
+  language?: string;
+  tags?: string[];
+}
+
+// Task types
+export interface Task {
+  id: string;
+  projectId: string;
   title: string;
+  description?: string;
+  status: 'todo' | 'in-progress' | 'review' | 'done' | 'blocked';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  assignee?: string;
+  createdAt: string;
+  updatedAt: string;
+  dueDate?: string;
+  labels?: string[];
+  estimatedHours?: number;
+  actualHours?: number;
+}
+
+// Project creation form data
+export interface ProjectFormData {
+  name: string;
   description: string;
-  type: 'Story' | 'Task' | 'Bug' | 'Epic';
-  priority: 'High' | 'Medium' | 'Low';
-  estimatedHours: number;
-  dependencies: string[];
-  acceptanceCriteria: string[];
-  jiraKey?: string;
+  provider: GitProvider;
+  repositoryUrl: string;
+  branch: string;
+  language: string;
+  tags: string[];
 }
 
-export interface ProcessingResult {
-  success: boolean;
-  issueKey: string;
-  duration: number;
-  branch?: string;
-  pullRequest?: string;
-  error?: string;
-  taskIndex?: number;
+// Git provider info
+export interface GitProviderInfo {
+  id: GitProvider;
+  name: string;
+  icon: string;
+  color: string;
+  baseUrl: string;
 }
 
-export interface ProcessingStatus {
-  currentTask: string;
-  completed: number;
+// Filter and pagination
+export interface ProjectFilters {
+  provider?: GitProvider;
+  status?: Project['status'];
+  language?: string;
+  search?: string;
+}
+
+export interface TaskFilters {
+  projectId?: string;
+  status?: Task['status'];
+  priority?: Task['priority'];
+  assignee?: string;
+  search?: string;
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
   total: number;
-  status: 'idle' | 'analyzing' | 'creating-tasks' | 'processing' | 'completed';
-  results: ProcessingResult[];
+  totalPages: number;
 }
 
-export interface AppState {
-  currentStep: ProcessingStep;
-  documents: UploadedDocument[];
-  generatedDocs: GeneratedDocumentation | null;
-  mockups: GeneratedMockups | null;
-  feedback: FeedbackItem[];
-  tasks: JiraTask[];
-  processingStatus: ProcessingStatus;
-  parameters: ProcessorParameters;
+// Repository connection settings
+export interface Repository {
+  id: string;
+  name: string;
+  provider: GitProvider;
+  url: string;
+  accessToken?: string;
+  username?: string;
+  isConnected: boolean;
+  lastSync?: string;
+  branches?: string[];
+  defaultBranch: string;
+  description?: string;
+  isPrivate: boolean;
+  owner: string;
+}
+
+// Provider connection config
+export interface ProviderConfig {
+  provider: GitProvider;
+  clientId?: string;
+  clientSecret?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  baseUrl?: string;
+  isConfigured: boolean;
+  lastConnected?: string;
+}
+
+// User settings
+export interface UserSettings {
+  id: string;
+  theme: 'light' | 'dark' | 'auto';
+  language: 'pl' | 'en';
+  notifications: {
+    email: boolean;
+    browser: boolean;
+    taskAssignments: boolean;
+    projectUpdates: boolean;
+    weeklyReports: boolean;
+  };
+  defaultView: 'dashboard' | 'projects' | 'tasks';
+  itemsPerPage: number;
 }

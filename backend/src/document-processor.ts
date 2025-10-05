@@ -1,5 +1,5 @@
 import { OpenAI } from 'openai';
-import pdf from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 import { promises as fs } from 'fs';
 
@@ -10,6 +10,18 @@ interface DocumentAnalysis {
   requirements: string[];
   userStories: string[];
   technicalSpecs: string[];
+}
+
+interface JiraTask {
+  id: string;
+  title: string;
+  description: string;
+  type: 'Story' | 'Task' | 'Epic' | 'Bug';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  estimatedHours: number;
+  assignee?: string;
+  labels: string[];
+  acceptanceCriteria: string[];
 }
 
 /**
@@ -35,7 +47,7 @@ export class DocumentProcessor {
     );
 
     const combinedText = documents.join('\n\n');
-    
+
     // AI analysis
     const analysis = await this.analyzeWithAI(combinedText);
     const tasks = await this.generateTasksFromAnalysis(analysis, combinedText);
@@ -43,22 +55,26 @@ export class DocumentProcessor {
     return { analysis, tasks };
   }
 
-  private async extractTextFromFile(file: Express.Multer.File): Promise<string> {
+  private async extractTextFromFile(
+    file: Express.Multer.File
+  ): Promise<string> {
     const fileContent = await fs.readFile(file.path);
-    
+
     switch (file.mimetype) {
       case 'application/pdf':
-        const pdfData = await pdf(fileContent);
+        const pdfData = await pdfParse(fileContent);
         return pdfData.text;
-      
+
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        const docxResult = await mammoth.extractRawText({ buffer: fileContent });
+        const docxResult = await mammoth.extractRawText({
+          buffer: fileContent,
+        });
         return docxResult.value;
-      
+
       case 'text/plain':
       case 'text/markdown':
         return fileContent.toString('utf-8');
-      
+
       default:
         throw new Error(`Unsupported file type: ${file.mimetype}`);
     }
@@ -95,7 +111,7 @@ Respond with valid JSON only.
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
-      max_tokens: 2000
+      max_tokens: 2000,
     });
 
     const content = response.choices[0].message.content;
@@ -109,7 +125,7 @@ Respond with valid JSON only.
   }
 
   private async generateTasksFromAnalysis(
-    analysis: DocumentAnalysis, 
+    analysis: DocumentAnalysis,
     originalText: string
   ): Promise<JiraTask[]> {
     const prompt = `
@@ -151,7 +167,7 @@ Respond with valid JSON array only.
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
-      max_tokens: 4000
+      max_tokens: 4000,
     });
 
     const content = response.choices[0].message.content;

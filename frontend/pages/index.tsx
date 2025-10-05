@@ -1,89 +1,33 @@
-import { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
-interface ProcessorConfig {
-  jiraHost: string;
-  jiraEmail: string;
-  jiraToken: string;
-  jiraProject: string;
-  githubToken: string;
-  githubOwner: string;
-  githubRepo: string;
-  openaiKey: string;
-}
+export default function HomePage() {
+  const router = useRouter();
 
-interface DocumentFile {
-  name: string;
-  content: string;
-  type: string;
-}
-
-export default function DocumentProcessor() {
-  const [config, setConfig] = useState<ProcessorConfig>({
-    jiraHost: '',
-    jiraEmail: '',
-    jiraToken: '',
-    jiraProject: '',
-    githubToken: '',
-    githubOwner: 'dapio',
-    githubRepo: '',
-    openaiKey: ''
-  });
-
-  const [documents, setDocuments] = useState<DocumentFile[]>([]);
-  const [processing, setProcessing] = useState(false);
-  const [results, setResults] = useState<any>(null);
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const filePromises = acceptedFiles.map(async (file) => {
-      const content = await file.text();
-      return {
-        name: file.name,
-        content,
-        type: file.type
-      };
-    });
-
-    const newDocuments = await Promise.all(filePromises);
-    setDocuments(prev => [...prev, ...newDocuments]);
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'text/plain': ['.txt'],
-      'text/markdown': ['.md'],
-      'application/pdf': ['.pdf'],
-      'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
-    }
-  });
-
-  const handleProcessDocuments = async () => {
-    setProcessing(true);
-    try {
-      const response = await axios.post('/api/process-documents', {
-        config,
-        documents
-      });
-      setResults(response.data);
-    } catch (error) {
-      console.error('Processing failed:', error);
-    } finally {
-      setProcessing(false);
-    }
-  };
+  useEffect(() => {
+    // Redirect to complete dashboard
+    router.replace('/complete-dashboard');
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            🚀 Document to Jira Processor
-          </h1>
-          
-          {/* Configuration Form */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">⚙️ Configuration</h2>
-            <div className="grid grid-cols-1 md:
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}
+    >
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '48px', margin: '0 0 1rem 0' }}>🤖</h1>
+        <h2 style={{ fontSize: '24px', margin: '0 0 0.5rem 0' }}>
+          ThinkCode AI Platform
+        </h2>
+        <p style={{ fontSize: '16px', opacity: 0.8, margin: 0 }}>Loading...</p>
+      </div>
+    </div>
+  );
+}

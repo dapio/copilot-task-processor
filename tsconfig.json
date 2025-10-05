@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "rootDir": "./src",
@@ -21,14 +23,37 @@
     "resolveJsonModule": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"],
-      "@/types/*": ["types/*"],
-      "@/utils/*": ["utils/*"],
-      "@/services/*": ["services/*"],
-      "@/processors/*": ["processors/*"],
-      "@/integrations/*": ["integrations/*"]
-    }
+      "@/*": [
+        "*"
+      ],
+      "@/types/*": [
+        "types/*"
+      ],
+      "@/utils/*": [
+        "utils/*"
+      ],
+      "@/services/*": [
+        "services/*"
+      ],
+      "@/processors/*": [
+        "processors/*"
+      ],
+      "@/integrations/*": [
+        "integrations/*"
+      ]
+    },
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "jsx": "preserve"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
 }
