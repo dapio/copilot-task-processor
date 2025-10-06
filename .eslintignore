@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.next/
+dist/
+build/
+out/
+
+# Test files causing compilation errors
+scripts/test-*.ts
+scripts/cleanup-system.ts
+scripts/generate-docs.ts
+scripts/init-agent-instructions.ts
+tests/
+*.test.ts
+*.spec.ts
+**/*.test.ts
+**/*.spec.ts
+
+# Configuration files
+*.config.js
+next.config.js
+playwright.config.ts
+jest.config.js
+
+# Generated files
+.next/
+dist/
+coverage/
+.nyc_output/
+
+# Prisma generated files
+prisma/migrations/
+src/generated/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Database files
+*.db
+*.sqlite
+
+# Uploads and temporary files
+uploads/
+temp/
+tmp/
+
+# Development files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

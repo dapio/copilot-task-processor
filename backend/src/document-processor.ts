@@ -3,6 +3,15 @@ const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 import { promises as fs } from 'fs';
 
+// Global type for Express Multer
+declare global {
+  namespace Express {
+    namespace Multer {
+      interface File {}
+    }
+  }
+}
+
 interface DocumentAnalysis {
   featuresCount: number;
   complexityScore: number;
@@ -37,7 +46,7 @@ export class DocumentProcessor {
   /**
    * Analyze documents and generate tasks
    */
-  public async analyzeDocuments(files: Express.Multer.File[]): Promise<{
+  public async analyzeDocuments(files: any[]): Promise<{
     analysis: DocumentAnalysis;
     tasks: JiraTask[];
   }> {
@@ -55,21 +64,21 @@ export class DocumentProcessor {
     return { analysis, tasks };
   }
 
-  private async extractTextFromFile(
-    file: Express.Multer.File
-  ): Promise<string> {
+  private async extractTextFromFile(file: any): Promise<string> {
     const fileContent = await fs.readFile(file.path);
 
     switch (file.mimetype) {
-      case 'application/pdf':
+      case 'application/pdf': {
         const pdfData = await pdfParse(fileContent);
         return pdfData.text;
+      }
 
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
         const docxResult = await mammoth.extractRawText({
           buffer: fileContent,
         });
         return docxResult.value;
+      }
 
       case 'text/plain':
       case 'text/markdown':

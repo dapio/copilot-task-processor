@@ -23,15 +23,19 @@ const ExecuteWorkflowSchema = z.object({
       timeoutMs: z.number().min(1000).optional(),
     })
     .optional()
-    .default({}),
+    .default({
+      continueOnError: false,
+      parallelExecution: false,
+      maxConcurrentSteps: 3,
+    }),
 });
 
 const ExecuteStepSchema = z.object({
   stepId: z.string().min(1, 'Step ID is required'),
   context: z
     .object({
-      inputs: z.record(z.any()).optional(),
-      metadata: z.record(z.any()).optional(),
+      inputs: z.record(z.string(), z.any()).optional(),
+      metadata: z.record(z.string(), z.any()).optional(),
     })
     .optional(),
 });
@@ -54,7 +58,7 @@ router.post(
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         });
       }
 
@@ -148,7 +152,7 @@ router.post(
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         });
       }
 
@@ -259,8 +263,9 @@ router.post(
     try {
       const { workflowId } = req.params;
 
-      const cancelResult =
-        await orchestrator.cancelWorkflowExecution(workflowId);
+      const cancelResult = await orchestrator.cancelWorkflowExecution(
+        workflowId
+      );
 
       if (cancelResult.success) {
         console.log(`🛑 Workflow cancelled: ${workflowId}`);
@@ -337,7 +342,7 @@ router.get('/providers/health', async (req: Request, res: Response) => {
   try {
     // Import provider factory
     const { getDefaultProviderConfigs, createMLProvider } = await import(
-      '../providers/ml-provider.factory'
+      '../providers/ml-provider.factory.js'
     );
 
     const configs = getDefaultProviderConfigs();

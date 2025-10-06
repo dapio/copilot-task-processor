@@ -1,0 +1,324 @@
+/**
+ * Workflow Admin Panel Styles
+ * Tailwind CSS classes for the admin panel components
+ */
+
+/* Global styles for the admin panel */
+.workflow-admin-panel {
+  @apply h-screen flex flex-col bg-gray-50;
+}
+
+/* Header styles */
+.admin-header {
+  @apply bg-white border-b px-6 py-4;
+}
+
+.admin-title {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.admin-subtitle {
+  @apply text-gray-600;
+}
+
+/* Layout styles */
+.admin-content {
+  @apply flex-1 flex overflow-hidden;
+}
+
+.sessions-sidebar {
+  @apply w-80 bg-white border-r flex flex-col;
+}
+
+.main-panel {
+  @apply flex-1 flex;
+}
+
+/* Session card styles */
+.session-card {
+  @apply cursor-pointer transition-colors hover:bg-gray-50;
+}
+
+.session-card.active {
+  @apply ring-2 ring-blue-500 bg-blue-50;
+}
+
+.session-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+.session-badge.active {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.session-badge.completed {
+  @apply bg-green-100 text-green-800;
+}
+
+.session-badge.cancelled {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Chat interface styles */
+.chat-container {
+  @apply flex-1 flex flex-col;
+}
+
+.chat-header {
+  @apply bg-white border-b px-6 py-3;
+}
+
+.chat-messages {
+  @apply flex-1 bg-gray-50 overflow-hidden;
+}
+
+.chat-input-area {
+  @apply p-4 bg-white border-t;
+}
+
+/* Message styles */
+.message-container {
+  @apply space-y-4;
+}
+
+.message-user {
+  @apply flex justify-end;
+}
+
+.message-assistant {
+  @apply flex justify-start;
+}
+
+.message-bubble {
+  @apply max-w-[80%] rounded-lg px-4 py-2;
+}
+
+.message-bubble.user {
+  @apply bg-blue-500 text-white;
+}
+
+.message-bubble.assistant {
+  @apply bg-gray-100 text-gray-900 border;
+}
+
+.message-sender {
+  @apply text-sm font-medium mb-1;
+}
+
+.message-content {
+  @apply whitespace-pre-wrap;
+}
+
+.message-timestamp {
+  @apply text-xs opacity-70 mt-1;
+}
+
+/* Progress indicator styles */
+.progress-step {
+  @apply flex items-center space-x-3;
+}
+
+.progress-icon {
+  @apply flex items-center justify-center w-8 h-8 rounded-full;
+}
+
+.progress-icon.active {
+  @apply bg-blue-500 text-white;
+}
+
+.progress-icon.completed {
+  @apply bg-green-500 text-white;
+}
+
+.progress-icon.inactive {
+  @apply bg-gray-200 text-gray-500;
+}
+
+.progress-label {
+  @apply text-sm;
+}
+
+.progress-label.active {
+  @apply font-medium text-blue-600;
+}
+
+.progress-label.completed {
+  @apply text-green-600;
+}
+
+.progress-label.inactive {
+  @apply text-gray-500;
+}
+
+/* Empty state styles */
+.empty-state {
+  @apply flex-1 flex items-center justify-center;
+}
+
+.empty-state-content {
+  @apply text-center;
+}
+
+.empty-state-icon {
+  @apply h-16 w-16 mx-auto mb-4 text-gray-400;
+}
+
+.empty-state-title {
+  @apply text-xl font-semibold text-gray-600 mb-2;
+}
+
+.empty-state-description {
+  @apply text-gray-500 mb-4;
+}
+
+/* Dialog styles */
+.dialog-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
+}
+
+.dialog-content {
+  @apply w-full max-w-md bg-white rounded-lg shadow-xl;
+}
+
+/* Button variants */
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500;
+}
+
+.btn-success {
+  @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
+
+.btn-outline {
+  @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500;
+}
+
+.btn-ghost {
+  @apply text-gray-700 hover:bg-gray-100 focus:ring-gray-500;
+}
+
+/* Loading states */
+.loading-spinner {
+  @apply animate-spin rounded-full h-4 w-4 border-b-2 border-current;
+}
+
+.loading-dots {
+  @apply animate-pulse flex space-x-1;
+}
+
+.loading-dot {
+  @apply w-2 h-2 bg-gray-400 rounded-full;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .workflow-admin-panel {
+    @apply text-sm;
+  }
+
+  .sessions-sidebar {
+    @apply w-full max-w-sm;
+  }
+
+  .admin-content {
+    @apply flex-col;
+  }
+
+  .message-bubble {
+    @apply max-w-[90%];
+  }
+}
+
+/* Accessibility improvements */
+.focus-visible {
+  @apply ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .message-bubble.assistant {
+    @apply border-2 border-gray-800;
+  }
+
+  .session-card {
+    @apply border-2 border-gray-300;
+  }
+
+  .session-card.active {
+    @apply border-blue-600;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    @apply animate-none;
+  }
+
+  .loading-dots {
+    @apply animate-none;
+  }
+
+  .fade-in,
+  .slide-up {
+    animation: none;
+  }
+}
+
+/* Dark mode support (if needed in the future) */
+@media (prefers-color-scheme: dark) {
+  .workflow-admin-panel {
+    @apply bg-gray-900 text-white;
+  }
+
+  .admin-header {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .sessions-sidebar {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .message-bubble.assistant {
+    @apply bg-gray-700 text-white border-gray-600;
+  }
+}

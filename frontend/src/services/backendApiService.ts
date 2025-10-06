@@ -142,7 +142,7 @@ export interface TaskProcessingResult {
 export class BackendApiService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '/api') {
+  constructor(baseUrl: string = 'http://localhost:3002/api') {
     this.baseUrl = baseUrl;
   }
 
@@ -289,7 +289,9 @@ export class BackendApiService {
 }
 
 // Export singleton instance
-export const backendApiService = new BackendApiService();
+export const backendApiService = new BackendApiService(
+  'http://localhost:3002/api'
+);
 
 // Export helper functions
 export const createDocumentAnalysisRequest = (

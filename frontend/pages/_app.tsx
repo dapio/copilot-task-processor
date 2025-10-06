@@ -39,9 +39,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           rel="stylesheet"
           type="text/css"
         />
-        {/* Additional Limitless JS (for dropdowns, etc) */}
-        import 'bootstrap/dist/js/bootstrap.bundle.min.js' import
-        '../public/custom-styles.css'
+        {/* Custom styles */}
+        <link href="/custom-styles.css" rel="stylesheet" type="text/css" />
       </Head>
       <Component {...pageProps} />
     </>

@@ -22,7 +22,25 @@ import {
   Play,
   Pause,
   Square,
+  FileText,
+  Upload,
+  CheckSquare,
+  Database,
 } from 'lucide-react';
+import { useBackendApi } from '../src/hooks/useBackendApi';
+import DocumentAnalysisView from '../src/components/DocumentAnalysisView';
+import ResearchIntegrationView from '../src/components/ResearchIntegrationView';
+import { WorkflowsView } from '../src/components/WorkflowsView';
+import { CommunicationsView } from '../src/components/CommunicationsView';
+import styles from '../src/styles/enterprise-dashboard.module.css';
+import {
+  createDocumentAnalysisRequest,
+  createTaskGenerationRequest,
+  DocumentAnalysisResult,
+  TaskGenerationResult,
+  GeneratedTask,
+  IntegrationTestResult,
+} from '../src/services/backendApiService';
 
 // Types
 interface Agent {
@@ -290,6 +308,8 @@ function Sidebar({
     { id: 'projects', label: 'Projects', icon: FolderOpen },
     { id: 'agents', label: 'AI Agents', icon: Users },
     { id: 'workflows', label: 'Workflows', icon: GitBranch },
+    { id: 'documents', label: 'Document Analysis', icon: FileText },
+    { id: 'research', label: 'Research & Integration', icon: Search },
     { id: 'communications', label: 'Communications', icon: MessageSquare },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -487,8 +507,8 @@ function DashboardView() {
                     </div>
                     <div className="w-16 h-2 bg-gray-200 rounded-full mt-1">
                       <div
-                        className="h-2 bg-blue-500 rounded-full transition-all"
-                        style={{ width: `${agent.currentWorkload * 100}%` }}
+                        className={`h-2 bg-blue-500 rounded-full ${styles.workloadBar}`}
+                        data-workload={Math.round(agent.currentWorkload * 100)}
                       />
                     </div>
                   </div>
@@ -575,6 +595,7 @@ function ProjectsView() {
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          aria-label="Filter projects by status"
         >
           <option value="all">All Status</option>
           <option value="planning">Planning</option>
@@ -652,7 +673,11 @@ function ProjectCard({
             {project.description}
           </p>
         </div>
-        <button className="text-gray-400 hover:text-gray-600">
+        <button
+          className="text-gray-400 hover:text-gray-600"
+          title="Project options"
+          aria-label="Project options"
+        >
           <MoreVertical className="h-4 w-4" />
         </button>
       </div>
@@ -868,6 +893,7 @@ function AgentsView() {
           value={filterRole}
           onChange={e => setFilterRole(e.target.value)}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          aria-label="Filter agents by role"
         >
           <option value="all">All Roles</option>
           {roles.map(role => (
@@ -880,6 +906,7 @@ function AgentsView() {
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          aria-label="Filter agents by status"
         >
           <option value="all">All Status</option>
           <option value="active">Active</option>
@@ -946,7 +973,11 @@ function AgentCard({
             <p className="text-blue-600 text-sm font-medium">{agent.role}</p>
           </div>
         </div>
-        <button className="text-gray-400 hover:text-gray-600">
+        <button
+          className="text-gray-400 hover:text-gray-600"
+          title="Agent options"
+          aria-label="Agent options"
+        >
           <MoreVertical className="h-4 w-4" />
         </button>
       </div>
@@ -964,14 +995,14 @@ function AgentCard({
         </div>
         <div className="w-full h-2 bg-gray-200 rounded-full">
           <div
-            className={`h-2 rounded-full transition-all ${
+            className={`h-2 rounded-full ${styles.workloadBar} ${
               agent.currentWorkload > 0.8
                 ? 'bg-red-500'
                 : agent.currentWorkload > 0.6
                   ? 'bg-yellow-500'
                   : 'bg-green-500'
             }`}
-            style={{ width: `${agent.currentWorkload * 100}%` }}
+            data-workload={Math.round(agent.currentWorkload * 100)}
           />
         </div>
       </div>
@@ -1009,17 +1040,13 @@ export default function EnterpriseManagementDashboard() {
       case 'agents':
         return <AgentsView />;
       case 'workflows':
-        return (
-          <div className="p-8">
-            <h1 className="text-2xl font-bold">Workflows (Coming Soon)</h1>
-          </div>
-        );
+        return <WorkflowsView />;
+      case 'documents':
+        return <DocumentAnalysisView />;
+      case 'research':
+        return <ResearchIntegrationView />;
       case 'communications':
-        return (
-          <div className="p-8">
-            <h1 className="text-2xl font-bold">Communications (Coming Soon)</h1>
-          </div>
-        );
+        return <CommunicationsView />;
       case 'settings':
         return (
           <div className="p-8">

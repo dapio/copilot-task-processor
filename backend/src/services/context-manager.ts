@@ -104,7 +104,9 @@ export class ContextManager {
     settings?: Partial<ProjectContext['settings']>;
     createdBy?: string;
   }): Promise<string> {
-    const contextId = `proj_ctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const contextId = `proj_ctx_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const context: ProjectContext = {
       id: contextId,
@@ -231,7 +233,9 @@ export class ContextManager {
     systemPrompt?: string;
     settings?: Partial<AgentContext['settings']>;
   }): Promise<string> {
-    const contextId = `agent_ctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const contextId = `agent_ctx_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const context: AgentContext = {
       id: contextId,
@@ -329,14 +333,8 @@ export class ContextManager {
    */
   async deleteAgentContext(contextId: string): Promise<boolean> {
     this.agentContexts.delete(contextId);
-
-    try {
-      // TODO: Usuń z bazy danych
-      return true;
-    } catch (error) {
-      console.error('Failed to delete agent context:', error);
-      return false;
-    }
+    // TODO: Usuń z bazy danych
+    return true;
   }
 
   // === Message Management ===
@@ -353,7 +351,9 @@ export class ContextManager {
       throw new Error(`Agent context ${contextId} not found`);
     }
 
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const messageId = `msg_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     const fullMessage: ContextMessage = {
       id: messageId,
       timestamp: new Date(),
@@ -433,7 +433,9 @@ export class ContextManager {
       expirationMinutes?: number;
     }
   ): Promise<string> {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const session: ContextSession = {
       id: sessionId,

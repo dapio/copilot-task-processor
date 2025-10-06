@@ -239,45 +239,48 @@ router.post('/best-practices', async (req: Request, res: Response) => {
  * POST /api/knowledge/search
  * Wyszukuje w feedach wiedzy
  */
-router.post('/search', async (req: Request, res: Response) => {
-  try {
-    const { query, agentId, filters } = req.body;
+router.post(
+  '/search',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const { query, agentId, filters } = req.body;
 
-    if (!query || query.trim().length < 2) {
-      return res.status(400).json({
+      if (!query || query.trim().length < 2) {
+        return res.status(400).json({
+          success: false,
+          error: 'Query must be at least 2 characters long',
+        });
+      }
+
+      const result = await knowledgeService.searchKnowledge(
+        query.trim(),
+        agentId,
+        filters
+      );
+
+      if (result.success) {
+        res.json({
+          success: true,
+          data: result.data,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error('Error in POST /search:', error);
+      res.status(500).json({
         success: false,
-        error: 'Query must be at least 2 characters long',
+        error: 'Search failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    const result = await knowledgeService.searchKnowledge(
-      query.trim(),
-      agentId,
-      filters
-    );
-
-    if (result.success) {
-      res.json({
-        success: true,
-        data: result.data,
-        timestamp: new Date().toISOString(),
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: result.error,
-        timestamp: new Date().toISOString(),
-      });
-    }
-  } catch (error) {
-    console.error('Error in POST /search:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Search failed',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
   }
-});
+);
 
 /**
  * GET /api/knowledge/recommendations/:agentId

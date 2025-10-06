@@ -78,8 +78,8 @@ const workflowExecutionSchema = z.object({
   contextId: z.string(),
   contextType: z.enum(['project', 'agent']),
   projectId: z.string().optional(),
-  parameters: z.record(z.any()).optional(),
-  providerOverrides: z.record(z.string()).optional(),
+  parameters: z.record(z.string(), z.any()).optional(),
+  providerOverrides: z.record(z.string(), z.string()).optional(),
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   enableChat: z.boolean().optional(),
   customSteps: z
@@ -96,7 +96,7 @@ const workflowExecutionSchema = z.object({
         ]),
         provider: z.string().optional(),
         dependencies: z.array(z.string()),
-        configuration: z.record(z.any()),
+        configuration: z.record(z.string(), z.any()),
       })
     )
     .optional(),
@@ -184,177 +184,189 @@ router.post('/providers/:name/test', async (req: Request, res: Response) => {
  * POST /api/enhanced/contexts/project
  * Tworzy nowy kontekst projektu
  */
-router.post('/contexts/project', async (req: Request, res: Response) => {
-  try {
-    const validatedData = createContextSchema.parse(req.body);
+router.post(
+  '/contexts/project',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const validatedData = createContextSchema.parse(req.body);
 
-    if (!validatedData.projectId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Project ID is required for project context',
-      });
-    }
+      if (!validatedData.projectId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Project ID is required for project context',
+        });
+      }
 
-    const contextId = await contextManager.createProjectContext({
-      projectId: validatedData.projectId,
-      name: validatedData.name,
-      systemPrompt: validatedData.systemPrompt,
-      workspace: validatedData.workspace,
-      createdBy: req.headers['x-user-id'] as string,
-    });
-
-    res.status(201).json({
-      success: true,
-      data: {
-        contextId,
-        type: 'project',
-        name: validatedData.name,
+      const contextId = await contextManager.createProjectContext({
         projectId: validatedData.projectId,
-      },
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
+        name: validatedData.name,
+        systemPrompt: validatedData.systemPrompt,
+        workspace: validatedData.workspace,
+        createdBy: req.headers['x-user-id'] as string,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: {
+          contextId,
+          type: 'project',
+          name: validatedData.name,
+          projectId: validatedData.projectId,
+        },
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.issues,
+        });
+      }
+
+      res.status(500).json({
         success: false,
-        error: 'Validation error',
-        details: error.errors,
+        error: 'Failed to create project context',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create project context',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
   }
-});
+);
 
 /**
  * POST /api/enhanced/contexts/agent
  * Tworzy nowy kontekst agenta
  */
-router.post('/contexts/agent', async (req: Request, res: Response) => {
-  try {
-    const validatedData = createContextSchema.parse(req.body);
+router.post(
+  '/contexts/agent',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const validatedData = createContextSchema.parse(req.body);
 
-    if (!validatedData.agentId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Agent ID is required for agent context',
-      });
-    }
+      if (!validatedData.agentId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Agent ID is required for agent context',
+        });
+      }
 
-    const contextId = await contextManager.createAgentContext({
-      agentId: validatedData.agentId,
-      parentProjectContextId: validatedData.parentContextId,
-      name: validatedData.name,
-      systemPrompt: validatedData.systemPrompt,
-    });
-
-    res.status(201).json({
-      success: true,
-      data: {
-        contextId,
-        type: 'agent',
-        name: validatedData.name,
+      const contextId = await contextManager.createAgentContext({
         agentId: validatedData.agentId,
         parentProjectContextId: validatedData.parentContextId,
-      },
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
+        name: validatedData.name,
+        systemPrompt: validatedData.systemPrompt,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: {
+          contextId,
+          type: 'agent',
+          name: validatedData.name,
+          agentId: validatedData.agentId,
+          parentProjectContextId: validatedData.parentContextId,
+        },
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.issues,
+        });
+      }
+
+      res.status(500).json({
         success: false,
-        error: 'Validation error',
-        details: error.errors,
+        error: 'Failed to create agent context',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create agent context',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
   }
-});
+);
 
 /**
  * GET /api/enhanced/contexts/:contextId
  * Pobiera szczegóły kontekstu
  */
-router.get('/contexts/:contextId', async (req: Request, res: Response) => {
-  try {
-    const { contextId } = req.params;
-    const { type = 'auto' } = req.query;
+router.get(
+  '/contexts/:contextId',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const { contextId } = req.params;
+      const { type = 'auto' } = req.query;
 
-    let context = null;
-    let contextType = type;
+      let context = null;
+      let contextType = type;
 
-    if (type === 'project' || type === 'auto') {
-      context = await contextManager.getProjectContext(contextId);
-      if (context) contextType = 'project';
-    }
+      if (type === 'project' || type === 'auto') {
+        context = await contextManager.getProjectContext(contextId);
+        if (context) contextType = 'project';
+      }
 
-    if (!context && (type === 'agent' || type === 'auto')) {
-      context = await contextManager.getAgentContext(contextId);
-      if (context) contextType = 'agent';
-    }
+      if (!context && (type === 'agent' || type === 'auto')) {
+        context = await contextManager.getAgentContext(contextId);
+        if (context) contextType = 'agent';
+      }
 
-    if (!context) {
-      return res.status(404).json({
+      if (!context) {
+        return res.status(404).json({
+          success: false,
+          error: 'Context not found',
+          message: `Context ${contextId} not found`,
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          context,
+          type: contextType,
+          contextId,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
         success: false,
-        error: 'Context not found',
-        message: `Context ${contextId} not found`,
+        error: 'Failed to get context',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    res.json({
-      success: true,
-      data: {
-        context,
-        type: contextType,
-        contextId,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get context',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
   }
-});
+);
 
 /**
  * GET /api/enhanced/contexts/:contextId/full
  * Pobiera pełny kontekst agenta (z projektem)
  */
-router.get('/contexts/:contextId/full', async (req: Request, res: Response) => {
-  try {
-    const { contextId } = req.params;
+router.get(
+  '/contexts/:contextId/full',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const { contextId } = req.params;
 
-    const fullContext = await contextManager.getFullAgentContext(contextId);
+      const fullContext = await contextManager.getFullAgentContext(contextId);
 
-    if (!fullContext) {
-      return res.status(404).json({
+      if (!fullContext) {
+        return res.status(404).json({
+          success: false,
+          error: 'Agent context not found',
+          message: `Agent context ${contextId} not found`,
+        });
+      }
+
+      res.json({
+        success: true,
+        data: fullContext,
+      });
+    } catch (error) {
+      res.status(500).json({
         success: false,
-        error: 'Agent context not found',
-        message: `Agent context ${contextId} not found`,
+        error: 'Failed to get full context',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    res.json({
-      success: true,
-      data: fullContext,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get full context',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
   }
-});
+);
 
 // === Chat Integration ===
 
@@ -362,41 +374,44 @@ router.get('/contexts/:contextId/full', async (req: Request, res: Response) => {
  * POST /api/enhanced/chat/sessions
  * Tworzy nową sesję chatu
  */
-router.post('/chat/sessions', async (req: Request, res: Response) => {
-  try {
-    const { contextId, contextType, title, activeProviders } = req.body;
+router.post(
+  '/chat/sessions',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const { contextId, contextType, title, activeProviders } = req.body;
 
-    if (!contextId || !contextType) {
-      return res.status(400).json({
-        success: false,
-        error: 'contextId and contextType are required',
-      });
-    }
+      if (!contextId || !contextType) {
+        return res.status(400).json({
+          success: false,
+          error: 'contextId and contextType are required',
+        });
+      }
 
-    const sessionId = await chatService.createChatSession({
-      contextId,
-      contextType,
-      title: title || `Chat Session - ${new Date().toISOString()}`,
-      activeProviders: activeProviders || ['github-copilot'],
-    });
-
-    res.status(201).json({
-      success: true,
-      data: {
-        sessionId,
+      const sessionId = await chatService.createChatSession({
         contextId,
         contextType,
-        title,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create chat session',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+        title: title || `Chat Session - ${new Date().toISOString()}`,
+        activeProviders: activeProviders || ['github-copilot'],
+      });
+
+      res.status(201).json({
+        success: true,
+        data: {
+          sessionId,
+          contextId,
+          contextType,
+          title,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create chat session',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   }
-});
+);
 
 /**
  * POST /api/enhanced/chat/sessions/:sessionId/message
@@ -404,7 +419,7 @@ router.post('/chat/sessions', async (req: Request, res: Response) => {
  */
 router.post(
   '/chat/sessions/:sessionId/message',
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { sessionId } = req.params;
       const validatedData = chatMessageSchema.parse(req.body);
@@ -442,7 +457,7 @@ router.post(
         return res.status(400).json({
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
       }
 
@@ -497,7 +512,7 @@ router.get(
  */
 router.get(
   '/chat/sessions/:sessionId/stats',
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { sessionId } = req.params;
 
@@ -561,94 +576,97 @@ router.get('/workflows/templates', async (req: Request, res: Response) => {
  * POST /api/enhanced/workflows/execute
  * Wykonuje workflow z template lub custom
  */
-router.post('/workflows/execute', async (req: Request, res: Response) => {
-  try {
-    const validatedData = workflowExecutionSchema.parse(req.body);
+router.post(
+  '/workflows/execute',
+  async (req: Request, res: Response): Promise<Response | void> => {
+    try {
+      const validatedData = workflowExecutionSchema.parse(req.body);
 
-    let result;
+      let result;
 
-    if (validatedData.templateId) {
-      // Wykonaj z template
-      result = await workflowController.executeWorkflowFromTemplate({
-        templateId: validatedData.templateId,
-        contextId: validatedData.contextId,
-        contextType: validatedData.contextType,
-        projectId: validatedData.projectId,
-        parameters: validatedData.parameters,
-        providerOverrides: validatedData.providerOverrides,
-        priority: validatedData.priority,
-        triggeredBy: req.headers['x-user-id'] as string,
-      });
-    } else if (validatedData.customSteps) {
-      // Wykonaj custom workflow
-      const customSteps = validatedData.customSteps.map(step => ({
-        ...step,
-        maxRetries: 2, // Domyślna wartość dla custom steps
-      }));
+      if (validatedData.templateId) {
+        // Wykonaj z template
+        result = await workflowController.executeWorkflowFromTemplate({
+          templateId: validatedData.templateId,
+          contextId: validatedData.contextId,
+          contextType: validatedData.contextType,
+          projectId: validatedData.projectId,
+          parameters: validatedData.parameters,
+          providerOverrides: validatedData.providerOverrides,
+          priority: validatedData.priority,
+          triggeredBy: req.headers['x-user-id'] as string,
+        });
+      } else if (validatedData.customSteps) {
+        // Wykonaj custom workflow
+        const customSteps = validatedData.customSteps.map(step => ({
+          ...step,
+          maxRetries: 2, // Domyślna wartość dla custom steps
+        }));
 
-      result = await workflowController.executeCustomWorkflow({
-        name: `Custom Workflow - ${new Date().toISOString()}`,
-        steps: customSteps,
-        contextId: validatedData.contextId,
-        contextType: validatedData.contextType,
-        providerStrategy: {
-          primary: 'github-copilot',
-          fallbacks: ['openai'],
-          contextAffinity: true,
+        result = await workflowController.executeCustomWorkflow({
+          name: `Custom Workflow - ${new Date().toISOString()}`,
+          steps: customSteps,
+          contextId: validatedData.contextId,
+          contextType: validatedData.contextType,
+          providerStrategy: {
+            primary: 'github-copilot',
+            fallbacks: ['openai'],
+            contextAffinity: true,
+          },
+          projectId: validatedData.projectId,
+          priority: validatedData.priority,
+          triggeredBy: req.headers['x-user-id'] as string,
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: 'Either templateId or customSteps must be provided',
+        });
+      }
+
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          error: result.error.message,
+          code: result.error.code,
+        });
+      }
+
+      // Stwórz chat session jeśli wymagane
+      let chatSessionId;
+      if (validatedData.enableChat) {
+        chatSessionId = await workflowController.createWorkflowSession({
+          workflowExecutionId: result.data,
+          enableChat: true,
+          title: `Workflow Chat - ${result.data}`,
+        });
+      }
+
+      res.status(201).json({
+        success: true,
+        data: {
+          executionId: result.data,
+          chatSessionId,
+          status: 'running',
         },
-        projectId: validatedData.projectId,
-        priority: validatedData.priority,
-        triggeredBy: req.headers['x-user-id'] as string,
       });
-    } else {
-      return res.status(400).json({
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.issues,
+        });
+      }
+
+      res.status(500).json({
         success: false,
-        error: 'Either templateId or customSteps must be provided',
+        error: 'Failed to execute workflow',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        error: result.error.message,
-        code: result.error.code,
-      });
-    }
-
-    // Stwórz chat session jeśli wymagane
-    let chatSessionId;
-    if (validatedData.enableChat) {
-      chatSessionId = await workflowController.createWorkflowSession({
-        workflowExecutionId: result.data,
-        enableChat: true,
-        title: `Workflow Chat - ${result.data}`,
-      });
-    }
-
-    res.status(201).json({
-      success: true,
-      data: {
-        executionId: result.data,
-        chatSessionId,
-        status: 'running',
-      },
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: error.errors,
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      error: 'Failed to execute workflow',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
   }
-});
+);
 
 /**
  * GET /api/enhanced/workflows/:executionId/status
@@ -656,12 +674,13 @@ router.post('/workflows/execute', async (req: Request, res: Response) => {
  */
 router.get(
   '/workflows/:executionId/status',
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { executionId } = req.params;
 
-      const execution =
-        await workflowController.getExecutionStatus(executionId);
+      const execution = await workflowController.getExecutionStatus(
+        executionId
+      );
 
       if (!execution) {
         return res.status(404).json({
@@ -698,7 +717,7 @@ router.get(
  */
 router.post(
   '/workflows/:executionId/control',
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const { executionId } = req.params;
       const { action } = req.body;

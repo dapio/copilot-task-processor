@@ -1,0 +1,16 @@
+{
+  "id": "task-2",
+  "title": "Technical Documentation",
+  "description": "Create comprehensive technical documentation and user guides",
+  "type": "documentation",
+  "priority": "medium",
+  "estimatedHours": 4,
+  "dependencies": [],
+  "tags": [
+    "documentation",
+    "guides"
+  ],
+  "status": "pending",
+  "createdAt": "2025-10-06T00:11:17.775Z",
+  "updatedAt": "2025-10-06T00:11:17.775Z"
+}

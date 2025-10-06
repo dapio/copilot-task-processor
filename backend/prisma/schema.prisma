@@ -1,0 +1,748 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  status          String    @default("pending") // pending, in_progress, completed, failed
+  priority        String    @default("medium") // low, medium, high, critical
+  estimatedHours  Int?
+  actualHours     Int?
+  dependencies    String? // JSON array of task IDs
+  tags            String? // JSON array of tags
+  category        String? // setup, development, testing, deployment
+  assignedAgentId String?
+  projectId       String?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  completedAt     DateTime?
+
+  // Relations
+  assignedAgent Agent?           @relation(fields: [assignedAgentId], references: [id])
+  project       Project?         @relation(fields: [projectId], references: [id])
+  executions    TaskExecution[]
+  steps         WorkflowStep[]
+  assignments   TaskAssignment[]
+
+  @@map("tasks")
+}
+
+model Agent {
+  id           String    @id @default(cuid())
+  name         String
+  type         String // document_processor, task_generator, integration_tester, etc.
+  status       String    @default("idle") // idle, active, busy, error
+  capabilities String? // JSON array of capabilities
+  config       Json?
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastSeen     DateTime?
+
+  // Relations
+  tasks             Task[]
+  executions        TaskExecution[]
+  workflowSteps     WorkflowStep[]
+  assignmentsFrom   TaskAssignment[] @relation("AssignmentFrom")
+  assignmentsTo     TaskAssignment[] @relation("AssignmentTo")
+  agentFeeds        AgentFeed[]
+  chatMessages      ProjectChatMessage[]
+  researchQueries   ResearchQuery[]
+
+  @@map("agents")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String? // web-app, mobile-app, api, etc.
+  status      String   @default("active") // active, paused, completed, archived
+  config      Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tasks           Task[]
+  workflows       Workflow[]
+  chats           ProjectChat[]
+  workflowRuns    WorkflowRun[]
+  projectFeeds    ProjectFeed[]
+  chatSessions    ProjectChatSession[]
+  mockups         MockupApproval[]
+
+  @@map("projects")
+}
+
+model TaskExecution {
+  id          String    @id @default(cuid())
+  taskId      String
+  agentId     String
+  status      String    @default("pending") // pending, running, completed, failed
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  duration    Int? // Duration in milliseconds
+  result      Json?
+  error       String?
+  logs        String? // JSON array of logs
+  metadata    Json?
+
+  // Relations
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@map("task_executions")
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String? // sequential, parallel, conditional
+  status      String   @default("draft") // draft, active, paused, completed
+  projectId   String
+  config      Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project    Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps      WorkflowStep[]
+  executions WorkflowExecution[]
+
+  @@map("workflows")
+}
+
+model WorkflowStep {
+  id              String  @id @default(cuid())
+  workflowId      String
+  taskId          String?
+  stepNumber      Int
+  name            String
+  description     String?
+  type            String  @default("task") // task, decision, parallel, loop
+  assignedAgentId String?
+  inputs          Json?
+  outputs         Json?
+  condition       String? // For conditional steps
+  config          Json?
+  metadata        Json?
+
+  // Relations
+  workflow      Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  task          Task?    @relation(fields: [taskId], references: [id])
+  assignedAgent Agent?   @relation(fields: [assignedAgentId], references: [id])
+
+  @@map("workflow_steps")
+}
+
+model WorkflowExecution {
+  id          String    @id @default(cuid())
+  workflowId  String
+  status      String    @default("pending") // pending, running, paused, completed, failed
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  duration    Int? // Duration in milliseconds
+  currentStep Int?
+  result      Json?
+  error       String?
+  logs        String? // JSON array of logs
+  metadata    Json?
+
+  // Relations
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@map("workflow_executions")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  name         String
+  originalName String
+  path         String
+  size         Int
+  mimeType     String
+  hash         String? // For deduplication
+  status       String   @default("uploaded") // uploaded, processing, processed, failed
+  analysis     Json?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("documents")
+}
+
+model KnowledgeFeed {
+  id           String    @id @default(cuid())
+  name         String
+  type         String // rss, api, webhook, manual
+  url          String?
+  config       Json?
+  status       String    @default("active") // active, paused, error
+  lastSync     DateTime?
+  syncInterval Int? // Minutes between syncs
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  entries       KnowledgeEntry[]
+  agentFeeds    AgentFeed[]
+  projectFeeds  ProjectFeed[]
+
+  @@map("knowledge_feeds")
+}
+
+model KnowledgeEntry {
+  id          String    @id @default(cuid())
+  feedId      String
+  title       String
+  content     String
+  url         String?
+  hash        String    @unique // For deduplication
+  tags        String? // JSON array of tags
+  category    String?
+  priority    String    @default("medium")
+  status      String    @default("active") // active, archived, deleted
+  embedding   String? // Vector embedding for search
+  metadata    Json?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  feed KnowledgeFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_entries")
+}
+
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  category    String? // integration, ui, performance, etc.
+  description String?
+  isSecret    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String // CREATE, UPDATE, DELETE, EXECUTE, etc.
+  entity    String // Task, Agent, Project, etc.
+  entityId  String
+  userId    String? // For future user management
+  details   Json?
+  timestamp DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  @@map("audit_logs")
+}
+
+model AgentBestPractice {
+  id          String   @id @default(cuid())
+  agentType   String
+  category    String
+  title       String
+  rule        String
+  description String
+  priority    String
+  examples    Json?    // Array of usage examples
+  antipatterns Json?   // Array of anti-patterns to avoid
+  tools       Json?    // Array of relevant tools
+  tags        Json?    // Array of tags for categorization
+  version     String   @default("1.0.0")
+  createdBy   String?  // Who created this best practice
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([agentType, category, title])
+  @@index([agentType, active])
+  @@index([category])
+}
+
+// Enhanced Workflow Management System
+model WorkflowTemplate {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  version     String             @default("1.0.0")
+  type        String             // new_application, existing_project, custom
+  category    String?            // automation, deployment, testing, etc.
+  priority    String             @default("medium") // low, medium, high, critical
+  
+  // Workflow Definition
+  steps       Json               // Array of workflow steps with full configuration
+  conditions  Json?              // Global conditions for workflow execution
+  variables   Json?              // Default variables and their types
+  metadata    Json?              // Additional metadata
+  
+  // Configuration
+  timeout     Int?               // Global timeout in milliseconds
+  retryPolicy Json?              // Global retry configuration
+  
+  // Status & Control
+  active      Boolean            @default(true)
+  validated   Boolean            @default(false)
+  
+  // Input/Output Schema
+  inputSchema  Json?             // JSON schema for input validation
+  outputSchema Json?             // JSON schema for expected output
+  
+  // Relations
+  workflowRuns     WorkflowRun[]
+  stepTemplates    WorkflowStepTemplate[]
+  schedules        WorkflowSchedule[]
+  
+  // Audit
+  createdBy   String?
+  updatedBy   String?
+  tags        Json?              // Array of tags for categorization
+  
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  @@index([category, active])
+  @@index([type])
+  @@index([priority])
+}
+
+model WorkflowStepTemplate {
+  id             String             @id @default(cuid())
+  workflowId     String
+  stepId         String             // Unique identifier within workflow
+  name           String
+  description    String?
+  type           String             // action, condition, loop, parallel, delay, approval
+  category       String?            // api, database, notification, transform, etc.
+  
+  // Handler Configuration
+  handler        String             // Handler function name or class
+  handlerConfig  Json?              // Handler-specific configuration
+  
+  // Execution Control
+  order          Int                @default(0)
+  dependencies   Json?              // Array of step IDs this step depends on
+  conditions     Json?              // Execution conditions
+  timeout        Int?               // Step timeout in milliseconds
+  retries        Int?               @default(0)
+  retryDelay     Int?               @default(1000)
+  
+  // Input/Output
+  inputMapping   Json?              // How to map workflow context to step input
+  outputMapping  Json?              // How to map step output to workflow context
+  
+  // Error Handling
+  onError        String?            // continue, halt, retry, skip
+  errorHandler   String?            // Custom error handler
+  
+  // Relations
+  workflow       WorkflowTemplate   @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  executions     WorkflowStepExecution[]
+  
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  
+  @@unique([workflowId, stepId])
+  @@index([workflowId, order])
+}
+
+model WorkflowRun {
+  id              String                     @id @default(cuid())
+  workflowId      String
+  projectId       String?
+  
+  // Execution State
+  status          String                     @default("pending") // pending, running, paused, completed, failed, cancelled, timeout
+  currentStep     Int                        @default(0)
+  currentStepId   String?
+  
+  // Input/Output Data
+  input           Json?                      // Initial input data
+  output          Json?                      // Final output data
+  context         Json?                      // Workflow execution context
+  variables       Json?                      // Runtime variables
+  
+  // Execution Timing
+  startTime       DateTime?
+  endTime         DateTime?
+  estimatedEnd    DateTime?
+  actualDuration  Int?                       // Duration in milliseconds
+  
+  // Progress & Metrics
+  totalSteps      Int                        @default(0)
+  completedSteps  Int                        @default(0)
+  failedSteps     Int                        @default(0)
+  skippedSteps    Int                        @default(0)
+  
+  // Error Handling
+  error           String?                    // Error message if failed
+  errorCode       String?                    // Structured error code
+  errorDetails    Json?                      // Detailed error information
+  
+  // Execution Control
+  priority        String                     @default("medium") // low, medium, high, critical
+  executor        String?                    // Who/what started the execution
+  executorType    String?                    // user, system, schedule, webhook
+  
+  // Logging & Monitoring
+  executionLog    Json?                      // Detailed execution log
+  performanceLog  Json?                      // Performance metrics
+  
+  // Relations
+  workflow        WorkflowTemplate           @relation(fields: [workflowId], references: [id])
+  project         Project?                   @relation(fields: [projectId], references: [id])
+  steps           WorkflowStepExecution[]
+  events          WorkflowExecutionEvent[]
+  
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  
+  @@index([workflowId, status])
+  @@index([projectId])
+  @@index([status, createdAt])
+  @@index([executor])
+}
+
+model WorkflowStepExecution {
+  id              String             @id @default(cuid())
+  workflowRunId   String
+  stepTemplateId  String
+  stepId          String             // From step template
+  
+  // Execution State
+  status          String             @default("pending") // pending, running, completed, failed, skipped, timeout, cancelled
+  attempt         Int                @default(1)
+  maxAttempts     Int                @default(1)
+  
+  // Input/Output
+  input           Json?              // Step input data
+  output          Json?              // Step output data
+  
+  // Timing
+  startTime       DateTime?
+  endTime         DateTime?
+  duration        Int?               // Duration in milliseconds
+  timeout         Int?               // Applied timeout
+  
+  // Error Information
+  error           String?            // Error message
+  errorCode       String?            // Structured error code  
+  errorDetails    Json?              // Detailed error information
+  stackTrace      String?            // Full stack trace if available
+  
+  // Retry Information
+  retryCount      Int                @default(0)
+  nextRetryAt     DateTime?
+  retryReason     String?
+  
+  // Performance & Metrics
+  cpuUsage        Float?             // CPU usage percentage
+  memoryUsage     Int?               // Memory usage in MB
+  
+  // Relations
+  workflowRun     WorkflowRun        @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  stepTemplate    WorkflowStepTemplate @relation(fields: [stepTemplateId], references: [id])
+  
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@index([workflowRunId, stepId])
+  @@index([status])
+  @@index([startTime])
+}
+
+model WorkflowExecutionEvent {
+  id              String             @id @default(cuid())
+  workflowRunId   String
+  
+  // Event Information
+  type            String             // started, step_started, step_completed, step_failed, paused, resumed, completed, failed, cancelled
+  level           String             @default("info") // debug, info, warn, error, fatal
+  message         String
+  details         Json?              // Additional event details
+  
+  // Context
+  stepId          String?            // If event is related to specific step
+  userId          String?            // User who triggered the event
+  source          String?            // Source of the event (system, user, webhook, etc.)
+  
+  // Relations
+  workflowRun     WorkflowRun        @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime           @default(now())
+  
+  @@index([workflowRunId, type])
+  @@index([createdAt])
+  @@index([level])
+}
+
+model WorkflowHandler {
+  id              String             @id @default(cuid())
+  name            String             @unique
+  type            String             // builtin, custom, agent, external
+  category        String             // api, database, notification, file, transform, etc.
+  
+  // Handler Definition
+  description     String?
+  handlerClass    String?            // Class name for custom handlers
+  handlerMethod   String?            // Method name
+  
+  // Configuration Schema
+  configSchema    Json?              // JSON schema for handler configuration
+  inputSchema     Json?              // Expected input schema
+  outputSchema    Json?              // Expected output schema
+  
+  // Requirements & Dependencies
+  requirements    Json?              // System requirements (packages, etc.)
+  dependencies    Json?              // Handler dependencies
+  
+  // Status & Control
+  enabled         Boolean            @default(true)
+  version         String             @default("1.0.0")
+  
+  // Documentation
+  documentation   String?            // Handler documentation
+  examples        Json?              // Usage examples
+  
+  // Audit
+  createdBy       String?
+  
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@index([type, enabled])
+  @@index([category])
+}
+
+model WorkflowSchedule {
+  id              String             @id @default(cuid())
+  workflowId      String
+  name            String
+  description     String?
+  
+  // Schedule Configuration
+  enabled         Boolean            @default(true)
+  scheduleType    String             // cron, interval, once, manual
+  cronExpression  String?            // For cron schedules
+  interval        Int?               // For interval schedules (milliseconds)
+  scheduledAt     DateTime?          // For one-time schedules
+  
+  // Execution Configuration
+  input           Json?              // Default input for scheduled executions
+  context         Json?              // Default context
+  priority        String             @default("medium")
+  
+  // Status
+  lastRun         DateTime?
+  nextRun         DateTime?
+  runCount        Int                @default(0)
+  successCount    Int                @default(0)
+  failureCount    Int                @default(0)
+  
+  // Relations
+  workflow        WorkflowTemplate   @relation(fields: [workflowId], references: [id])
+  
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@index([enabled, nextRun])
+  @@index([workflowId])
+}
+
+// Enhanced Knowledge Feeds Management (using existing model)
+
+model AgentFeed {
+  id            String        @id @default(cuid())
+  agentId       String
+  feedId        String
+  
+  // Relations
+  agent         Agent         @relation(fields: [agentId], references: [id])
+  feed          KnowledgeFeed @relation(fields: [feedId], references: [id])
+  
+  createdAt     DateTime      @default(now())
+  
+  @@unique([agentId, feedId])
+}
+
+model ProjectFeed {
+  id            String        @id @default(cuid())
+  projectId     String
+  feedId        String
+  
+  // Relations
+  project       Project       @relation(fields: [projectId], references: [id])
+  feed          KnowledgeFeed @relation(fields: [feedId], references: [id])
+  
+  createdAt     DateTime      @default(now())
+  
+  @@unique([projectId, feedId])
+}
+
+// Chat & Communication
+model ProjectChatSession {
+  id              String              @id @default(cuid())
+  projectId       String
+  name            String?
+  context         Json?               // Chat context and history
+  
+  // Relations
+  project         Project             @relation(fields: [projectId], references: [id])
+  messages        ProjectChatMessage[]
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  @@index([projectId])
+}
+
+model ProjectChatMessage {
+  id              String              @id @default(cuid())
+  sessionId       String
+  role            String              // user, assistant, agent
+  content         String
+  metadata        Json?
+  agentId         String?
+  
+  // Relations
+  session         ProjectChatSession  @relation(fields: [sessionId], references: [id])
+  agent           Agent?              @relation(fields: [agentId], references: [id])
+  
+  createdAt       DateTime            @default(now())
+  
+  @@index([sessionId])
+}
+
+// Mockup & Approval System
+model MockupApproval {
+  id              String            @id @default(cuid())
+  projectId       String
+  name            String
+  description     String?
+  mockupData      Json              // Mockup content
+  status          String            @default("pending") // pending, approved, rejected, needs_changes
+  
+  // Approval workflow
+  approvalComments Json?
+  iterations       Json?            // History of iterations
+  currentIteration Int              @default(1)
+  
+  // Relations
+  project         Project           @relation(fields: [projectId], references: [id])
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@index([projectId])
+  @@index([status])
+}
+
+// Internet Research & Integration
+model ResearchSource {
+  id          String    @id @default(cuid())
+  name        String
+  type        String    // website, api, documentation, repository
+  url         String?
+  apiConfig   Json?     // API configuration if applicable
+  metadata    Json?
+  active      Boolean   @default(true)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ResearchQuery {
+  id          String        @id @default(cuid())
+  query       String
+  agentId     String
+  projectId   String?
+  results     Json?         // Research results
+  sources     Json?         // Used sources
+  
+  // Relations
+  agent       Agent         @relation(fields: [agentId], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  
+  @@index([agentId])
+}
+
+model ProjectChat {
+  id          String   @id @default(cuid())
+  projectId   String
+  sessionId   String   @default(cuid())
+  role        String // 'user', 'assistant', 'agent'
+  agentType   String? // Which agent is speaking
+  content     String
+  metadata    Json? // Context, attachments, etc.
+  parentId    String? // For threaded conversations
+  isImportant Boolean  @default(false)
+  timestamp   DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_chats")
+}
+
+model AgentService {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  type        String // Agent type identifier
+  endpoint    String? // Service endpoint if running separately
+  status      String    @default("stopped") // 'running', 'stopped', 'error'
+  port        Int?
+  processId   String?
+  config      Json?
+  resources   Json? // CPU, memory limits
+  permissions Json? // What this agent can access
+  healthCheck DateTime?
+  logs        String? // JSON array of recent logs
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("agent_services")
+}
+
+model TaskAssignment {
+  id             String    @id @default(cuid())
+  taskId         String
+  fromAgentId    String?
+  toAgentId      String?
+  toUserId       String? // For escalation to human
+  type           String // 'assignment', 'escalation', 'collaboration'
+  status         String    @default("pending") // 'pending', 'accepted', 'rejected', 'completed'
+  message        String?
+  priority       String    @default("medium")
+  dueDate        DateTime?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  acknowledgedAt DateTime?
+
+  // Relations
+  task      Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fromAgent Agent? @relation("AssignmentFrom", fields: [fromAgentId], references: [id])
+  toAgent   Agent? @relation("AssignmentTo", fields: [toAgentId], references: [id])
+
+  @@map("task_assignments")
+}

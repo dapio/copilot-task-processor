@@ -62,7 +62,7 @@ export class ApiService {
   // Generic request method with security features
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {},
+    options: any = {},
     config: RequestConfig = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -94,7 +94,7 @@ export class ApiService {
     }
 
     // Prepare request options
-    const requestOptions: RequestInit = {
+    const requestOptions: any = {
       ...options,
       headers,
       signal: this.createTimeoutSignal(config.timeout || DEFAULT_TIMEOUT),
@@ -112,7 +112,7 @@ export class ApiService {
   // Execute request with retry logic
   private async executeWithRetry<T>(
     url: string,
-    options: RequestInit,
+    options: any,
     retryConfig: RetryConfig,
     requestId: string,
     attempt: number = 1

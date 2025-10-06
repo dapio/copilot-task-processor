@@ -1,0 +1,32 @@
+/* Admin Panel Loading Styles */
+
+.loadingContainer {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.loadingContent {
+  text-align: center;
+}
+
+.loadingIcon {
+  font-size: 48px;
+  margin-bottom: 1rem;
+}
+
+.loadingTitle {
+  font-size: 24px;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.loadingText {
+  font-size: 16px;
+  opacity: 0.8;
+  margin: 0;
+}

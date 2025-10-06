@@ -4,7 +4,11 @@
  */
 
 import { PrismaClient, Workflow, WorkflowStep } from '@prisma/client';
-import { TaskExecutionEngine, ExecutionResult, StepResult } from './task-execution.engine';
+import {
+  TaskExecutionEngine,
+  ExecutionResult,
+  StepResult,
+} from './task-execution.engine';
 
 export interface WorkflowExecutionOptions {
   continueOnError?: boolean;
@@ -61,16 +65,21 @@ export class WorkflowOrchestrator {
       }
 
       const workflowData = workflow.data;
-      const steps = workflowData.steps.sort((a, b) => a.stepNumber - b.stepNumber);
+      const steps = workflowData.steps.sort(
+        (a, b) => a.stepNumber - b.stepNumber
+      );
 
       // 2. Validate workflow execution readiness
-      const validationResult = await this.validateWorkflowExecution(workflowData);
+      const validationResult =
+        await this.validateWorkflowExecution(workflowData);
       if (!validationResult.success) {
         return validationResult;
       }
 
       // 3. Update workflow status to 'running'
-      await this.updateWorkflowStatus(workflowId, 'running', { startedAt: new Date() });
+      await this.updateWorkflowStatus(workflowId, 'running', {
+        startedAt: new Date(),
+      });
 
       // 4. Execute steps based on execution mode
       const stepResults = new Map<string, StepResult>();
@@ -109,8 +118,8 @@ export class WorkflowOrchestrator {
       );
 
       // 6. Update workflow final status
-      await this.updateWorkflowStatus(workflowId, finalStatus, { 
-        completedAt: new Date() 
+      await this.updateWorkflowStatus(workflowId, finalStatus, {
+        completedAt: new Date(),
       });
 
       const duration = Date.now() - startTime;
@@ -125,10 +134,9 @@ export class WorkflowOrchestrator {
       };
 
       return { success: true, data: result };
-
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      
+
       // Update workflow to failed status
       await this.updateWorkflowStatus(workflowId, 'failed', {
         completedAt: new Date(),
@@ -140,8 +148,9 @@ export class WorkflowOrchestrator {
           code: 'WORKFLOW_EXECUTION_ERROR',
           message: error.message,
           workflowId,
-          details: { error, duration }
-        }
+          retryable: false,
+          details: { error, duration },
+        },
       };
     }
   }
@@ -192,7 +201,10 @@ export class WorkflowOrchestrator {
         };
         errors.push(error);
         hasErrors = true;
-        console.error(`❌ Step ${step.stepNumber} failed:`, stepResult.error.message);
+        console.error(
+          `❌ Step ${step.stepNumber} failed:`,
+          stepResult.error.message
+        );
 
         if (!options.continueOnError) {
           break;
@@ -231,10 +243,10 @@ export class WorkflowOrchestrator {
     // Execute in batches
     for (let i = 0; i < executableSteps.length; i += maxConcurrent) {
       const batch = executableSteps.slice(i, i + maxConcurrent);
-      
+
       console.log(`Executing batch of ${batch.length} steps in parallel`);
 
-      const batchPromises = batch.map(async (step) => {
+      const batchPromises = batch.map(async step => {
         const stepResult = await this.taskEngine.executeWorkflowStep(step.id);
         return { step, result: stepResult };
       });
@@ -245,7 +257,7 @@ export class WorkflowOrchestrator {
       for (const promiseResult of batchResults) {
         if (promiseResult.status === 'fulfilled') {
           const { step, result } = promiseResult.value;
-          
+
           if (result.success) {
             stepResults.set(step.id, result.data);
             completedSteps++;
@@ -258,7 +270,10 @@ export class WorkflowOrchestrator {
             };
             errors.push(error);
             hasErrors = true;
-            console.error(`❌ Step ${step.stepNumber} failed:`, result.error.message);
+            console.error(
+              `❌ Step ${step.stepNumber} failed:`,
+              result.error.message
+            );
           }
         } else {
           errors.push({
@@ -301,12 +316,12 @@ export class WorkflowOrchestrator {
             code: 'WORKFLOW_NOT_FOUND',
             message: `Workflow ${workflowId} not found`,
             workflowId,
-          }
+            retryable: false,
+          },
         };
       }
 
       return { success: true, data: workflow };
-
     } catch (error: any) {
       return {
         success: false,
@@ -314,8 +329,9 @@ export class WorkflowOrchestrator {
           code: 'WORKFLOW_LOAD_ERROR',
           message: `Failed to load workflow: ${error.message}`,
           workflowId,
-          details: error
-        }
+          retryable: true,
+          details: error,
+        },
       };
     }
   }
@@ -334,7 +350,8 @@ export class WorkflowOrchestrator {
           code: 'NO_STEPS_FOUND',
           message: 'Workflow has no steps to execute',
           workflowId: workflow.id,
-        }
+          retryable: false,
+        },
       };
     }
 
@@ -346,12 +363,15 @@ export class WorkflowOrchestrator {
           code: 'WORKFLOW_ALREADY_RUNNING',
           message: 'Workflow is already running',
           workflowId: workflow.id,
-        }
+          retryable: true,
+        },
       };
     }
 
     // Validate step sequence
-    const stepNumbers = workflow.steps.map(s => s.stepNumber).sort((a, b) => a - b);
+    const stepNumbers = workflow.steps
+      .map(s => s.stepNumber)
+      .sort((a, b) => a - b);
     for (let i = 0; i < stepNumbers.length; i++) {
       if (stepNumbers[i] !== i + 1) {
         return {
@@ -360,7 +380,8 @@ export class WorkflowOrchestrator {
             code: 'INVALID_STEP_SEQUENCE',
             message: `Step sequence is invalid. Expected step ${i + 1}, found ${stepNumbers[i]}`,
             workflowId: workflow.id,
-          }
+            retryable: false,
+          },
         };
       }
     }
@@ -398,7 +419,7 @@ export class WorkflowOrchestrator {
     if (completedSteps === totalSteps && !hasErrors) {
       return 'completed';
     }
-    
+
     if (completedSteps === 0 || (!continueOnError && hasErrors)) {
       return 'failed';
     }
@@ -416,13 +437,14 @@ export class WorkflowOrchestrator {
   /**
    * Cancel workflow execution
    */
-  async cancelWorkflowExecution(workflowId: string): Promise<ExecutionResult<void>> {
+  async cancelWorkflowExecution(
+    workflowId: string
+  ): Promise<ExecutionResult<void>> {
     try {
       await this.updateWorkflowStatus(workflowId, 'cancelled');
       this.activeExecutions.delete(workflowId);
 
       return { success: true, data: undefined };
-
     } catch (error: any) {
       return {
         success: false,
@@ -430,8 +452,9 @@ export class WorkflowOrchestrator {
           code: 'CANCEL_ERROR',
           message: error.message,
           workflowId,
-          details: error
-        }
+          retryable: true,
+          details: error,
+        },
       };
     }
   }
@@ -465,13 +488,20 @@ export class WorkflowOrchestrator {
             code: 'WORKFLOW_NOT_FOUND',
             message: `Workflow ${workflowId} not found`,
             workflowId,
-          }
+            retryable: false,
+          },
         };
       }
 
-      const completedSteps = workflow.steps.filter(s => s.status === 'completed').length;
-      const failedSteps = workflow.steps.filter(s => s.status === 'failed').length;
-      const runningSteps = workflow.steps.filter(s => s.status === 'running').length;
+      const completedSteps = workflow.steps.filter(
+        s => s.status === 'completed'
+      ).length;
+      const failedSteps = workflow.steps.filter(
+        s => s.status === 'failed'
+      ).length;
+      const runningSteps = workflow.steps.filter(
+        s => s.status === 'running'
+      ).length;
 
       return {
         success: true,
@@ -482,12 +512,13 @@ export class WorkflowOrchestrator {
             completed: completedSteps,
             failed: failedSteps,
             running: runningSteps,
-            percentage: workflow.steps.length > 0 ? 
-              Math.round((completedSteps / workflow.steps.length) * 100) : 0,
-          }
-        }
+            percentage:
+              workflow.steps.length > 0
+                ? Math.round((completedSteps / workflow.steps.length) * 100)
+                : 0,
+          },
+        },
       };
-
     } catch (error: any) {
       return {
         success: false,
@@ -495,8 +526,9 @@ export class WorkflowOrchestrator {
           code: 'STATUS_FETCH_ERROR',
           message: error.message,
           workflowId,
-          details: error
-        }
+          retryable: true,
+          details: error,
+        },
       };
     }
   }

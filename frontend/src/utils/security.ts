@@ -4,6 +4,10 @@
  * Sanitize HTML content to prevent XSS attacks
  */
 export const sanitizeHtml = (input: string): string => {
+  if (typeof document === 'undefined') {
+    // Server-side fallback - basic sanitization
+    return input.replace(/[<>]/g, '');
+  }
   const element = document.createElement('div');
   element.innerText = input;
   return element.innerHTML;
@@ -51,7 +55,7 @@ export const isValidUrl = (url: string): boolean => {
  * Validate GitHub repository URL
  */
 export const isValidGitHubUrl = (url: string): boolean => {
-  const githubRegex = /^https:\/\/github\.com\/[\w\-\.]+\/[\w\-\.]+$/;
+  const githubRegex = /^https:\/\/github\.com\/[\w\-.]+\/[\w\-.]+$/;
   return githubRegex.test(url);
 };
 
@@ -59,7 +63,7 @@ export const isValidGitHubUrl = (url: string): boolean => {
  * Validate BitBucket repository URL
  */
 export const isValidBitBucketUrl = (url: string): boolean => {
-  const bitbucketRegex = /^https:\/\/bitbucket\.org\/[\w\-\.]+\/[\w\-\.]+$/;
+  const bitbucketRegex = /^https:\/\/bitbucket\.org\/[\w\-.]+\/[\w\-.]+$/;
   return bitbucketRegex.test(url);
 };
 
@@ -67,7 +71,7 @@ export const isValidBitBucketUrl = (url: string): boolean => {
  * Validate Azure DevOps repository URL
  */
 export const isValidAzureReposUrl = (url: string): boolean => {
-  const azureRegex = /^https:\/\/dev\.azure\.com\/[\w\-\.]+\/[\w\-\.]+$/;
+  const azureRegex = /^https:\/\/dev\.azure\.com\/[\w\-.]+\/[\w\-.]+$/;
   return azureRegex.test(url);
 };
 
@@ -75,7 +79,7 @@ export const isValidAzureReposUrl = (url: string): boolean => {
  * Validate GitLab repository URL
  */
 export const isValidGitLabUrl = (url: string): boolean => {
-  const gitlabRegex = /^https:\/\/gitlab\.com\/[\w\-\.]+\/[\w\-\.]+$/;
+  const gitlabRegex = /^https:\/\/gitlab\.com\/[\w\-.]+\/[\w\-.]+$/;
   return gitlabRegex.test(url);
 };
 
@@ -83,7 +87,7 @@ export const isValidGitLabUrl = (url: string): boolean => {
  * Validate project name
  */
 export const isValidProjectName = (name: string): boolean => {
-  return name.length >= 2 && name.length <= 100 && /^[\w\s\-\.]+$/.test(name);
+  return name.length >= 2 && name.length <= 100 && /^[\w\s\-.]+$/.test(name);
 };
 
 /**
@@ -91,7 +95,7 @@ export const isValidProjectName = (name: string): boolean => {
  */
 export const isValidBranchName = (branch: string): boolean => {
   return (
-    branch.length >= 1 && branch.length <= 100 && /^[\w\-\/\.]+$/.test(branch)
+    branch.length >= 1 && branch.length <= 100 && /^[\w\-/.]+$/.test(branch)
   );
 };
 
@@ -222,7 +226,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: any;
 
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
