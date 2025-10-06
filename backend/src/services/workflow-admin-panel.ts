@@ -136,21 +136,23 @@ Always ask clarifying questions and provide detailed explanations for your recom
     createdBy: string;
     initialPrompt?: string;
   }): Promise<string> {
-    const sessionId = `workflow_creation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `workflow_creation_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     // Stwórz chat session
-    const chatSessionId = await this.chatService.createChatSession({
-      contextId: this.adminContextId,
-      contextType: 'agent',
-      title: options.title || 'New Workflow Creation',
-      activeProviders: ['github-copilot'],
-      settings: {
-        contextAware: true,
-        workspaceAccess: false,
-        autoSave: true,
-        multiProvider: false,
-      },
-    });
+    const sessionResult = await this.chatService.createSession(
+      this.adminContextId,
+      'agent'
+    );
+
+    if (!sessionResult.success) {
+      throw new Error(
+        `Failed to create chat session: ${sessionResult.error.message}`
+      );
+    }
+
+    const chatSessionId = sessionResult.data.id;
 
     // Stwórz workflow creation session
     const creationSession: WorkflowCreationSession = {
@@ -282,7 +284,9 @@ Please describe your project and what you want to achieve with the workflow.`;
         success: false,
         error: {
           code: 'PROCESSING_ERROR',
-          message: `Failed to process message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `Failed to process message: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
           retryable: true,
         },
       };
@@ -317,8 +321,12 @@ ${session.conversationHistory.join('\n')}
 Extracted Information:
 - Project Type: ${session.extractedInformation.projectType}
 - Complexity: ${session.extractedInformation.complexity}
-- Technical Requirements: ${session.extractedInformation.technicalRequirements?.join(', ')}
-- Business Requirements: ${session.extractedInformation.businessRequirements?.join(', ')}
+- Technical Requirements: ${session.extractedInformation.technicalRequirements?.join(
+        ', '
+      )}
+- Business Requirements: ${session.extractedInformation.businessRequirements?.join(
+        ', '
+      )}
 - Stakeholders: ${session.extractedInformation.stakeholders?.join(', ')}
 
 Please generate a detailed workflow template with:
@@ -363,7 +371,9 @@ Format the response as a structured workflow definition.`;
         success: false,
         error: {
           code: 'GENERATION_ERROR',
-          message: `Failed to generate workflow: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `Failed to generate workflow: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
           retryable: true,
         },
       };
@@ -399,14 +409,18 @@ Format the response as a structured workflow definition.`;
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message: `Workflow validation failed: ${validationResult.errors.join(', ')}`,
+            message: `Workflow validation failed: ${validationResult.errors.join(
+              ', '
+            )}`,
             retryable: false,
           },
         };
       }
 
       // Wygeneruj unikalne ID dla workflow
-      const workflowId = `custom_workflow_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const workflowId = `custom_workflow_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
 
       const finalWorkflow: WorkflowTemplateEnhanced = {
         ...(session.workflowInProgress as WorkflowTemplateEnhanced),
@@ -457,7 +471,9 @@ Thank you for using the Workflow Admin Panel!`,
         success: false,
         error: {
           code: 'FINALIZATION_ERROR',
-          message: `Failed to finalize workflow: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `Failed to finalize workflow: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
           retryable: true,
         },
       };

@@ -1,0 +1,348 @@
+/* Dashboard Entry Point Styles */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="1"/></g></svg>')
+    repeat;
+  pointer-events: none;
+}
+
+.welcomeCard {
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.6s ease-out;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.logoIcon {
+  width: 48px;
+  height: 48px;
+  color: #3b82f6;
+}
+
+.logoText {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.welcome {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+}
+
+.enterButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  text-decoration: none;
+}
+
+.enterButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+}
+
+.enterButton:active {
+  transform: translateY(0);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.feature {
+  text-align: center;
+}
+
+.featureIcon {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 0.75rem;
+  color: #3b82f6;
+}
+
+.featureTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.featureDescription {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.statusIndicator {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: #065f46;
+  font-weight: 500;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Loading states */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #6b7280;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  color: #3b82f6;
+}
+
+.loadingText {
+  font-size: 0.875rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error states */
+.error {
+  text-align: center;
+  color: #dc2626;
+  padding: 1rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.errorTitle {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.retryButton {
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retryButton:hover {
+  background: #b91c1c;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .welcomeCard {
+    padding: 2rem;
+  }
+
+  .logoText {
+    font-size: 1.5rem;
+  }
+
+  .welcome {
+    font-size: 1.125rem;
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+  }
+
+  .enterButton {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .statusIndicator {
+    position: static;
+    margin-bottom: 1rem;
+    align-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcomeCard {
+    padding: 1.5rem;
+  }
+
+  .logoIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logoText {
+    font-size: 1.25rem;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: left;
+  }
+
+  .featureIcon {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .featureContent {
+    flex: 1;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+  }
+
+  .welcomeCard {
+    background: rgba(31, 41, 55, 0.95);
+    color: #f9fafb;
+  }
+
+  .logoText {
+    color: #f9fafb;
+  }
+
+  .welcome {
+    color: #e5e7eb;
+  }
+
+  .subtitle {
+    color: #9ca3af;
+  }
+
+  .featureTitle {
+    color: #e5e7eb;
+  }
+
+  .featureDescription {
+    color: #9ca3af;
+  }
+}

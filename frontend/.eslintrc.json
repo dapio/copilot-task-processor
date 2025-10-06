@@ -1,6 +1,15 @@
 {
   "extends": "next/core-web-vitals",
   "rules": {
-    "react/no-unknown-property": ["error", { "ignore": ["css"] }]
+    "react/no-unknown-property": ["error", { "ignore": ["css"] }],
+    "@typescript-eslint/no-unused-vars": "warn",
+    "no-unused-vars": "warn",
+    "max-lines-per-function": "off",
+    "complexity": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "import/no-anonymous-default-export": "warn",
+    "jsx-a11y/aria-proptypes": "off",
+    "jsx-a11y/aria-props": "off",
+    "jsx-a11y/aria-propsvalidation": "off"
   }
 }

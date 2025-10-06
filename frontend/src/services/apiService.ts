@@ -332,34 +332,4 @@ export class ApiService {
 // Singleton instance
 export const apiService = new ApiService();
 
-// Mock API responses for development
-export const mockApiService = {
-  // Simulate network delay
-  async simulateDelay(min: number = 200, max: number = 1000): Promise<void> {
-    const delay = Math.random() * (max - min) + min;
-    await new Promise(resolve => setTimeout(resolve, delay));
-  },
-
-  // Simulate random failures
-  simulateFailure(failureRate: number = 0.1): void {
-    if (Math.random() < failureRate) {
-      throw new ApiError(500, 'Simulated server error', 'MOCK_ERROR');
-    }
-  },
-
-  // Mock successful response
-  mockSuccess<T>(data: T): ApiResponse<T> {
-    return {
-      data,
-      status: 200,
-      timestamp: new Date().toISOString(),
-    };
-  },
-
-  // Mock error response
-  mockError(status: number, message: string, code?: string): never {
-    throw new ApiError(status, message, code);
-  },
-};
-
 export default apiService;

@@ -3,7 +3,7 @@
  * Handles ML-powered chat conversations at project level with context management
  */
 
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import {
   IMLProvider,
   Result,

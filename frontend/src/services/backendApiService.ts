@@ -1,4 +1,4 @@
-import { ApiResponse, ApiError } from './apiService';
+import { ApiError } from './apiService';
 
 // Backend API Response interface
 export interface BackendResponse<T = any> {
@@ -142,8 +142,9 @@ export interface TaskProcessingResult {
 export class BackendApiService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'http://localhost:3002/api') {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl?: string) {
+    this.baseUrl =
+      baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
   }
 
   /**
@@ -172,7 +173,7 @@ export class BackendApiService {
       const formData = new FormData();
 
       // Add files
-      request.files.forEach((file, index) => {
+      request.files.forEach(file => {
         formData.append('files', file, file.name);
       });
 
@@ -289,9 +290,7 @@ export class BackendApiService {
 }
 
 // Export singleton instance
-export const backendApiService = new BackendApiService(
-  'http://localhost:3002/api'
-);
+export const backendApiService = new BackendApiService();
 
 // Export helper functions
 export const createDocumentAnalysisRequest = (

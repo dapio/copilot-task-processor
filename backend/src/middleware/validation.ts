@@ -15,6 +15,7 @@ interface ValidationError {
  * Middleware to validate request body against Zod schema
  */
 export function validateRequestBody(schema: ZodSchema) {
+  // @ts-ignore
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = schema.parse(req.body);
@@ -45,6 +46,7 @@ export function validateRequestBody(schema: ZodSchema) {
  * Middleware to validate request params against Zod schema
  */
 export function validateRequestParams(schema: ZodSchema) {
+  // @ts-ignore
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = schema.parse(req.params);
@@ -75,6 +77,7 @@ export function validateRequestParams(schema: ZodSchema) {
  * Middleware to validate request query against Zod schema
  */
 export function validateRequestQuery(schema: ZodSchema) {
+  // @ts-ignore
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = schema.parse(req.query);

@@ -1,39 +1,36 @@
 import { Router, Request, Response } from 'express';
-import { createMockWorkflowEngine } from '../services/mock-workflow-engine.service';
+import { RealWorkflowService } from '../services/real-workflow-service';
 
 /**
- * Create workflow execution routes using mock engine
+ * Create workflow execution routes using real workflow service
  */
 export function createExecutionRoutes(): Router {
   const router = Router();
 
-  // Use mock engine for now
-  const mockEngine = createMockWorkflowEngine();
+  // Use real workflow service
+  const workflowService = new RealWorkflowService();
 
   /**
    * GET /executions - List all workflow executions
    */
   router.get('/', async (req: Request, res: Response) => {
     try {
-      const result = await mockEngine.getExecutionHistory();
+      const workflowId = req.query.workflowId as string;
+      const limit = parseInt(req.query.limit as string) || 50;
 
-      if (result.success) {
-        res.json({
-          success: true,
-          data: result.data,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          error: 'Failed to load executions',
-          timestamp: new Date().toISOString(),
-        });
-      }
-    } catch {
+      const executions = await workflowService.getExecutions(workflowId, limit);
+
+      res.json({
+        success: true,
+        data: executions,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
       res.status(500).json({
         success: false,
-        error: 'Internal server error',
+        error: `Failed to load executions: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
         timestamp: new Date().toISOString(),
       });
     }
@@ -45,25 +42,27 @@ export function createExecutionRoutes(): Router {
   router.get('/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const result = await mockEngine.getExecution(id);
 
-      if (result.success) {
-        res.json({
-          success: true,
-          data: result.data,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        res.status(404).json({
+      const execution = await workflowService.getExecutionById(id);
+      if (!execution) {
+        return res.status(404).json({
           success: false,
           error: 'Execution not found',
           timestamp: new Date().toISOString(),
         });
       }
-    } catch {
+
+      res.json({
+        success: true,
+        data: execution,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
       res.status(500).json({
         success: false,
-        error: 'Internal server error',
+        error: `Failed to get execution: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
         timestamp: new Date().toISOString(),
       });
     }

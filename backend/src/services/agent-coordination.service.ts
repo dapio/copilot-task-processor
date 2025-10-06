@@ -3,7 +3,7 @@
  * Manages agent communication, task assignment, and workflow synchronization
  */
 
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import {
   IMLProvider,
   Result,

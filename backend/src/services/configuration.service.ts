@@ -3,7 +3,7 @@
  * Centralized system for managing all platform configurations in database
  */
 
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { Result, MLError } from '../providers/ml-provider.interface';
 
 export interface ConfigurationItem {

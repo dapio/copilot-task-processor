@@ -1,9 +1,11 @@
 /**
  * Internet Research Service
- * Enables agents to search and gather information from the internet
+ * Provides agents with comprehensive web research capabilities
+ * Handles search queries, content extraction, and knowledge aggregation
  */
 
-import { PrismaClient } from '../generated/prisma';
+import { EventEmitter } from 'events';
+import { PrismaClient } from '@prisma/client';
 import { Result, MLError } from '../providers/ml-provider.interface';
 
 export interface ResearchRequest {

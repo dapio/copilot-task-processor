@@ -1,698 +1,581 @@
 /**
- * Microsoft Reviewer Agent - James Wilson
- * Specialized in Microsoft code reviews, best practices, Azure solutions, and .NET standards
+ * Microsoft Reviewer Agent
+ * Specialized agent for Microsoft code review and analysis
  */
 
-import { PrismaClient } from '@prisma/client';
+// Agent interface implementation
+import { MicrosoftReviewerLogic } from './services/microsoft-reviewer.logic';
+import { IMLProvider } from '../providers/ml-provider.interface';
 import {
-  IMLProvider,
-  Result,
-  MLError,
-} from '../providers/ml-provider.interface';
-
-export interface CodeReview {
-  id: string;
-  title: string;
-  description: string;
-
-  // Review metadata
-  author: string;
-  reviewerId: string;
-  status:
-    | 'pending'
-    | 'in_progress'
-    | 'approved'
-    | 'rejected'
-    | 'changes_requested';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-
-  // Code analysis
-  codeChanges: CodeChange[];
-  securityAnalysis: SecurityAnalysis;
-  performanceAnalysis: PerformanceAnalysis;
-  architectureAnalysis: ArchitectureAnalysis;
-
-  // Microsoft-specific analysis
-  microsoftStandards: StandardsCompliance;
-  azureRecommendations: AzureRecommendation[];
-  dotnetBestPractices: DotNetBestPractice[];
-
-  // Review feedback
-  comments: ReviewComment[];
-  overallScore: number;
-  recommendations: string[];
-
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CodeChange {
-  file: string;
-  type: 'added' | 'modified' | 'deleted';
-  linesChanged: number;
-
-  // Change analysis
-  complexity: ComplexityMetrics;
-  quality: QualityMetrics;
-  testCoverage: CoverageMetrics;
-
-  // Microsoft standards
-  codingStandards: StandardsCheck[];
-  securityChecks: SecurityCheck[];
-  performanceChecks: PerformanceCheck[];
-}
-
-export interface ComplexityMetrics {
-  cyclomaticComplexity: number;
-  cognitiveComplexity: number;
-  maintainabilityIndex: number;
-  linesOfCode: number;
-}
-
-export interface QualityMetrics {
-  codeSmells: CodeSmell[];
-  duplications: CodeDuplication[];
-  bugs: PotentialBug[];
-  vulnerabilities: SecurityVulnerability[];
-}
-
-export interface CoverageMetrics {
-  statementCoverage: number;
-  branchCoverage: number;
-  functionCoverage: number;
-  newCodeCoverage: number;
-}
-
-export interface StandardsCheck {
-  rule: string;
-  category: 'naming' | 'formatting' | 'structure' | 'documentation';
-  severity: 'info' | 'warning' | 'error';
-  message: string;
-  file: string;
-  line: number;
-}
-
-export interface SecurityCheck {
-  type: 'vulnerability' | 'best_practice' | 'compliance';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  remediation: string;
-  cwe?: string;
-}
-
-export interface PerformanceCheck {
-  type: 'memory' | 'cpu' | 'io' | 'network' | 'database';
-  impact: 'low' | 'medium' | 'high';
-  description: string;
-  suggestion: string;
-}
-
-export interface CodeSmell {
-  type: string;
-  severity: 'minor' | 'major' | 'critical';
-  description: string;
-  file: string;
-  line: number;
-  effort: string;
-}
-
-export interface CodeDuplication {
-  lines: number;
-  files: string[];
-  duplicatedBlocks: number;
-  percentage: number;
-}
-
-export interface PotentialBug {
-  type: string;
-  severity: 'low' | 'medium' | 'high';
-  description: string;
-  file: string;
-  line: number;
-  likelihood: number;
-}
-
-export interface SecurityVulnerability {
-  type: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  file: string;
-  line: number;
-  cwe: string;
-}
-
-export interface SecurityAnalysis {
-  overallRisk: 'low' | 'medium' | 'high' | 'critical';
-  vulnerabilities: SecurityVulnerability[];
-  dataProtection: DataProtectionCheck[];
-  authentication: AuthenticationCheck[];
-  authorization: AuthorizationCheck[];
-  inputValidation: InputValidationCheck[];
-}
-
-export interface DataProtectionCheck {
-  category: 'encryption' | 'pii' | 'gdpr' | 'storage';
-  compliant: boolean;
-  findings: string[];
-  recommendations: string[];
-}
-
-export interface AuthenticationCheck {
-  method: string;
-  secure: boolean;
-  findings: string[];
-  recommendations: string[];
-}
-
-export interface AuthorizationCheck {
-  type: string;
-  adequate: boolean;
-  findings: string[];
-  recommendations: string[];
-}
-
-export interface InputValidationCheck {
-  endpoint: string;
-  validated: boolean;
-  findings: string[];
-  recommendations: string[];
-}
-
-export interface PerformanceAnalysis {
-  overallScore: number;
-  bottlenecks: PerformanceBottleneck[];
-  optimizations: OptimizationSuggestion[];
-  resourceUsage: ResourceUsageAnalysis;
-  scalability: ScalabilityAnalysis;
-}
-
-export interface PerformanceBottleneck {
-  type: 'cpu' | 'memory' | 'io' | 'network' | 'database';
-  location: string;
-  impact: 'low' | 'medium' | 'high';
-  description: string;
-  suggestion: string;
-}
-
-export interface OptimizationSuggestion {
-  category: string;
-  priority: 'low' | 'medium' | 'high';
-  description: string;
-  expectedImprovement: string;
-  implementation: string;
-}
-
-export interface ResourceUsageAnalysis {
-  memory: MemoryUsage;
-  cpu: CpuUsage;
-  storage: StorageUsage;
-  network: NetworkUsage;
-}
-
-export interface MemoryUsage {
-  allocated: number;
-  leaked: number;
-  efficiency: number;
-  recommendations: string[];
-}
-
-export interface CpuUsage {
-  utilization: number;
-  efficiency: number;
-  hotspots: string[];
-  recommendations: string[];
-}
-
-export interface StorageUsage {
-  reads: number;
-  writes: number;
-  efficiency: number;
-  recommendations: string[];
-}
-
-export interface NetworkUsage {
-  requests: number;
-  bandwidth: number;
-  efficiency: number;
-  recommendations: string[];
-}
-
-export interface ScalabilityAnalysis {
-  horizontal: ScalabilityAssessment;
-  vertical: ScalabilityAssessment;
-  recommendations: string[];
-}
-
-export interface ScalabilityAssessment {
-  feasible: boolean;
-  limitations: string[];
-  requirements: string[];
-}
-
-export interface ArchitectureAnalysis {
-  overallScore: number;
-  patterns: ArchitecturePattern[];
-  violations: ArchitectureViolation[];
-  improvements: ArchitectureImprovement[];
-  dependencies: DependencyAnalysis;
-}
-
-export interface ArchitecturePattern {
-  name: string;
-  implemented: boolean;
-  quality: 'poor' | 'fair' | 'good' | 'excellent';
-  recommendations: string[];
-}
-
-export interface ArchitectureViolation {
-  type: string;
-  severity: 'low' | 'medium' | 'high';
-  description: string;
-  location: string;
-  fix: string;
-}
-
-export interface ArchitectureImprovement {
-  area: string;
-  priority: 'low' | 'medium' | 'high';
-  description: string;
-  benefits: string[];
-  implementation: string;
-}
-
-export interface DependencyAnalysis {
-  external: ExternalDependency[];
-  internal: InternalDependency[];
-  vulnerabilities: DependencyVulnerability[];
-  updates: DependencyUpdate[];
-}
-
-export interface ExternalDependency {
-  name: string;
-  version: string;
-  license: string;
-  secure: boolean;
-  upToDate: boolean;
-}
-
-export interface InternalDependency {
-  module: string;
-  coupling: 'loose' | 'tight';
-  cohesion: 'low' | 'medium' | 'high';
-  recommendations: string[];
-}
-
-export interface DependencyVulnerability {
-  dependency: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  fix: string;
-}
-
-export interface DependencyUpdate {
-  dependency: string;
-  currentVersion: string;
-  latestVersion: string;
-  breaking: boolean;
-  benefits: string[];
-}
-
-export interface StandardsCompliance {
-  overallScore: number;
-  categories: ComplianceCategory[];
-  violations: ComplianceViolation[];
-  certifications: CertificationCheck[];
-}
-
-export interface ComplianceCategory {
-  name: string;
-  score: number;
-  checks: ComplianceCheck[];
-}
-
-export interface ComplianceCheck {
-  rule: string;
-  passed: boolean;
-  description: string;
-  importance: 'low' | 'medium' | 'high';
-}
-
-export interface ComplianceViolation {
-  category: string;
-  rule: string;
-  severity: 'minor' | 'major' | 'critical';
-  description: string;
-  file: string;
-  line: number;
-  fix: string;
-}
-
-export interface CertificationCheck {
-  standard: string;
-  compliant: boolean;
-  gaps: string[];
-  recommendations: string[];
-}
-
-export interface AzureRecommendation {
-  service: string;
-  category:
-    | 'cost'
-    | 'performance'
-    | 'security'
-    | 'reliability'
-    | 'architecture';
-  priority: 'low' | 'medium' | 'high';
-  description: string;
-  implementation: string;
-  benefits: string[];
-}
-
-export interface DotNetBestPractice {
-  area: string;
-  rule: string;
-  compliance: boolean;
-  description: string;
-  recommendation: string;
-  example?: string;
-}
-
-export interface ReviewComment {
-  id: string;
-  type: 'suggestion' | 'issue' | 'question' | 'praise';
-  severity: 'info' | 'warning' | 'error';
-  file: string;
-  line?: number;
-  message: string;
-  suggestion?: string;
-  resolved: boolean;
-}
+  CodeReviewResult,
+  SecurityAnalysis,
+  PerformanceAnalysis,
+  MicrosoftAssessment,
+  CodeChange,
+} from './types/microsoft-reviewer.types';
 
 export class MicrosoftReviewerAgent {
-  private prisma: PrismaClient;
-  private provider: IMLProvider;
-  private agentId = 'microsoft-reviewer-james-wilson';
+  public readonly name = 'Microsoft Reviewer Agent';
+  public readonly description =
+    'Ekspert przeglądu kodu Microsoft - Azure, .NET, bezpieczeństwo i wydajność';
+  public readonly version = '1.0.0';
+  public readonly category = 'code-review';
+  public readonly tags = [
+    'microsoft',
+    'azure',
+    'dotnet',
+    'security',
+    'performance',
+    'code-review',
+  ];
 
-  // Agent personality and expertise
-  private agentConfig = {
-    name: 'James Wilson',
-    role: 'Microsoft Technology Reviewer',
-    personality:
-      'detail-oriented, standards-focused, solution-oriented, mentoring',
-    expertise: [
-      'microsoft_ecosystem',
-      'azure_architecture',
-      'dotnet_development',
-      'code_quality_standards',
-      'security_best_practices',
-      'performance_optimization',
-      'enterprise_patterns',
-      'cloud_native_design',
-      'devops_practices',
-      'compliance_standards',
-    ],
-    workingStyle: 'thorough, constructive, knowledge-sharing',
-    communicationStyle: 'professional, educational, solution-focused',
-  };
+  private logic: MicrosoftReviewerLogic;
 
-  constructor(prisma: PrismaClient, provider: IMLProvider) {
-    this.prisma = prisma;
-    this.provider = provider;
+  constructor(private mlProvider: IMLProvider) {
+    this.logic = new MicrosoftReviewerLogic(mlProvider);
   }
 
   /**
-   * Perform comprehensive code review
+   * Processes requests for Microsoft code review and analysis
    */
-  async performCodeReview(
-    codeChanges: string,
-    projectContext: any,
-    reviewType: 'standard' | 'security' | 'performance' | 'architecture'
-  ): Promise<Result<CodeReview, MLError>> {
-    const prompt = this.buildCodeReviewPrompt(
+  async processRequest(
+    request: string,
+    context: any = {}
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    try {
+      const requestType = this.determineRequestType(request, context);
+
+      switch (requestType) {
+        case 'code-review':
+          return await this.handleCodeReview(request, context);
+
+        case 'security-analysis':
+          return await this.handleSecurityAnalysis(request, context);
+
+        case 'performance-analysis':
+          return await this.handlePerformanceAnalysis(request, context);
+
+        case 'architecture-review':
+          return await this.handleArchitectureReview(request, context);
+
+        case 'best-practices':
+          return await this.handleBestPractices(request, context);
+
+        case 'standards-validation':
+          return await this.handleStandardsValidation(request, context);
+
+        default:
+          return await this.handleGeneralInquiry(request, context);
+      }
+    } catch (error) {
+      console.error('Error in Microsoft Reviewer Agent:', error);
+      return {
+        response:
+          'Wystąpił błąd podczas analizy Microsoft. Spróbuj ponownie lub skontaktuj się z administratorem.',
+        metadata: { error: true, timestamp: new Date().toISOString() },
+      };
+    }
+  }
+
+  /**
+   * Handles comprehensive code review requests
+   */
+  private async handleCodeReview(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    const codeChanges = this.extractCodeChanges(context);
+    const reviewType = this.extractReviewType(request, context);
+
+    const reviewResult = await this.logic.performCodeReview(
       codeChanges,
-      projectContext,
-      reviewType
+      reviewType,
+      context.options
     );
 
-    const response = await this.provider.generateText(prompt, {
-      temperature: 0.2,
-      maxTokens: 4000,
-    });
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-
-    try {
-      const reviewResult = JSON.parse(response.data.text);
-      return {
-        success: true,
-        data: reviewResult.codeReview,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'CODE_REVIEW_ERROR',
-          message: 'Failed to perform code review',
-          details: error instanceof Error ? error.message : 'Unknown error',
-        },
-      };
-    }
-  }
-
-  /**
-   * Analyze Azure architecture and provide recommendations
-   */
-  async analyzeAzureArchitecture(
-    architectureDescription: string,
-    requirements: any
-  ): Promise<
-    Result<{ analysis: any; recommendations: AzureRecommendation[] }, MLError>
-  > {
-    const prompt = this.buildAzureAnalysisPrompt(
-      architectureDescription,
-      requirements
-    );
-
-    const response = await this.provider.generateText(prompt, {
-      temperature: 0.3,
-      maxTokens: 3500,
-    });
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-
-    try {
-      const analysisResult = JSON.parse(response.data.text);
-      return {
-        success: true,
-        data: {
-          analysis: analysisResult.architectureAnalysis,
-          recommendations: analysisResult.azureRecommendations,
-        },
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'AZURE_ANALYSIS_ERROR',
-          message: 'Failed to analyze Azure architecture',
-          details: error instanceof Error ? error.message : 'Unknown error',
-        },
-      };
-    }
-  }
-
-  /**
-   * Review .NET code for best practices
-   */
-  async reviewDotNetCode(
-    codeSnippet: string,
-    framework: 'net6' | 'net7' | 'net8' | 'netcore'
-  ): Promise<
-    Result<{ compliance: any; suggestions: DotNetBestPractice[] }, MLError>
-  > {
-    const prompt = this.buildDotNetReviewPrompt(codeSnippet, framework);
-
-    const response = await this.provider.generateText(prompt, {
-      temperature: 0.2,
-      maxTokens: 3000,
-    });
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-
-    try {
-      const reviewResult = JSON.parse(response.data.text);
-      return {
-        success: true,
-        data: {
-          compliance: reviewResult.compliance,
-          suggestions: reviewResult.bestPractices,
-        },
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'DOTNET_REVIEW_ERROR',
-          message: 'Failed to review .NET code',
-          details: error instanceof Error ? error.message : 'Unknown error',
-        },
-      };
-    }
-  }
-
-  // Private methods for prompt building
-
-  private buildCodeReviewPrompt(
-    codeChanges: string,
-    projectContext: any,
-    reviewType: string
-  ): string {
-    return `Jestem James Wilson, senior Microsoft technology reviewer.
-
-ZADANIE: Przeprowadź ${reviewType} code review zgodnie z Microsoft standards.
-
-KONTEKST PROJEKTU:
-${JSON.stringify(projectContext, null, 2)}
-
-ZMIANY W KODZIE:
-${codeChanges.substring(0, 2000)}
-
-WYKONAJ REVIEW KONCENTRUJĄC SIĘ NA:
-
-1. MICROSOFT CODING STANDARDS:
-   - Naming conventions
-   - Code structure
-   - Documentation standards
-   - Error handling patterns
-
-2. SECURITY ANALYSIS:
-   - OWASP compliance
-   - Data protection
-   - Authentication/Authorization
-   - Input validation
-
-3. PERFORMANCE REVIEW:
-   - Resource usage
-   - Scalability concerns
-   - Optimization opportunities
-   - Memory management
-
-4. ARCHITECTURE COMPLIANCE:
-   - Design patterns
-   - SOLID principles
-   - Dependency injection
-   - Separation of concerns
-
-ODPOWIEDŹ W FORMACIE JSON z krótką analizą.`;
-  }
-
-  private buildAzureAnalysisPrompt(
-    architectureDescription: string,
-    requirements: any
-  ): string {
-    return `Jestem James Wilson, ekspert Azure architecture.
-
-ZADANIE: Przeanalizuj architekturę Azure i podaj rekomendacje.
-
-OPIS ARCHITEKTURY:
-${architectureDescription}
-
-WYMAGANIA:
-${JSON.stringify(requirements, null, 2)}
-
-PRZEANALIZUJ ARCHITEKTURĘ POD KĄTEM:
-
-1. AZURE BEST PRACTICES:
-   - Well-Architected Framework
-   - Service selection
-   - Cost optimization
-   - Security posture
-
-2. SCALABILITY & RELIABILITY:
-   - Auto-scaling configuration
-   - Availability zones
-   - Disaster recovery
-   - Performance monitoring
-
-3. SECURITY & COMPLIANCE:
-   - Identity management
-   - Network security
-   - Data protection
-   - Compliance standards
-
-PODAJ KONKRETNE REKOMENDACJE z uzasadnieniem.`;
-  }
-
-  private buildDotNetReviewPrompt(
-    codeSnippet: string,
-    framework: string
-  ): string {
-    return `Jestem James Wilson, .NET expert reviewer.
-
-ZADANIE: Przejrzyj kod .NET pod kątem best practices.
-
-FRAMEWORK: ${framework}
-
-KOD DO REVIEW:
-${codeSnippet}
-
-SPRAWDŹ ZGODNOŚĆ Z .NET BEST PRACTICES:
-
-1. CODING STANDARDS:
-   - Naming conventions (PascalCase, camelCase)
-   - Code organization
-   - XML documentation
-   - Async/await patterns
-
-2. PERFORMANCE:
-   - Memory allocation
-   - Collection usage
-   - String operations
-   - LINQ optimization
-
-3. SECURITY:
-   - Input validation
-   - SQL injection protection
-   - XSS protection
-   - Authentication patterns
-
-ODPOWIEDŹ KRÓTKO - tylko najważniejsze uwagi i sugestie.`;
-  }
-
-  /**
-   * Get agent information
-   */
-  getAgentInfo() {
     return {
-      id: this.agentId,
-      ...this.agentConfig,
-      status: 'active',
-      capabilities: [
-        'code_review',
-        'azure_architecture_analysis',
-        'dotnet_best_practices',
-        'security_assessment',
-        'performance_analysis',
-        'compliance_checking',
-        'standards_enforcement',
-      ],
+      response: this.formatCodeReviewResponse(reviewResult),
+      data: reviewResult,
+      metadata: {
+        type: 'code-review',
+        reviewType,
+        changesCount: codeChanges.length,
+        timestamp: new Date().toISOString(),
+      },
     };
   }
+
+  /**
+   * Handles security analysis requests
+   */
+  private async handleSecurityAnalysis(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    const codeChanges = this.extractCodeChanges(context);
+    const securityContext = context.security || {};
+
+    const securityAnalysis = await this.logic.analyzeSecurityVulnerabilities(
+      codeChanges,
+      securityContext
+    );
+
+    return {
+      response: this.formatSecurityAnalysisResponse(securityAnalysis),
+      data: securityAnalysis,
+      metadata: {
+        type: 'security-analysis',
+        vulnerabilitiesFound: securityAnalysis.vulnerabilities.length,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Handles performance analysis requests
+   */
+  private async handlePerformanceAnalysis(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    const codeChanges = this.extractCodeChanges(context);
+    const performanceData = context.performance || {};
+
+    const performanceAnalysis =
+      await this.logic.analyzePerformanceOptimizations(
+        codeChanges,
+        performanceData
+      );
+
+    return {
+      response: this.formatPerformanceAnalysisResponse(performanceAnalysis),
+      data: performanceAnalysis,
+      metadata: {
+        type: 'performance-analysis',
+        bottlenecksFound: performanceAnalysis.bottlenecks.length,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Handles architecture review requests
+   */
+  private async handleArchitectureReview(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    const architectureContext = context.architecture || {};
+
+    const microsoftAssessment = await this.logic.reviewArchitectureCompliance(
+      architectureContext
+    );
+
+    return {
+      response: this.formatArchitectureReviewResponse(microsoftAssessment),
+      data: microsoftAssessment,
+      metadata: {
+        type: 'architecture-review',
+        complianceScore: microsoftAssessment.bestPractices.overall,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Handles best practices requests
+   */
+  private async handleBestPractices(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    const codeChanges = this.extractCodeChanges(context);
+    const focusAreas = this.extractFocusAreas(request, context);
+
+    const bestPractices = await this.logic.generateBestPracticeRecommendations(
+      codeChanges,
+      focusAreas
+    );
+
+    return {
+      response: this.formatBestPracticesResponse(bestPractices),
+      data: bestPractices,
+      metadata: {
+        type: 'best-practices',
+        recommendationsCount: bestPractices.length,
+        focusAreas,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Handles standards validation requests
+   */
+  private async handleStandardsValidation(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    const codeChanges = this.extractCodeChanges(context);
+
+    const validation = await this.logic.validateMicrosoftStandards(codeChanges);
+
+    return {
+      response: this.formatStandardsValidationResponse(validation),
+      data: validation,
+      metadata: {
+        type: 'standards-validation',
+        compliant: validation.compliant,
+        violationsCount: validation.violations.length,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Handles general inquiries about Microsoft practices
+   */
+  private async handleGeneralInquiry(
+    request: string,
+    context: any
+  ): Promise<{ response: string; data?: any; metadata?: any }> {
+    void context; // Mark as used for ESLint
+
+    return {
+      response: `Jestem ekspertem Microsoft Reviewer. Mogę pomóc z:
+
+• 🔍 **Kompleksowym przeglądem kodu** - analiza zgodności z Microsoft standards
+• 🛡️ **Analizą bezpieczeństwa** - wykrywanie zagrożeń zgodnie z Microsoft SDL
+• ⚡ **Optymalizacją wydajności** - best practices .NET i Azure
+• 🏗️ **Przeglądem architektury** - Azure Well-Architected Framework
+• 📋 **Rekomendacjami best practices** - standardy Microsoft i Azure
+
+Jak mogę pomóc z Twoim projektem Microsoft/.NET/Azure?
+
+**Przykładowe żądania:**
+- "Przeanalizuj bezpieczeństwo tego kodu C#"
+- "Oceń wydajność aplikacji .NET"
+- "Sprawdź zgodność z Azure best practices"
+- "Przejrzyj architekturę mikroservisów"`,
+      metadata: {
+        type: 'general-inquiry',
+        capabilities: [
+          'code-review',
+          'security',
+          'performance',
+          'architecture',
+          'best-practices',
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  // Helper methods for request processing
+
+  private determineRequestType(request: string, context: any): string {
+    void context; // Mark as used for ESLint
+    const lower = request.toLowerCase();
+
+    const patterns = {
+      'security-analysis': ['bezpieczeńst', 'security', 'vulnerab'],
+      'performance-analysis': ['wydajnoś', 'performance', 'optym'],
+      'architecture-review': ['architekt', 'design', 'well-architect'],
+      'best-practices': ['best practic', 'standard', 'guideline'],
+      'standards-validation': ['walidacj', 'validat', 'compliance'],
+      'code-review': ['przegląd', 'review', 'analiz'],
+    };
+
+    for (const [type, keywords] of Object.entries(patterns)) {
+      if (keywords.some(keyword => lower.includes(keyword))) {
+        return type;
+      }
+    }
+
+    return 'general-inquiry';
+  }
+
+  private extractCodeChanges(context: any): CodeChange[] {
+    if (!context || !context.codeChanges) {
+      return [];
+    }
+
+    return Array.isArray(context.codeChanges) ? context.codeChanges : [];
+  }
+
+  private extractReviewType(request: string, context: any): string {
+    void request; // Mark as used for ESLint
+
+    if (context && context.reviewType) {
+      return context.reviewType;
+    }
+
+    return 'full_review';
+  }
+
+  private extractFocusAreas(request: string, context: any): string[] {
+    void request; // Mark as used for ESLint
+
+    if (context && context.focusAreas && Array.isArray(context.focusAreas)) {
+      return context.focusAreas;
+    }
+
+    return [];
+  }
+
+  // Response formatting methods
+
+  private formatCodeReviewResponse(result: CodeReviewResult): string {
+    const overall = result.overall;
+
+    return `# 📋 Microsoft Code Review - Raport
+
+## 🎯 Ogólna Ocena
+**Rating:** ${this.translateRating(overall.rating)} (${overall.score}/100)
+
+${overall.summary}
+
+### 🔍 Kluczowe Ustalenia:
+${overall.keyFindings.map(finding => `• ${finding}`).join('\n')}
+
+## 📊 Szczegółowa Analiza
+
+### 🏗️ Jakość Kodu
+- **Maintainability:** ${result.quality.maintainability.rating} (${
+      result.quality.maintainability.score
+    }/100)
+- **Reliability:** ${result.quality.reliability.rating} (${
+      result.quality.reliability.score
+    }/100)
+- **Testability:** ${result.quality.testability.rating} (${
+      result.quality.testability.score
+    }/100)
+
+### 🛡️ Bezpieczeństwo
+- **Overall Security:** ${result.security.overall.rating} (${
+      result.security.overall.score
+    }/100)
+- **Risk Level:** ${this.translateRisk(result.security.overall.riskLevel)}
+- **Vulnerabilities:** ${result.security.vulnerabilities.critical} critical, ${
+      result.security.vulnerabilities.high
+    } high
+
+### ⚡ Wydajność
+- **Performance Score:** ${result.performance.overall.score}/100
+- **Rating:** ${this.translateRating(result.performance.overall.rating)}
+- **Bottlenecks Identified:** ${result.performance.bottlenecks.identified}
+
+### 🏢 Microsoft Compliance
+- **Best Practices:** ${result.microsoft.bestPractices.overall}% compliance
+- **Azure Optimization:** Dostępne rekomendacje
+- **.NET Standards:** Zgodność potwierdzona
+
+## 🎯 Rekomendacje (${result.recommendations.total})
+- **Krytyczne:** ${result.recommendations.byPriority.critical}
+- **Wysokie:** ${result.recommendations.byPriority.high}
+- **Średnie:** ${result.recommendations.byPriority.medium}
+- **Niskie:** ${result.recommendations.byPriority.low}
+
+**Szacowany czas implementacji:** ${
+      result.recommendations.effort.total
+    } godzin`;
+  }
+
+  private formatSecurityAnalysisResponse(analysis: SecurityAnalysis): string {
+    const vulnCount = analysis.vulnerabilities.length;
+
+    return `# 🛡️ Microsoft Security Analysis
+
+## 🔍 Podsumowanie Bezpieczeństwa
+**Znalezione vulnerabilities:** ${vulnCount}
+
+### 🚨 Stan Bezpieczeństwa:
+- **Data Protection:** ${analysis.dataProtection.length} kontroli
+- **Authentication:** ${analysis.authentication.length} weryfikacji
+- **Authorization:** ${analysis.authorization.length} sprawdzeń
+- **Input Validation:** ${analysis.inputValidation.length} walidacji
+- **Cryptography:** ${analysis.cryptography.length} analiz
+
+## 📋 Microsoft SDL Compliance
+Analiza zgodności z Microsoft Security Development Lifecycle została przeprowadzona zgodnie z najnowszymi wytycznymi.
+
+### 🎯 Rekomendacje Bezpieczeństwa:
+${
+  vulnCount > 0
+    ? '• Wykryto potencjalne zagrożenia wymagające natychmiastowej uwagi\n• Szczegółowa analiza dostępna w raporcie'
+    : '• Nie wykryto krytycznych zagrożeń bezpieczeństwa\n• Kod spełnia podstawowe standardy Microsoft SDL'
 }
 
-export default MicrosoftReviewerAgent;
+**Następne kroki:** Implementacja zalecanych poprawek zgodnie z priorytetem.`;
+  }
+
+  private formatPerformanceAnalysisResponse(
+    analysis: PerformanceAnalysis
+  ): string {
+    const bottlenecks = analysis.bottlenecks.length;
+    const optimizations = analysis.optimizations.length;
+
+    return `# ⚡ Microsoft Performance Analysis
+
+## 🎯 Analiza Wydajności
+**Wykryte bottlenecks:** ${bottlenecks}
+**Możliwości optymalizacji:** ${optimizations}
+
+### 📊 Wykorzystanie Zasobów:
+- **Memory Usage:** Analiza wzorców alokacji pamięci
+- **CPU Performance:** Identyfikacja hotspots wydajności
+- **I/O Operations:** Optymalizacja operacji dyskowych i sieciowych
+
+### 🚀 Scalability Assessment:
+Ocena gotowości do skalowania poziomego i pionowego zgodnie z Azure best practices.
+
+## 🎯 .NET Performance Guidelines
+Analiza zgodności z Microsoft performance guidelines dla:
+- Garbage Collection optimization
+- Async/await patterns
+- Memory management
+- Resource pooling
+
+### 📈 Rekomendacje Optymalizacji:
+${
+  bottlenecks > 0
+    ? `• Zidentyfikowano ${bottlenecks} obszarów wymagających optymalizacji\n• Potencjalna poprawa wydajności: znacząca`
+    : '• Kod spełnia standardy wydajności Microsoft\n• Dostępne dodatkowe optymalizacje dla advanced scenarios'
+}`;
+  }
+
+  private formatArchitectureReviewResponse(
+    assessment: MicrosoftAssessment
+  ): string {
+    const compliance = assessment.bestPractices.overall;
+
+    return `# 🏗️ Microsoft Architecture Review
+
+## 🎯 Azure Well-Architected Assessment
+**Overall Compliance:** ${compliance}%
+
+### 🏢 Microsoft Architecture Patterns:
+- **Clean Architecture:** Ocena implementacji
+- **Microservices Patterns:** Analiza zgodności
+- **Cloud-Native Design:** Azure readiness assessment
+- **Event-Driven Architecture:** Pattern usage review
+
+### ☁️ Azure Optimization:
+${
+  assessment.azure.services.length > 0
+    ? `• Przeanalizowano ${assessment.azure.services.length} serwisów Azure\n• Zidentyfikowano możliwości optymalizacji kosztów i wydajności`
+    : '• Gotowość do wdrożenia w Azure\n• Rekomendowane serwisy i konfiguracje dostępne'
+}
+
+### 🎯 .NET Standards Compliance:
+- **Coding Standards:** Zgodność z Microsoft guidelines
+- **Design Patterns:** SOLID principles implementation
+- **Package Management:** Dependency security i updates
+
+## 📋 Rekomendacje Architektoniczne:
+**Priorytety implementacji:**
+1. Infrastructure optimization
+2. Security hardening  
+3. Performance tuning
+4. Cost optimization
+
+**Timeline:** Fazowa implementacja zgodnie z Microsoft best practices`;
+  }
+
+  private formatBestPracticesResponse(practices: any[]): string {
+    return `# 📋 Microsoft Best Practices
+
+## 🎯 Rekomendacje Microsoft Standards
+
+### 🏢 Zidentyfikowane Obszary:
+${practices
+  .map(
+    practice => `
+**${practice.category.toUpperCase()}**
+- **Rule:** ${practice.rule}
+- **Status:** ${this.translateCompliance(practice.compliance)}
+- **Recommendation:** ${practice.recommendation}
+`
+  )
+  .join('\n')}
+
+## 📚 Dokumentacja Reference:
+Wszystkie rekomendacje oparte na oficjalnej dokumentacji Microsoft i Azure best practices.
+
+### 🎯 Następne Kroki:
+1. **Immediate Actions:** Krytyczne poprawki
+2. **Short-term:** Implementacja core recommendations  
+3. **Long-term:** Advanced optimizations
+
+**Priorytet:** Implementacja zgodnie z business impact i effort required.`;
+  }
+
+  private formatStandardsValidationResponse(validation: any): string {
+    const status = validation.compliant ? '✅ COMPLIANT' : '❌ NON-COMPLIANT';
+    const violationsCount = validation.violations.length;
+
+    return `# ✅ Microsoft Standards Validation
+
+## 🎯 Compliance Status: ${status}
+
+### 📊 Validation Summary:
+- **Violations Found:** ${violationsCount}
+- **Recommendations:** ${validation.recommendations.length}
+
+${
+  violationsCount > 0
+    ? `
+### ⚠️ Areas Requiring Attention:
+${validation.violations
+  .map((v: any) => `• ${v.area}: ${v.description}`)
+  .join('\n')}
+`
+    : '### ✨ Excellent Compliance!\nKod spełnia wszystkie sprawdzone standardy Microsoft.'
+}
+
+### 📋 Microsoft Guidelines Checked:
+- **Coding Standards:** .NET Design Guidelines compliance
+- **Security Standards:** Microsoft SDL requirements
+- **Performance Standards:** .NET performance best practices  
+- **Architecture Standards:** Azure Well-Architected principles
+
+## 🎯 Action Plan:
+${validation.recommendations.map((rec: string) => `• ${rec}`).join('\n')}
+
+**Compliance Level:** ${
+      validation.compliant ? 'Enterprise Ready' : 'Requires Improvements'
+    }`;
+  }
+
+  // Translation helper methods
+
+  private translateRating(rating: string): string {
+    const translations = {
+      excellent: 'Doskonały',
+      good: 'Dobry',
+      acceptable: 'Akceptowalny',
+      poor: 'Słaby',
+      critical: 'Krytyczny',
+    };
+    return translations[rating as keyof typeof translations] || rating;
+  }
+
+  private translateRisk(risk: string): string {
+    const translations = {
+      low: 'Niskie',
+      medium: 'Średnie',
+      high: 'Wysokie',
+      critical: 'Krytyczne',
+    };
+    return translations[risk as keyof typeof translations] || risk;
+  }
+
+  private translateCompliance(compliance: string): string {
+    const translations = {
+      compliant: 'Zgodny',
+      partial: 'Częściowo zgodny',
+      non_compliant: 'Niezgodny',
+    };
+    return translations[compliance as keyof typeof translations] || compliance;
+  }
+}

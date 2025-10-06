@@ -4,7 +4,7 @@
  * Part 1: Core execution management (< 500 lines)
  */
 
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import {
   WorkflowTemplate,
   WorkflowExecution,

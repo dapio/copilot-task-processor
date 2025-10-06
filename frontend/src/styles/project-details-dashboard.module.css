@@ -1,0 +1,600 @@
+/**
+ * Project Details Dashboard Styles
+ * @description Style dla szczegółowego widoku projektu - SERCA PLATFORMY
+ */
+
+.projectDetailsDashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8fafc;
+}
+
+/* ================== TOP NAVIGATION ================== */
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.projectInfo h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.projectId {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+/* ================== MAIN LAYOUT ================== */
+.mainLayout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ================== SECTION NAVIGATION ================== */
+.sectionNav {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+}
+
+.sectionMenu {
+  padding: 1rem 0;
+}
+
+.sectionItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.sectionItem:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.sectionItem.active {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-right: 3px solid #3b82f6;
+}
+
+.sectionBadge {
+  background: #3b82f6;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+.sectionItem.active .sectionBadge {
+  background: #1d4ed8;
+}
+
+/* ================== MAIN CONTENT ================== */
+.sectionContent {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* ================== OVERVIEW SECTION ================== */
+.overviewSection {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.projectHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.projectTitleSection h1 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.projectMeta {
+  display: flex;
+  gap: 1rem;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusActive {
+  color: #16a34a;
+}
+
+.status.completed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.statusCompleted {
+  color: #3b82f6;
+}
+
+.status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusPending {
+  color: #f59e0b;
+}
+
+.status.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.statusCancelled {
+  color: #ef4444;
+}
+
+.priority {
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.priority.red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.priority.orange {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.priority.yellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.priority.green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.priority.gray {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.projectActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editButton:hover {
+  background: #2563eb;
+}
+
+/* ================== INFO GRID ================== */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.infoCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.infoHeader h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.infoContent p {
+  margin: 0 0 0.75rem 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.infoContent p:last-child {
+  margin-bottom: 0;
+}
+
+.infoContent p strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* ================== PROGRESS SECTION ================== */
+.progressSection {
+  margin-bottom: 1.5rem;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progressBar {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressFill[data-progress="0"] { width: 0%; }
+.progressFill[data-progress="5"] { width: 5%; }
+.progressFill[data-progress="10"] { width: 10%; }
+.progressFill[data-progress="15"] { width: 15%; }
+.progressFill[data-progress="20"] { width: 20%; }
+.progressFill[data-progress="25"] { width: 25%; }
+.progressFill[data-progress="30"] { width: 30%; }
+.progressFill[data-progress="35"] { width: 35%; }
+.progressFill[data-progress="40"] { width: 40%; }
+.progressFill[data-progress="45"] { width: 45%; }
+.progressFill[data-progress="50"] { width: 50%; }
+.progressFill[data-progress="55"] { width: 55%; }
+.progressFill[data-progress="60"] { width: 60%; }
+.progressFill[data-progress="65"] { width: 65%; }
+.progressFill[data-progress="67"] { width: 67%; }
+.progressFill[data-progress="70"] { width: 70%; }
+.progressFill[data-progress="75"] { width: 75%; }
+.progressFill[data-progress="80"] { width: 80%; }
+.progressFill[data-progress="85"] { width: 85%; }
+.progressFill[data-progress="90"] { width: 90%; }
+.progressFill[data-progress="95"] { width: 95%; }
+.progressFill[data-progress="100"] { width: 100%; }
+
+.statsRow {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* ================== TEAM LIST ================== */
+.teamList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.teamMember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.agentStatus {
+  margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.agentStatus.online {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.agentStatus.busy {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.agentStatus.offline {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.moreMembers {
+  padding: 0.5rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ================== TECHNOLOGIES ================== */
+.technologiesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.techBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+/* ================== RECENT ACTIVITY ================== */
+.recentActivity {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.recentActivity h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activityItem {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.activityIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityText {
+  display: block;
+  color: #374151;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.activityTime {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* ================== PLACEHOLDER SECTIONS ================== */
+.tasksSection,
+.workflowSection,
+.agentsSection,
+.chatSection,
+.mockupsSection,
+.iterationsSection,
+.historySection {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.tasksSection h2,
+.workflowSection h2,
+.agentsSection h2,
+.chatSection h2,
+.mockupsSection h2,
+.iterationsSection h2,
+.historySection h2 {
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.tasksSection p,
+.workflowSection p,
+.agentsSection p,
+.chatSection p,
+.mockupsSection p,
+.iterationsSection p,
+.historySection p {
+  color: #64748b;
+  font-size: 1.125rem;
+}
+
+/* ================== RESPONSIVE DESIGN ================== */
+@media (max-width: 768px) {
+  .projectDetailsDashboard {
+    height: auto;
+  }
+  
+  .mainLayout {
+    flex-direction: column;
+  }
+  
+  .sectionNav {
+    width: 100%;
+  }
+  
+  .sectionMenu {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem;
+  }
+  
+  .sectionItem {
+    flex-shrink: 0;
+    padding: 0.5rem 1rem;
+  }
+  
+  .projectHeader {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsRow {
+    justify-content: space-around;
+  }
+  
+  .topNav {
+    padding: 1rem;
+  }
+  
+  .sectionContent {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .projectInfo h1 {
+    font-size: 1.25rem;
+  }
+  
+  .projectHeader {
+    padding: 1rem;
+  }
+  
+  .projectTitleSection h1 {
+    font-size: 1.5rem;
+  }
+  
+  .projectMeta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .infoCard {
+    padding: 1rem;
+  }
+  
+  .statsRow {
+    gap: 1rem;
+  }
+}

@@ -3,7 +3,7 @@
  * Handles workflow template creation, validation and management
  * Max 500 lines - STRICT COMPLIANCE
  */
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { Result } from '../../providers/ml-provider.interface';
 import { WorkflowTemplate, WorkflowEngineError } from './types';
 import { WorkflowValidator } from './validator';

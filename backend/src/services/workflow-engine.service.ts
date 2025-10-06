@@ -2,7 +2,7 @@
  * Workflow Engine Service - Complete Orchestrator (< 500 lines)
  * Integrates all workflow modules with comprehensive API
  */
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { Result } from '../providers/ml-provider.interface';
 import {
   WorkflowTemplate,

@@ -93,6 +93,34 @@ export function useBackendApi() {
     });
 
   /**
+   * Execute function with retry logic
+   */
+  const executeWithRetry = useCallback(
+    async <T>(
+      fn: () => Promise<T>,
+      maxRetries: number = 3
+    ): Promise<{ success: boolean; data?: T; error?: string }> => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const data = await fn();
+          return { success: true, data };
+        } catch (error) {
+          if (attempt === maxRetries) {
+            return {
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            };
+          }
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+        }
+      }
+      return { success: false, error: 'Max retries exceeded' };
+    },
+    []
+  );
+
+  /**
    * Check backend health and connection
    */
   const checkConnection = useCallback(async (): Promise<boolean> => {
@@ -374,6 +402,8 @@ export function useBackendApi() {
     // Connection state
     connection: connectionState,
     checkConnection,
+    executeWithRetry,
+    isConnected: connectionState.isConnected,
 
     // Document analysis
     documentAnalysis: documentAnalysisState,

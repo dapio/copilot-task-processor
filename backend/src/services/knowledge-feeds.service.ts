@@ -3,7 +3,7 @@
  * Manages learning feeds for agents and projects
  */
 
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { Result, MLError } from '../providers/ml-provider.interface';
 
 export interface KnowledgeFeedData {

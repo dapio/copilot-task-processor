@@ -1,0 +1,264 @@
+/* Chat Dashboard Styles */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionButton {
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.actionButton:hover {
+  background: white;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.conversationsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.conversationItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.conversationItem:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.conversationItem.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.avatar.agent {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.avatar.user {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.conversationContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+}
+
+.participantName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.lastMessage {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.statusIndicator.online {
+  background: #22c55e;
+}
+
+.statusIndicator.busy {
+  background: #f59e0b;
+}
+
+.statusIndicator.offline {
+  background: #6b7280;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.emptyIcon {
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.emptyMessage {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.startChatButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.startChatButton:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.quickActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.quickAction {
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #374151;
+}
+
+.quickAction:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    height: calc(100vh - 100px);
+  }
+
+  .header {
+    padding: 0.75rem 1rem;
+  }
+
+  .conversationsList {
+    padding: 0.75rem;
+  }
+
+  .conversationItem {
+    padding: 0.75rem;
+  }
+
+  .conversationHeader {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .quickActions {
+    justify-content: center;
+  }
+}

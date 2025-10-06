@@ -3,7 +3,7 @@
  * Manages agent best practices, standards, and compliance rules
  */
 
-import { PrismaClient, AgentBestPractice } from '../generated/prisma';
+import { PrismaClient, AgentBestPractice } from '@prisma/client';
 import { Result, MLError } from '../providers/ml-provider.interface';
 
 export type BestPractice = AgentBestPractice;

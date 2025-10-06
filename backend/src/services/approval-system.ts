@@ -133,7 +133,9 @@ export class ApprovalSystem {
     contextInformation: string;
     approverInfo?: ApprovalRequest['approverInfo'];
   }): Promise<string> {
-    const approvalId = `approval_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const approvalId = `approval_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const timeoutAt = options.approvalConfig.timeoutMinutes
       ? new Date(Date.now() + options.approvalConfig.timeoutMinutes * 60 * 1000)
@@ -258,7 +260,9 @@ export class ApprovalSystem {
     requestedChanges: string[];
     maxIterations?: number;
   }): Promise<string> {
-    const iterationId = `iteration_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const iterationId = `iteration_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     // Sprawdź ile iteracji już było dla tego kroku
     const existingIterations = Array.from(
@@ -279,12 +283,18 @@ export class ApprovalSystem {
     }
 
     // Stwórz chat session dla iteracji
-    const chatSessionId = await this.chatService.createChatSession({
-      contextId: `${options.workflowExecutionId}_${options.stepId}_iteration_${iterationNumber}`,
-      contextType: 'agent',
-      title: `Iteration ${iterationNumber} for ${options.stepId}`,
-      activeProviders: ['github-copilot'],
-    });
+    const sessionResult = await this.chatService.createSession(
+      `${options.workflowExecutionId}_${options.stepId}_iteration_${iterationNumber}`,
+      'agent'
+    );
+
+    if (!sessionResult.success) {
+      throw new Error(
+        `Failed to create chat session: ${sessionResult.error.message}`
+      );
+    }
+
+    const chatSessionId = sessionResult.data.id;
 
     const iterationSession: IterationSession = {
       id: iterationId,
@@ -311,7 +321,9 @@ export class ApprovalSystem {
     // Wyślij wiadomość startową do chat session
     await this.chatService.processMessage({
       sessionId: chatSessionId,
-      message: `Starting iteration ${iterationNumber} for step "${options.stepId}".
+      message: `Starting iteration ${iterationNumber} for step "${
+        options.stepId
+      }".
       
 Trigger: ${options.trigger}
 Details: ${options.triggerDetails}
@@ -405,7 +417,9 @@ Please implement the requested changes and provide the updated result.`,
   private async sendApprovalNotification(
     approval: ApprovalRequest
   ): Promise<void> {
-    const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const notificationId = `notif_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const notification: StakeholderNotification = {
       id: notificationId,
@@ -465,12 +479,9 @@ Please review the attached artifacts and provide your decision.`,
 
       if (notification.attempts < notification.maxAttempts) {
         // Ponów próbę za 5 minut
-        setTimeout(
-          () => {
-            this.deliverNotification(notification);
-          },
-          5 * 60 * 1000
-        );
+        setTimeout(() => {
+          this.deliverNotification(notification);
+        }, 5 * 60 * 1000);
       }
 
       return false;
@@ -611,15 +622,12 @@ Please review the attached artifacts and provide your decision.`,
         a.response.approvedAt >= today
     ).length;
 
-    const byApproverType = allApprovals.reduce(
-      (acc, approval) => {
-        if (approval.status === 'pending') {
-          acc[approval.approverType] = (acc[approval.approverType] || 0) + 1;
-        }
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    const byApproverType = allApprovals.reduce((acc, approval) => {
+      if (approval.status === 'pending') {
+        acc[approval.approverType] = (acc[approval.approverType] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
 
     return {
       pendingCount,

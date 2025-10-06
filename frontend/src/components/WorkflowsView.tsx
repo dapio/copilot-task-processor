@@ -1,5 +1,5 @@
 /**
- * 🔄 Workflows Management Component
+ * Workflows Management Component
  * ThinkCode AI Platform - Zarządzanie przepływami pracy
  */
 
@@ -45,76 +45,13 @@ export const WorkflowsView: React.FC = () => {
 
   const loadWorkflows = async () => {
     try {
-      // Mock data for now - will be replaced with API call
-      const mockWorkflows: Workflow[] = [
-        {
-          id: '1',
-          name: 'Document Processing Pipeline',
-          description:
-            'Automatically process uploaded documents through AI analysis',
-          status: 'active',
-          steps: [
-            {
-              id: '1',
-              name: 'Upload Validation',
-              type: 'data_processing',
-              config: {},
-              order: 1,
-            },
-            {
-              id: '2',
-              name: 'AI Analysis',
-              type: 'api_call',
-              config: {},
-              order: 2,
-            },
-            {
-              id: '3',
-              name: 'Task Generation',
-              type: 'data_processing',
-              config: {},
-              order: 3,
-            },
-          ],
-          createdAt: '2024-01-15T10:00:00Z',
-          lastRun: '2024-01-20T14:30:00Z',
-          totalRuns: 45,
-        },
-        {
-          id: '2',
-          name: 'Code Review Automation',
-          description: 'Automated code review and quality assessment workflow',
-          status: 'active',
-          steps: [
-            {
-              id: '1',
-              name: 'Code Analysis',
-              type: 'api_call',
-              config: {},
-              order: 1,
-            },
-            {
-              id: '2',
-              name: 'Security Scan',
-              type: 'api_call',
-              config: {},
-              order: 2,
-            },
-            {
-              id: '3',
-              name: 'Review Report',
-              type: 'notification',
-              config: {},
-              order: 3,
-            },
-          ],
-          createdAt: '2024-01-18T09:15:00Z',
-          lastRun: '2024-01-20T16:45:00Z',
-          totalRuns: 23,
-        },
-      ];
+      // TODO: Implement real API call to load workflows
+      // const response = await fetch('/api/workflows');
+      // const workflows = await response.json();
+      // setWorkflows(workflows);
 
-      setWorkflows(mockWorkflows);
+      // For now, set empty array - workflows will be loaded from real API later
+      setWorkflows([]);
       setLoading(false);
     } catch (error) {
       console.error('Failed to load workflows:', error);
@@ -153,11 +90,17 @@ export const WorkflowsView: React.FC = () => {
   const getStatusIcon = (status: Workflow['status']) => {
     switch (status) {
       case 'active':
-        return <Play className="w-4 h-4 text-green-500" />;
+        return React.createElement(Play, {
+          className: 'w-4 h-4 text-green-500',
+        });
       case 'paused':
-        return <Pause className="w-4 h-4 text-yellow-500" />;
+        return React.createElement(Pause, {
+          className: 'w-4 h-4 text-yellow-500',
+        });
       case 'stopped':
-        return <Square className="w-4 h-4 text-red-500" />;
+        return React.createElement(Square, {
+          className: 'w-4 h-4 text-red-500',
+        });
     }
   };
 
@@ -216,7 +159,9 @@ export const WorkflowsView: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <span
-                  className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(workflow.status)}`}
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                    workflow.status
+                  )}`}
                 >
                   {getStatusIcon(workflow.status)}
                   <span className="ml-1 capitalize">{workflow.status}</span>

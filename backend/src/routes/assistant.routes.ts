@@ -212,8 +212,9 @@ router.post(
 
       const agent = await getAssistantAgent();
       const result = await agent.assistWithDecision(
-        workflowContext,
-        decisionContext
+        decisionContext.decision || 'assistance',
+        decisionContext.options || [],
+        workflowContext
       );
 
       if (!result.success) {

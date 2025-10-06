@@ -378,7 +378,30 @@ export class RealWorkflowService {
     }
   }
 
-  private async getWorkflowById(id: string): Promise<Workflow | null> {
+  /**
+   * Get specific execution by ID
+   */
+  async getExecutionById(
+    executionId: string
+  ): Promise<WorkflowExecution | null> {
+    try {
+      const filePath = path.join(
+        this.executionsDirectory,
+        `${executionId}.json`
+      );
+      const content = await fs.readFile(filePath, 'utf-8');
+      return JSON.parse(content);
+    } catch (error) {
+      // Check if execution is in active executions
+      const activeExecution = this.activeExecutions.get(executionId);
+      if (activeExecution) {
+        return activeExecution;
+      }
+      return null;
+    }
+  }
+
+  async getWorkflowById(id: string): Promise<Workflow | null> {
     try {
       const workflowFile = path.join(this.workflowsDirectory, `${id}.json`);
       const content = await fs.readFile(workflowFile, 'utf-8');

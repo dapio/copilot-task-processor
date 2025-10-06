@@ -1,53 +1,46 @@
-/* Enterprise Dashboard CSS Module */
+/* Enterprise Dashboard Styles */
 
-.workloadBar {
-  transition: width 0.3s ease-in-out;
+.dashboard {
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
 }
 
-.workloadBar[data-workload='0'] {
-  width: 0%;
+/* Header */
+.header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
-.workloadBar[data-workload='1'] {
-  width: 1%;
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
 }
-.workloadBar[data-workload='2'] {
-  width: 2%;
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
-.workloadBar[data-workload='3'] {
-  width: 3%;
+
+.logoIcon {
+  color: #3b82f6;
 }
-.workloadBar[data-workload='4'] {
-  width: 4%;
-}
-.workloadBar[data-workload='5'] {
-  width: 5%;
-}
-.workloadBar[data-workload='6'] {
-  width: 6%;
-}
-.workloadBar[data-workload='7'] {
-  width: 7%;
-}
-.workloadBar[data-workload='8'] {
-  width: 8%;
-}
-.workloadBar[data-workload='9'] {
-  width: 9%;
-}
-.workloadBar[data-workload='10'] {
-  width: 10%;
-}
-.workloadBar[data-workload='11'] {
-  width: 11%;
-}
-.workloadBar[data-workload='12'] {
-  width: 12%;
-}
-.workloadBar[data-workload='13'] {
-  width: 13%;
-}
-.workloadBar[data-workload='14'] {
-  width: 14%;
+
+.logo h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
 }
 .workloadBar[data-workload='15'] {
   width: 15%;

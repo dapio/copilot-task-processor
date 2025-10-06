@@ -1,15 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import cors from 'cors';
-
-// Global type for Express Multer
-declare global {
-  namespace Express {
-    namespace Multer {
-      interface File {}
-    }
-  }
-}
 import { DocumentProcessor } from './document-processor';
 
 import fs from 'fs/promises';
@@ -17,6 +8,9 @@ import fs from 'fs/promises';
 import { RealTaskService } from './services/real-task-service';
 import { RealIntegrationService } from './services/real-integration-service';
 import { RealWorkflowService } from './services/real-workflow-service';
+
+// Import API routes
+import { apiRoutes } from './routes/index';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -28,7 +22,7 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB limit
     files: 10, // max 10 files
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: any, cb: any) => {
     const allowedTypes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -107,6 +101,12 @@ const documentProcessor = new DocumentProcessor(
 const taskService = new RealTaskService();
 const integrationService = new RealIntegrationService();
 const workflowService = new RealWorkflowService();
+
+// Configure API Routes
+apiRoutes.forEach(route => {
+  app.use(route.path, route.router);
+  console.log(`✅ Configured API route: ${route.path}`);
+});
 
 /**
  * Health check endpoint

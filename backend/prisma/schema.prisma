@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -35,6 +34,7 @@ model Task {
   executions    TaskExecution[]
   steps         WorkflowStep[]
   assignments   TaskAssignment[]
+  jiraIntegration JiraIntegration?
 
   @@map("tasks")
 }
@@ -83,6 +83,7 @@ model Project {
   projectFeeds    ProjectFeed[]
   chatSessions    ProjectChatSession[]
   mockups         MockupApproval[]
+  chatChannels    ChatChannel[]
 
   @@map("projects")
 }
@@ -745,4 +746,139 @@ model TaskAssignment {
   toAgent   Agent? @relation("AssignmentTo", fields: [toAgentId], references: [id])
 
   @@map("task_assignments")
+}
+
+// ================================
+// CLEANUP AND MAINTENANCE MODELS
+// ================================
+
+model CleanupTask {
+  id            String   @id @default(cuid())
+  name          String
+  type          String   // 'data_retention' | 'file_cleanup' | 'database_maintenance' | 'performance_optimization'
+  schedule      String   // cron expression
+  lastRun       DateTime?
+  nextRun       DateTime?
+  status        String   @default("pending") // 'pending' | 'running' | 'completed' | 'failed'
+  configuration Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  results CleanupResult[]
+
+  @@map("cleanup_tasks")
+}
+
+model CleanupResult {
+  id              String   @id @default(cuid())
+  taskId          String
+  taskName        String
+  success         Boolean
+  startTime       DateTime
+  endTime         DateTime
+  duration        Int      // milliseconds
+  itemsProcessed  Int
+  itemsRemoved    Int
+  spaceSaved      Int      // bytes
+  errors          Json     // Array stored as JSON
+  warnings        Json     // Array stored as JSON
+  createdAt       DateTime @default(now())
+
+  // Relations
+  task CleanupTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("cleanup_results")
+}
+
+model ResearchResult {
+  id              String   @id @default(cuid())
+  query           String
+  searchType      String
+  results         Json
+  summary         String
+  keyFindings     Json     // Array stored as JSON
+  recommendations Json     // Array stored as JSON
+  confidence      Float
+  createdAt       DateTime @default(now())
+
+  @@map("research_results")
+}
+
+// Chat System Models
+model ChatChannel {
+  id          String        @id @default(cuid())
+  name        String
+  type        String        @default("project") // project, agent, system, direct
+  description String?
+  projectId   String?
+  agentIds    String?       // JSON array of agent IDs
+  userIds     String?       // JSON array of user IDs
+  isActive    Boolean       @default(true)
+  metadata    Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  project  Project?      @relation(fields: [projectId], references: [id])
+  messages ChatMessage[]
+
+  @@map("chat_channels")
+}
+
+model ChatMessage {
+  id        String    @id @default(cuid())
+  channelId String
+  senderId  String    // User ID or Agent ID
+  senderType String   @default("user") // user, agent, system
+  content   String
+  messageType String @default("text") // text, file, image, command, system
+  metadata  Json?     // File attachments, mentions, reactions, etc.
+  parentId  String?   // For replies/threads
+  isEdited  Boolean   @default(false)
+  editedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  channel ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  parent  ChatMessage? @relation("MessageReplies", fields: [parentId], references: [id])
+  replies ChatMessage[] @relation("MessageReplies")
+
+  @@map("chat_messages")
+}
+
+// Jira Integration Models
+model JiraIntegration {
+  id           String   @id @default(cuid())
+  taskId       String   @unique
+  jiraKey      String   @unique
+  jiraId       String
+  projectKey   String
+  issueType    String
+  lastSyncAt   DateTime @default(now())
+  syncStatus   String   @default("active") // active, paused, error
+  syncErrors   Json?    // Array of sync error details
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("jira_integrations")
+}
+
+model JiraSyncLog {
+  id        String   @id @default(cuid())
+  taskId    String?
+  jiraKey   String?
+  action    String   // created, updated, deleted, synced, error
+  direction String   // platform_to_jira, jira_to_platform, bidirectional
+  status    String   // success, error, warning
+  message   String
+  details   Json?    // Additional sync details
+  duration  Int?     // Sync duration in milliseconds
+  createdAt DateTime @default(now())
+
+  @@map("jira_sync_logs")
 }
