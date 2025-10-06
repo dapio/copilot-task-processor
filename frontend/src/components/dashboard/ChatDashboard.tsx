@@ -4,7 +4,7 @@
  */
 
 import React, { memo } from 'react';
-import { MessageSquare, Users, Bot, Clock, Send } from 'lucide-react';
+import { MessageSquare, Users, Bot, Clock } from 'lucide-react';
 import type {
   ConversationData,
   ProjectData,
@@ -18,7 +18,7 @@ interface ChatDashboardProps {
 }
 
 export const ChatDashboard = memo<ChatDashboardProps>(
-  ({ conversations, selectedProject, onSelectConversation }) => {
+  ({ conversations, onSelectConversation }) => {
     return (
       <div className={styles.chatDashboard}>
         <div className={styles.header}>

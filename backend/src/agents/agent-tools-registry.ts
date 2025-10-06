@@ -311,7 +311,7 @@ export const workflowAssistantTools: CopilotTool[] = [
       },
       required: ['currentStep'],
     },
-    handler: async (input, context) => {
+    handler: async input => {
       // Mock implementation - would integrate with workflow engine
       const suggestion = {
         nextStep: `next_step_after_${input.currentStep}`,
@@ -350,7 +350,7 @@ export const workflowAssistantTools: CopilotTool[] = [
       },
       required: ['workflowId'],
     },
-    handler: async (input, context) => {
+    handler: async input => {
       const analysis = {
         workflowId: input.workflowId,
         completionPercentage: 65,
@@ -412,7 +412,7 @@ export const businessAnalystTools: CopilotTool[] = [
       },
       required: ['requirements'],
     },
-    handler: async (input, context) => {
+    handler: async input => {
       const analysis = {
         requirementsCount: input.requirements.length,
         gaps: [
@@ -474,7 +474,7 @@ export const qaEngineerTools: CopilotTool[] = [
         },
       },
     },
-    handler: async (input, context) => {
+    handler: async input => {
       // Mock test results
       const testResults = {
         testType: input.testType,

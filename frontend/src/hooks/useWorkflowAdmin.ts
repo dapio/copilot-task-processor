@@ -194,11 +194,6 @@ export const useWorkflowAdmin = () => {
     updatedAt: new Date(session.updatedAt),
   });
 
-  // Load sessions on mount
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
   const loadSessions = useCallback(async () => {
     setLoading(true);
     try {
@@ -209,12 +204,17 @@ export const useWorkflowAdmin = () => {
       } else {
         setError(result.error || 'Failed to load sessions');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load sessions');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Load sessions on mount
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   const startNewSession = useCallback(
     async (title: string, initialPrompt?: string): Promise<string | null> => {
@@ -233,7 +233,7 @@ export const useWorkflowAdmin = () => {
           setError(result.error || 'Failed to create session');
           return null;
         }
-      } catch (err) {
+      } catch {
         setError('Failed to create session');
         return null;
       } finally {
@@ -276,7 +276,7 @@ export const useWorkflowAdmin = () => {
           setError(result.error || 'Failed to send message');
           return false;
         }
-      } catch (err) {
+      } catch {
         setError('Failed to send message');
         return false;
       } finally {
@@ -314,7 +314,7 @@ export const useWorkflowAdmin = () => {
           setError(result.error || 'Failed to generate workflow');
           return null;
         }
-      } catch (err) {
+      } catch {
         setError('Failed to generate workflow');
         return null;
       } finally {
@@ -354,7 +354,7 @@ export const useWorkflowAdmin = () => {
           setError(result.error || 'Failed to finalize workflow');
           return null;
         }
-      } catch (err) {
+      } catch {
         setError('Failed to finalize workflow');
         return null;
       } finally {
@@ -397,7 +397,7 @@ export const useWorkflowAdmin = () => {
           setError(result.error || 'Failed to cancel session');
           return false;
         }
-      } catch (err) {
+      } catch {
         setError('Failed to cancel session');
         return false;
       } finally {
@@ -425,7 +425,7 @@ export const useWorkflowAdmin = () => {
           setError(result.error || 'Failed to refresh session');
           return false;
         }
-      } catch (err) {
+      } catch {
         setError('Failed to refresh session');
         return false;
       }

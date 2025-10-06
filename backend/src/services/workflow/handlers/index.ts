@@ -50,7 +50,7 @@ export function getAvailableHandlerTypes(): string[] {
 /**
  * Get handler metadata by type (mock implementation)
  */
-export function getHandlerMetadata(type: string, _prisma?: PrismaClient): any {
+export function getHandlerMetadata(type: string): any {
   // Mock metadata - actual implementation would create handler instances
   const metadata = {
     'http-request': {

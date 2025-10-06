@@ -103,56 +103,82 @@ export class MCPServer {
 
     // Execute tool
     this.server.setRequestHandler(CallToolRequestSchema, async request => {
-      const { name, arguments: args } = request.params;
-
-      const tool = this.tools.get(name);
-      if (!tool) {
-        throw new Error(`Unknown tool: ${name}`);
-      }
-
-      try {
-        // Validate input schema
-        this.validateToolInput(args, tool.inputSchema);
-
-        // Execute tool with context
-        const context: ToolExecutionContext = {
-          sessionId: args ? String(args._sessionId || '') : undefined,
-          agentId: args ? String(args._agentId || '') : undefined,
-          projectId: args ? String(args._projectId || '') : undefined,
-          workspaceId: args ? String(args._workspaceId || '') : undefined,
-          metadata: args ? (args._metadata as Record<string, any>) : undefined,
-        };
-
-        const result = await tool.handler(args, context);
-
-        if (!result.success) {
-          throw new Error(result.error || 'Tool execution failed');
-        }
-
-        return {
-          content: result.content || [
-            {
-              type: 'text',
-              text: JSON.stringify(result.data, null, 2),
-            },
-          ],
-          isError: false,
-        } as CallToolResult;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown error';
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Tool execution failed: ${errorMessage}`,
-            },
-          ],
-          isError: true,
-        } as CallToolResult;
-      }
+      return this.handleToolExecution(request);
     });
+  }
+
+  /**
+   * Create execution context from args - extracted to reduce complexity
+   */
+  private createExecutionContext(args: any): ToolExecutionContext {
+    return {
+      sessionId: args ? String(args._sessionId || '') : undefined,
+      agentId: args ? String(args._agentId || '') : undefined,
+      projectId: args ? String(args._projectId || '') : undefined,
+      workspaceId: args ? String(args._workspaceId || '') : undefined,
+      metadata: args ? (args._metadata as Record<string, any>) : undefined,
+    };
+  }
+
+  /**
+   * Format successful tool result - extracted to reduce complexity
+   */
+  private formatSuccessResult(result: any): CallToolResult {
+    return {
+      content: result.content || [
+        {
+          type: 'text',
+          text: JSON.stringify(result.data, null, 2),
+        },
+      ],
+      isError: false,
+    } as CallToolResult;
+  }
+
+  /**
+   * Format error result - extracted to reduce complexity
+   */
+  private formatErrorResult(error: any): CallToolResult {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Tool execution failed: ${errorMessage}`,
+        },
+      ],
+      isError: true,
+    } as CallToolResult;
+  }
+
+  /**
+   * Handle tool execution request - extracted to reduce complexity
+   */
+  private async handleToolExecution(request: any): Promise<CallToolResult> {
+    const { name, arguments: args } = request.params;
+
+    const tool = this.tools.get(name);
+    if (!tool) {
+      throw new Error(`Unknown tool: ${name}`);
+    }
+
+    try {
+      // Validate input schema
+      this.validateToolInput(args, tool.inputSchema);
+
+      // Execute tool with context
+      const context = this.createExecutionContext(args);
+      const result = await tool.handler(args, context);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Tool execution failed');
+      }
+
+      return this.formatSuccessResult(result);
+    } catch (error) {
+      return this.formatErrorResult(error);
+    }
   }
 
   /**
@@ -199,8 +225,8 @@ export class MCPServer {
         },
         required: ['filePath'],
       },
-      handler: async (input, context) => {
-        return await this.handleReadWorkspaceFile(input, context);
+      handler: async input => {
+        return await this.handleReadWorkspaceFile(input);
       },
     });
 
@@ -227,8 +253,8 @@ export class MCPServer {
           maxResults: { type: 'number', default: 50 },
         },
       },
-      handler: async (input, context) => {
-        return await this.handleSearchWorkspaceFiles(input, context);
+      handler: async input => {
+        return await this.handleSearchWorkspaceFiles(input);
       },
     });
   }
@@ -306,8 +332,8 @@ export class MCPServer {
         },
         required: ['specification', 'language'],
       },
-      handler: async (input, context) => {
-        return await this.handleGenerateCode(input, context);
+      handler: async input => {
+        return await this.handleGenerateCode(input);
       },
     });
   }
@@ -338,8 +364,8 @@ export class MCPServer {
         },
         required: ['command'],
       },
-      handler: async (input, context) => {
-        return await this.handleExecuteTerminalCommand(input, context);
+      handler: async input => {
+        return await this.handleExecuteTerminalCommand(input);
       },
     });
   }
@@ -362,8 +388,8 @@ export class MCPServer {
         },
         required: ['query'],
       },
-      handler: async (input, context) => {
-        return await this.handleQueryDatabase(input, context);
+      handler: async input => {
+        return await this.handleQueryDatabase(input);
       },
     });
 
@@ -450,10 +476,7 @@ export class MCPServer {
 
   // === Tool Handlers ===
 
-  private async handleReadWorkspaceFile(
-    input: any,
-    _context?: ToolExecutionContext
-  ): Promise<ToolResult> {
+  private async handleReadWorkspaceFile(input: any): Promise<ToolResult> {
     try {
       const fs = require('fs/promises');
       const path = require('path');
@@ -499,10 +522,7 @@ export class MCPServer {
     }
   }
 
-  private async handleSearchWorkspaceFiles(
-    input: any,
-    _context?: ToolExecutionContext
-  ): Promise<ToolResult> {
+  private async handleSearchWorkspaceFiles(input: any): Promise<ToolResult> {
     try {
       const { glob } = require('glob');
       const fs = require('fs/promises');
@@ -604,9 +624,8 @@ export class MCPServer {
   }
 
   private async handleGenerateCode(
-    input: any,
+    input: any
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _context?: ToolExecutionContext
   ): Promise<ToolResult> {
     // Mock implementation - in real version would use ML providers
     const generatedCode = `// Generated code for: ${input.specification}
@@ -638,9 +657,8 @@ export default generatedFunction;
   }
 
   private async handleExecuteTerminalCommand(
-    input: any,
+    input: any
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _context?: ToolExecutionContext
   ): Promise<ToolResult> {
     try {
       const { exec } = await import('child_process');
@@ -678,9 +696,8 @@ export default generatedFunction;
   }
 
   private async handleQueryDatabase(
-    input: any,
+    input: any
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _context?: ToolExecutionContext
   ): Promise<ToolResult> {
     try {
       const result = await this.prisma.$queryRawUnsafe(

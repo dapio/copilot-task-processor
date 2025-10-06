@@ -4,14 +4,7 @@
  */
 
 import React, { memo } from 'react';
-import {
-  FileImage,
-  Eye,
-  CheckCircle,
-  XCircle,
-  Clock,
-  MessageSquare,
-} from 'lucide-react';
+import { FileImage } from 'lucide-react';
 import type { ProjectData } from '../../types/dashboard.types';
 import styles from '../../styles/dashboard-mockups.module.css';
 

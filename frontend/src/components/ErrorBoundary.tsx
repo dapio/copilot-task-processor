@@ -22,7 +22,15 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Log error to structured logging system
+    if (typeof window !== 'undefined') {
+      // Client-side error reporting
+      console.error('React Error Boundary:', {
+        error: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+      });
+    }
 
     this.setState({
       error,

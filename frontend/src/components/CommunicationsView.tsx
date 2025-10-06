@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Users, Bell, Send, Search, Filter } from 'lucide-react';
+import { MessageCircle, Users, Bell, Send, Filter } from 'lucide-react';
 
 interface Message {
   id: string;

@@ -225,12 +225,7 @@ export class WorkflowEngineService {
    */
   async startExecution(
     templateId: string,
-    input: Record<string, any>,
-    options?: {
-      priority?: number;
-      timeout?: number;
-      metadata?: Record<string, any>;
-    }
+    input: Record<string, any>
   ): Promise<Result<string, WorkflowEngineError>> {
     this.ensureInitialized();
 
@@ -245,16 +240,9 @@ export class WorkflowEngineService {
       };
     }
 
-    const executionOptions = {
-      priority: 'medium' as const,
-      timeout: options?.timeout,
-      continueOnError: false,
-    };
-
     const result = await this.executionManager.startExecution(
       templateId,
-      input,
-      executionOptions
+      input
     );
 
     if (result.success) {

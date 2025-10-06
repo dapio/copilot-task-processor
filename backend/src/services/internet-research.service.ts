@@ -4,7 +4,6 @@
  * Handles search queries, content extraction, and knowledge aggregation
  */
 
-import { EventEmitter } from 'events';
 import { PrismaClient } from '@prisma/client';
 import { Result, MLError } from '../providers/ml-provider.interface';
 

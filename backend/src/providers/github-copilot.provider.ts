@@ -6,7 +6,6 @@
 import {
   IMLProvider,
   GenerationOptions,
-  EmbeddingOptions,
   GenerationResult,
   EmbeddingResult,
   AnalysisResult,
@@ -142,7 +141,9 @@ export class GitHubCopilotProvider implements IMLProvider {
         success: false,
         error: {
           code: 'COPILOT_GENERATION_ERROR',
-          message: `GitHub Copilot generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `GitHub Copilot generation failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
           details: error,
           retryable: true,
         },
@@ -153,10 +154,7 @@ export class GitHubCopilotProvider implements IMLProvider {
   /**
    * Generuje embeddings (fallback do OpenAI lub lokalnego modelu)
    */
-  async generateEmbedding(
-    text: string,
-    options: EmbeddingOptions = {}
-  ): Promise<Result<EmbeddingResult, MLError>> {
+  async generateEmbedding(): Promise<Result<EmbeddingResult, MLError>> {
     // GitHub Copilot nie oferuje bezpośrednio embeddingów
     // Implementujemy fallback lub mock
     return {
@@ -300,7 +298,9 @@ Format odpowiedzi jako JSON:
         success: false,
         error: {
           code: 'HEALTH_CHECK_FAILED',
-          message: `GitHub Copilot health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `GitHub Copilot health check failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
           details: error,
           retryable: true,
         },
@@ -351,7 +351,9 @@ Format odpowiedzi jako JSON:
     systemPrompt?: string;
     parentContextId?: string;
   }): Promise<string> {
-    const contextId = `context-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const contextId = `context-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const parentContext = options.parentContextId
       ? this.contexts.get(options.parentContextId)
@@ -514,7 +516,7 @@ Format odpowiedzi jako JSON:
   ): Promise<Result<GenerationResult, MLError>> {
     // W przypadku braku API key, użyj mock response
     if (!this.apiKey) {
-      return this.getMockResponse(messages, options);
+      return this.getMockResponse(messages);
     }
 
     try {
@@ -575,7 +577,9 @@ Format odpowiedzi jako JSON:
         success: false,
         error: {
           code: 'COPILOT_API_ERROR',
-          message: `GitHub Copilot API call failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `GitHub Copilot API call failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
           details: error,
           retryable: true,
         },
@@ -584,8 +588,7 @@ Format odpowiedzi jako JSON:
   }
 
   private getMockResponse(
-    messages: CopilotChatMessage[],
-    options: CopilotChatOptions
+    messages: CopilotChatMessage[]
   ): Result<GenerationResult, MLError> {
     const lastMessage = messages[messages.length - 1];
     const prompt = lastMessage?.content || '';
@@ -660,7 +663,9 @@ To jest mock response z GitHub Copilot Provider. W wersji produkcyjnej ta odpowi
     const info = [];
     if (workspace.files?.length) {
       info.push(
-        `Files: ${workspace.files.slice(0, 5).join(', ')}${workspace.files.length > 5 ? '...' : ''}`
+        `Files: ${workspace.files.slice(0, 5).join(', ')}${
+          workspace.files.length > 5 ? '...' : ''
+        }`
       );
     }
     if (workspace.activeFile) {

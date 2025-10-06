@@ -65,31 +65,29 @@ export default function ResearchIntegrationView() {
     setError(null);
 
     try {
-      let endpoint = '';
       const payload: any = { query: researchQuery.query };
 
       switch (researchQuery.category) {
         case 'solutions':
-          endpoint = '/research/solutions';
+          // Research solutions endpoint
           if (researchQuery.filters?.technology) {
             payload.technology = researchQuery.filters.technology;
           }
           break;
         case 'integrations':
-          endpoint = '/research/integrations';
+          // Integration research endpoint
           if (researchQuery.filters?.complexity) {
             payload.complexity = researchQuery.filters.complexity;
           }
           break;
         case 'technologies':
-          endpoint = '/research/technologies';
+          // Technology research endpoint
           if (researchQuery.filters?.category) {
             payload.category = researchQuery.filters.category;
           }
           break;
         case 'compare':
-          endpoint = '/research/compare';
-          // Split query into technologies to compare
+          // Compare research endpoint
           payload.technologies = researchQuery.query.split(' vs ');
           break;
       }
@@ -122,7 +120,7 @@ export default function ResearchIntegrationView() {
       if (response.success && response.data) {
         // Convert research results to integration test format
         const testResults = (response.data as ResearchResult[]).map(
-          (result, index): IntegrationTestResult => ({
+          (result): IntegrationTestResult => ({
             name: result.title,
             status:
               result.relevanceScore > 0.8

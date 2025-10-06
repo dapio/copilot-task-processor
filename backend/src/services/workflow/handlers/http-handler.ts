@@ -49,8 +49,7 @@ export class HttpRequestHandler
     'Execute HTTP requests with comprehensive error handling';
 
   async execute(
-    input: HttpRequestInput,
-    _context: Record<string, any>
+    input: HttpRequestInput
   ): Promise<Result<HttpRequestOutput, StepExecutionError>> {
     try {
       // Validate input

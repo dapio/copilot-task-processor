@@ -112,8 +112,7 @@ export class RealTaskService {
       // Generate tasks based on analysis
       const tasks = await this.generateTasksFromAnalysis(
         documentAnalyses,
-        projectInsights,
-        options
+        projectInsights
       );
 
       // Calculate metrics
@@ -135,7 +134,9 @@ export class RealTaskService {
     } catch (error) {
       console.error('Task generation error:', error);
       throw new Error(
-        `Failed to generate tasks: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to generate tasks: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -207,7 +208,9 @@ export class RealTaskService {
         action,
         status: 'failed',
         result: {
-          message: `Task processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `Task processing failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
         },
         processedAt: new Date().toISOString(),
       };
@@ -304,8 +307,7 @@ export class RealTaskService {
 
   private async generateTasksFromAnalysis(
     analyses: any[],
-    insights: any,
-    options: any
+    insights: any
   ): Promise<Task[]> {
     const tasks: Task[] = [];
     let taskCounter = 1;
@@ -327,7 +329,7 @@ export class RealTaskService {
     });
 
     // Analysis-based tasks
-    analyses.forEach((analysis, index) => {
+    analyses.forEach(analysis => {
       if (analysis.keyTopics?.length > 0) {
         tasks.push({
           id: `task-${taskCounter++}`,
@@ -436,7 +438,7 @@ export class RealTaskService {
   private async analyzeTask(
     task: Task
   ): Promise<TaskProcessingResult['result']> {
-    const analysis = await this.researchService.searchSolutions({
+    await this.researchService.searchSolutions({
       query: task.description,
       maxResults: 5,
       includeCode: true,
@@ -453,7 +455,7 @@ export class RealTaskService {
   private async researchTask(
     task: Task
   ): Promise<TaskProcessingResult['result']> {
-    const researchResults = await this.researchService.searchSolutions({
+    await this.researchService.searchSolutions({
       query: task.description,
       maxResults: 10,
       includeCode: true,

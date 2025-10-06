@@ -65,6 +65,61 @@ export class AgentServicesManager extends EventEmitter {
   }
 
   /**
+   * Initialize service configuration and status - extracted for readability
+   */
+  private initializeServiceConfig(config: AgentServiceConfig): ServiceStatus {
+    // Assign port if not provided
+    if (!config.port) {
+      config.port = this.getAvailablePort();
+    }
+
+    // Store configuration
+    this.serviceConfigs.set(config.id, config);
+
+    // Create service status
+    const status: ServiceStatus = {
+      id: config.id,
+      status: 'starting',
+      port: config.port,
+      errorCount: 0,
+    };
+    this.serviceStatus.set(config.id, status);
+    return status;
+  }
+
+  /**
+   * Create and start service process - extracted for readability
+   */
+  private async createServiceProcess(
+    config: AgentServiceConfig
+  ): Promise<ChildProcess> {
+    // Create agent service script
+    const serviceScript = await this.createAgentServiceScript(config);
+    const servicePath = path.join(
+      __dirname,
+      '../../../temp',
+      `${config.id}-service.js`
+    );
+
+    await fs.mkdir(path.dirname(servicePath), { recursive: true });
+    await fs.writeFile(servicePath, serviceScript);
+
+    // Start the service process
+    return spawn('node', [servicePath], {
+      env: {
+        ...process.env,
+        ...config.environment,
+        AGENT_ID: config.id,
+        AGENT_TYPE: config.type,
+        AGENT_PORT: config.port!.toString(),
+        DATABASE_URL: process.env.DATABASE_URL,
+      },
+      stdio: ['pipe', 'pipe', 'pipe'],
+      detached: false,
+    });
+  }
+
+  /**
    * Start agent service
    */
   async startAgentService(
@@ -82,47 +137,11 @@ export class AgentServicesManager extends EventEmitter {
         };
       }
 
-      // Assign port if not provided
-      if (!config.port) {
-        config.port = this.getAvailablePort();
-      }
+      // Initialize configuration and status
+      const status = this.initializeServiceConfig(config);
 
-      // Store configuration
-      this.serviceConfigs.set(config.id, config);
-
-      // Create service status
-      const status: ServiceStatus = {
-        id: config.id,
-        status: 'starting',
-        port: config.port,
-        errorCount: 0,
-      };
-      this.serviceStatus.set(config.id, status);
-
-      // Create agent service script
-      const serviceScript = await this.createAgentServiceScript(config);
-      const servicePath = path.join(
-        __dirname,
-        '../../../temp',
-        `${config.id}-service.js`
-      );
-
-      await fs.mkdir(path.dirname(servicePath), { recursive: true });
-      await fs.writeFile(servicePath, serviceScript);
-
-      // Start the service process
-      const childProcess = spawn('node', [servicePath], {
-        env: {
-          ...process.env,
-          ...config.environment,
-          AGENT_ID: config.id,
-          AGENT_TYPE: config.type,
-          AGENT_PORT: config.port.toString(),
-          DATABASE_URL: process.env.DATABASE_URL,
-        },
-        stdio: ['pipe', 'pipe', 'pipe'],
-        detached: false,
-      });
+      // Create and start process
+      const childProcess = await this.createServiceProcess(config);
 
       // Store process reference
       this.services.set(config.id, childProcess);

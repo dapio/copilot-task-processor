@@ -154,7 +154,7 @@ export class BackendApiService {
     try {
       const response = await fetch(`${this.baseUrl}/health`);
       return await response.json();
-    } catch (error) {
+    } catch {
       throw new ApiError(
         500,
         'Failed to connect to backend',

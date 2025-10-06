@@ -86,20 +86,12 @@ export class CopilotFunctionCallingProvider extends GitHubCopilotProvider {
     }
 
     try {
-      // Build system prompt with available tools
-      const availableTools =
-        options.tools || this.mcpServer.getRegisteredTools();
-      const systemPrompt =
-        this.buildFunctionCallingSystemPrompt(availableTools);
-
-      // Enhanced prompt with tool descriptions
-      const enhancedPrompt = `${systemPrompt}\n\nUser Query: ${prompt}`;
-
       // Generate initial response
-      const response = await this.generateText(enhancedPrompt, {
-        ...options,
-        contextId,
-      });
+      const response = await this.processInitialGeneration(
+        prompt,
+        options,
+        contextId
+      );
 
       if (!response.success) {
         return response;
@@ -124,26 +116,12 @@ export class CopilotFunctionCallingProvider extends GitHubCopilotProvider {
       this.functionCallHistory.set(contextId, functionResults);
 
       // Generate final response with function results
-      const finalPrompt = this.buildFinalResponsePrompt(
+      return await this.executeAndGenerateFinal(
         prompt,
+        options,
+        contextId,
         functionResults
       );
-      const finalResponse = await this.generateText(finalPrompt, {
-        ...options,
-        contextId,
-      });
-
-      if (!finalResponse.success) {
-        return finalResponse;
-      }
-
-      return {
-        success: true,
-        data: {
-          ...finalResponse.data,
-          functionCalls: functionResults,
-        },
-      };
     } catch (error) {
       return {
         success: false,
@@ -281,7 +259,7 @@ Remember: You have full access to the workspace and can perform complex operatio
             });
           }
         }
-      } catch (error) {
+      } catch {
         // Ignore parsing errors for alternate patterns
       }
     }
@@ -379,6 +357,59 @@ I executed the following tools:
 ${resultsText}
 
 Now provide a comprehensive response that incorporates these results and directly answers the user's question. Be specific and actionable in your response.`;
+  }
+
+  /**
+   * Process initial generation with function calling logic - extracted for readability
+   */
+  private async processInitialGeneration(
+    prompt: string,
+    options: CopilotFunctionCallingOptions,
+    contextId: string
+  ): Promise<Result<GenerationResult, MLError>> {
+    // Build system prompt with available tools
+    const availableTools = options.tools || this.mcpServer.getRegisteredTools();
+    const systemPrompt = this.buildFunctionCallingSystemPrompt(availableTools);
+
+    // Enhanced prompt with tool descriptions
+    const enhancedPrompt = `${systemPrompt}\n\nUser Query: ${prompt}`;
+
+    // Generate initial response
+    return await this.generateText(enhancedPrompt, {
+      ...options,
+      contextId,
+    });
+  }
+
+  /**
+   * Execute function calls and generate final response - extracted for readability
+   */
+  private async executeAndGenerateFinal(
+    prompt: string,
+    options: CopilotFunctionCallingOptions,
+    contextId: string,
+    functionResults: FunctionCallResult[]
+  ): Promise<
+    Result<GenerationResult & { functionCalls?: FunctionCallResult[] }, MLError>
+  > {
+    // Generate final response with function results
+    const finalPrompt = this.buildFinalResponsePrompt(prompt, functionResults);
+    const finalResponse = await this.generateText(finalPrompt, {
+      ...options,
+      contextId,
+    });
+
+    if (!finalResponse.success) {
+      return finalResponse;
+    }
+
+    return {
+      success: true,
+      data: {
+        ...finalResponse.data,
+        functionCalls: functionResults,
+      },
+    };
   }
 
   /**

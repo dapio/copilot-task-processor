@@ -391,7 +391,7 @@ export class RealWorkflowService {
       );
       const content = await fs.readFile(filePath, 'utf-8');
       return JSON.parse(content);
-    } catch (error) {
+    } catch {
       // Check if execution is in active executions
       const activeExecution = this.activeExecutions.get(executionId);
       if (activeExecution) {
@@ -486,7 +486,7 @@ export class RealWorkflowService {
       });
 
       try {
-        await this.executeStep(executedStep, execution);
+        await this.executeStep(executedStep);
         executedStep.status = 'completed';
         executedStep.completedAt = new Date().toISOString();
         executedStep.duration =
@@ -517,10 +517,7 @@ export class RealWorkflowService {
     }
   }
 
-  private async executeStep(
-    step: WorkflowStep,
-    execution: WorkflowExecution
-  ): Promise<void> {
+  private async executeStep(step: WorkflowStep): Promise<void> {
     // Simulate step execution based on type
     const delay = step.config.timeout || 1000;
 

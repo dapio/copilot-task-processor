@@ -383,10 +383,7 @@ Format the response as a structured workflow definition.`;
   /**
    * Zatwierdza i zapisuje utworzony workflow
    */
-  async finalizeWorkflow(
-    sessionId: string,
-    finalApprovals?: { approvedBy: string; notes?: string }
-  ): Promise<Result<string, MLError>> {
+  async finalizeWorkflow(sessionId: string): Promise<Result<string, MLError>> {
     const session = this.creationSessions.get(sessionId);
     if (!session || !session.workflowInProgress) {
       return {
@@ -516,7 +513,7 @@ Provide analysis in structured format.`;
       });
 
       if (result.success) {
-        return this.parseAnalysisResult(result.data.text);
+        return this.parseAnalysisResult();
       }
     } catch (error) {
       console.error('Failed to analyze user input:', error);
@@ -688,7 +685,7 @@ Based on the current progress and user's message, provide helpful guidance and a
   /**
    * Parsuje wynik analizy AI
    */
-  private parseAnalysisResult(aiResponse: string): WorkflowAnalysisResult {
+  private parseAnalysisResult(): WorkflowAnalysisResult {
     // Podstawowa implementacja - potrzeba bardziej zaawansowanego parsingu
     return {
       suggestedTemplate: 'custom',

@@ -54,38 +54,24 @@ export function createWorkflowRoutes(
   });
 
   // Global error handler
-  router.use(
-    (
-      error: any,
-      req: express.Request,
-      res: express.Response,
-      _next: express.NextFunction
-    ) => {
-      console.error('Workflow API Error:', error);
+  router.use((error: any, req: express.Request, res: express.Response) => {
+    console.error('Workflow API Error:', error);
 
-      res.status(500).json({
-        success: false,
-        error: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred',
-        ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
-      });
-    }
-  );
+    res.status(500).json({
+      success: false,
+      error: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred',
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
+    });
+  });
 
   return router;
 }
 
-/**
- * Create mock workflow engine for development
- */
-function createMockWorkflowEngine(): Partial<WorkflowEngineService> {
+// Mock template operations
+function createMockTemplateOperations() {
   return {
-    async createTemplate(
-      _name: string,
-      _description: string,
-      _steps: any[],
-      _config?: any
-    ) {
+    async createTemplate(_name: string, _description: string, _steps: any[]) {
       return {
         success: true,
         data: {
@@ -111,10 +97,15 @@ function createMockWorkflowEngine(): Partial<WorkflowEngineService> {
       } as any;
     },
 
-    async deleteTemplate(_id: string) {
+    async deleteTemplate() {
       return { success: true, data: true } as any;
     },
+  };
+}
 
+// Mock execution operations
+function createMockExecutionOperations() {
+  return {
     async startExecution(_templateId: string, _variables: Record<string, any>) {
       return {
         success: true,
@@ -164,7 +155,7 @@ function createMockWorkflowEngine(): Partial<WorkflowEngineService> {
       } as any;
     },
 
-    async getExecutionHistory(_filters?: any) {
+    async getExecutionHistory() {
       return {
         success: true,
         data: [
@@ -178,5 +169,15 @@ function createMockWorkflowEngine(): Partial<WorkflowEngineService> {
         ],
       } as any;
     },
+  };
+}
+
+/**
+ * Create mock workflow engine for development
+ */
+function createMockWorkflowEngine(): Partial<WorkflowEngineService> {
+  return {
+    ...createMockTemplateOperations(),
+    ...createMockExecutionOperations(),
   };
 }

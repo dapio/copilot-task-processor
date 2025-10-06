@@ -54,8 +54,7 @@ export class DatabaseQueryHandler
   }
 
   async execute(
-    input: DatabaseQueryInput,
-    _context: Record<string, any>
+    input: DatabaseQueryInput
   ): Promise<Result<DatabaseQueryOutput, StepExecutionError>> {
     const startTime = Date.now();
 
@@ -103,12 +102,7 @@ export class DatabaseQueryHandler
     rowCount: number;
     affectedRows?: number;
   }> {
-    const {
-      query,
-      parameters = [],
-      timeout = 30000,
-      transaction = false,
-    } = input;
+    const { query, timeout = 30000, transaction = false } = input;
 
     // Set query timeout
     if (timeout > 0) {
@@ -117,19 +111,16 @@ export class DatabaseQueryHandler
     }
 
     if (transaction) {
-      return await this.executeInTransaction(query, parameters);
+      return await this.executeInTransaction(query);
     } else {
-      return await this.executeSingleQuery(query, parameters);
+      return await this.executeSingleQuery(query);
     }
   }
 
   /**
    * Execute query in transaction
    */
-  private async executeInTransaction(
-    query: string,
-    _parameters: any[]
-  ): Promise<{
+  private async executeInTransaction(query: string): Promise<{
     results: any[];
     rowCount: number;
     affectedRows?: number;
@@ -149,10 +140,7 @@ export class DatabaseQueryHandler
   /**
    * Execute single query
    */
-  private async executeSingleQuery(
-    query: string,
-    _parameters: any[]
-  ): Promise<{
+  private async executeSingleQuery(query: string): Promise<{
     results: any[];
     rowCount: number;
     affectedRows?: number;

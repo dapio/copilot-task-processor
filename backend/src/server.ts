@@ -60,12 +60,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Error handling middleware
-const errorHandler = (
-  error: Error,
-  req: Request,
-  res: Response,
-  _next: NextFunction
-): void => {
+const errorHandler = (error: Error, _req: Request, res: Response): void => {
   console.error('Server Error:', error);
 
   if (error.message.includes('File type')) {

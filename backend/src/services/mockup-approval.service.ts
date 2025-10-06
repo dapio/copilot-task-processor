@@ -369,10 +369,7 @@ export class MockupApprovalService extends EventEmitter {
   /**
    * Generate mockup preview URL
    */
-  async generatePreviewUrl(
-    mockupId: string,
-    iterationNumber?: number
-  ): Promise<Result<string, MLError>> {
+  async generatePreviewUrl(mockupId: string): Promise<Result<string, MLError>> {
     try {
       const mockup = await this.prisma.mockupApproval.findUnique({
         where: { id: mockupId },
@@ -390,11 +387,7 @@ export class MockupApprovalService extends EventEmitter {
       }
 
       // Generate preview URL based on mockup type and content
-      const mockupData = mockup.mockupData as unknown as MockupData;
-      const previewUrl = await this.createPreviewFile(
-        mockupData,
-        iterationNumber
-      );
+      const previewUrl = await this.createPreviewFile();
 
       return { success: true, data: previewUrl };
     } catch (error) {
@@ -551,9 +544,9 @@ export class MockupApprovalService extends EventEmitter {
     fidelity: string
   ): string {
     const header = this.generateHeader(request, style);
-    const navigation = this.generateNavigation(style);
+    const navigation = this.generateNavigation();
     const mainContent = this.generateMainContent(request, fidelity);
-    const footer = this.generateFooter(style);
+    const footer = this.generateFooter();
 
     return `
       ${header}
@@ -606,7 +599,7 @@ export class MockupApprovalService extends EventEmitter {
     </header>`;
   }
 
-  private generateNavigation(_style: MockupStyleGuide): string {
+  private generateNavigation(): string {
     return `<nav style="background: #f8f9fa; padding: 10px;">
       <a href="#" style="margin-right: 20px;">Home</a>
       <a href="#" style="margin-right: 20px;">Features</a>
@@ -628,7 +621,7 @@ export class MockupApprovalService extends EventEmitter {
     </main>`;
   }
 
-  private generateFooter(_style: MockupStyleGuide): string {
+  private generateFooter(): string {
     return `<footer style="background: #333; color: white; padding: 20px; text-align: center;">
       <p>&copy; 2024 ThinkCode AI Platform</p>
     </footer>`;
@@ -646,10 +639,7 @@ export class MockupApprovalService extends EventEmitter {
   /**
    * Create preview file from mockup data
    */
-  private async createPreviewFile(
-    _mockupData: MockupData,
-    _iterationNumber?: number
-  ): Promise<string> {
+  private async createPreviewFile(): Promise<string> {
     const fileName = `mockup-preview-${Date.now()}.html`;
 
     // In a real implementation, write the file to storage and use mockupData

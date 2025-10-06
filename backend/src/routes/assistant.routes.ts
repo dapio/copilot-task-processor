@@ -134,10 +134,8 @@ router.post(
  */
 router.get('/conversation/:executionId', async (req, res) => {
   try {
-    const { executionId } = req.params;
-
     const agent = await getAssistantAgent();
-    const conversation = await agent.getConversation(executionId);
+    const conversation = await agent.getConversation();
 
     res.json({
       success: true,
@@ -244,10 +242,8 @@ router.post(
  */
 router.delete('/conversation/:executionId', async (req, res) => {
   try {
-    const { executionId } = req.params;
-
     const agent = await getAssistantAgent();
-    await agent.clearConversation(executionId);
+    await agent.clearConversation();
 
     res.json({
       success: true,
@@ -290,10 +286,8 @@ router.get('/stats', async (req, res) => {
  */
 router.put('/configure', async (req, res) => {
   try {
-    const config = req.body;
-
     const agent = await getAssistantAgent();
-    agent.configureAssistant(config);
+    agent.configureAssistant();
 
     res.json({
       success: true,

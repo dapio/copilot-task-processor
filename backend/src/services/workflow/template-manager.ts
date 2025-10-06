@@ -150,7 +150,7 @@ export class TemplateManager {
 
       // Update template in database
       const prismaData = templateToCreateData(mergedTemplate);
-      const updated = await this.prisma.workflowTemplate.update({
+      await this.prisma.workflowTemplate.update({
         where: { id: templateId },
         data: {
           name: prismaData.name,

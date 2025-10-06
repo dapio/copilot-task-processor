@@ -10,7 +10,7 @@ import {
   ProjectRequirement,
   ArchitectureConstraint,
   ArchitectureAnalysisRequest,
-  ArchitectureReview
+  ArchitectureReview,
 } from './types/system-architect.types';
 
 export class SystemArchitectAgent {
@@ -24,42 +24,53 @@ export class SystemArchitectAgent {
     this.description = 'System Architecture Design and Analysis';
   }
 
-  private log(level: 'info' | 'debug' | 'warn' | 'error', message: string, meta?: any) {
+  private log(
+    level: 'info' | 'debug' | 'warn' | 'error',
+    message: string,
+    meta?: any
+  ) {
     console[level](`[${this.agentId}] ${message}`, meta || '');
   }
 
-  private async sendPrompt(_prompt: string): Promise<string> {
+  private async sendPrompt(): Promise<string> {
     // Mock implementation - in real scenario, this would call ML provider
     return JSON.stringify({
       architecture: {
-        name: "Sample Architecture",
-        type: "microservices",
-        description: "AI-generated architecture",
+        name: 'Sample Architecture',
+        type: 'microservices',
+        description: 'AI-generated architecture',
         layers: [],
-        components: []
-      }
+        components: [],
+      },
     });
   }
 
   /**
    * Design system architecture based on requirements and constraints
    */
-  async designArchitecture(request: ArchitectureAnalysisRequest): Promise<SystemArchitecture> {
+  async designArchitecture(
+    request: ArchitectureAnalysisRequest
+  ): Promise<SystemArchitecture> {
     try {
-      this.log('info', 'Starting architecture design process', { projectId: request.projectId });
+      this.log('info', 'Starting architecture design process', {
+        projectId: request.projectId,
+      });
 
       // Analyze requirements
-      const requirementAnalysis = SystemArchitectLogicService.analyzeRequirements(request.requirements);
-      this.log('debug', 'Requirements analysis completed', { complexity: requirementAnalysis.complexity });
+      const requirementAnalysis =
+        SystemArchitectLogicService.analyzeRequirements(request.requirements);
+      this.log('debug', 'Requirements analysis completed', {
+        complexity: requirementAnalysis.complexity,
+      });
 
       // Generate architecture design prompt
-      const prompt = SystemArchitectPrompts.buildArchitectureDesignPrompt(
+      SystemArchitectPrompts.buildArchitectureDesignPrompt(
         request.requirements,
         request.constraints
       );
 
       // Get AI response
-      const response = await this.sendPrompt(prompt);
+      const response = await this.sendPrompt();
       const architectureData = this.parseArchitectureResponse(response);
 
       // Validate and enhance architecture
@@ -70,17 +81,20 @@ export class SystemArchitectAgent {
       );
 
       if (!validation.valid) {
-        this.log('warn', 'Architecture validation failed', { violations: validation.violations });
-        throw new Error(`Architecture validation failed: ${validation.violations.join(', ')}`);
+        this.log('warn', 'Architecture validation failed', {
+          violations: validation.violations,
+        });
+        throw new Error(
+          `Architecture validation failed: ${validation.violations.join(', ')}`
+        );
       }
 
-      this.log('info', 'Architecture design completed successfully', { 
+      this.log('info', 'Architecture design completed successfully', {
         score: validation.score,
-        recommendations: validation.recommendations.length 
+        recommendations: validation.recommendations.length,
       });
 
       return architectureData;
-
     } catch (error: any) {
       this.log('error', 'Architecture design failed', { error: error.message });
       throw error;
@@ -116,14 +130,15 @@ export class SystemArchitectAgent {
           description: rec,
           priority: 'medium' as const,
           effort: 'To be estimated',
-          benefits: ['Improved architecture quality']
+          benefits: ['Improved architecture quality'],
         })),
-        score: validation.score
+        score: validation.score,
       };
 
-      this.log('info', 'Architecture review completed', { score: review.score });
+      this.log('info', 'Architecture review completed', {
+        score: review.score,
+      });
       return review;
-
     } catch (error: any) {
       this.log('error', 'Architecture review failed', { error: error.message });
       throw error;
@@ -151,9 +166,10 @@ export class SystemArchitectAgent {
       const deploymentDiagram = this.generateDeploymentDiagram(architecture);
       diagrams.push(deploymentDiagram);
 
-      this.log('info', 'Architecture diagrams generated successfully', { count: diagrams.length });
+      this.log('info', 'Architecture diagrams generated successfully', {
+        count: diagrams.length,
+      });
       return diagrams;
-
     } catch (error: any) {
       this.log('error', 'Diagram generation failed', { error: error.message });
       throw error;
@@ -171,50 +187,83 @@ export class SystemArchitectAgent {
 
       const parsed = JSON.parse(jsonMatch[0]);
       return this.buildSystemArchitectureFromParsed(parsed);
-
     } catch (error: any) {
-      this.log('error', 'Failed to parse architecture response', { error: error.message });
+      this.log('error', 'Failed to parse architecture response', {
+        error: error.message,
+      });
       throw new Error(`Architecture response parsing failed: ${error.message}`);
     }
   }
 
   private buildSystemArchitectureFromParsed(parsed: any): SystemArchitecture {
-    const defaultQualityAttribute = { level: 'medium' as const, requirements: [], strategies: [], metrics: [] };
-    
+    const defaultQualityAttribute = {
+      level: 'medium' as const,
+      requirements: [],
+      strategies: [],
+      metrics: [],
+    };
+
     return {
       id: `arch_${Date.now()}`,
       name: parsed.architecture?.name || 'Generated Architecture',
       type: parsed.architecture?.type || 'layered',
-      description: parsed.architecture?.description || 'AI-generated architecture',
+      description:
+        parsed.architecture?.description || 'AI-generated architecture',
       layers: parsed.architecture?.layers || [],
       components: parsed.architecture?.components || [],
       integrations: parsed.architecture?.integrations || [],
-      scalability: parsed.qualityAttributes?.scalability || defaultQualityAttribute,
-      performance: parsed.qualityAttributes?.performance || defaultQualityAttribute,
+      scalability:
+        parsed.qualityAttributes?.scalability || defaultQualityAttribute,
+      performance:
+        parsed.qualityAttributes?.performance || defaultQualityAttribute,
       security: parsed.qualityAttributes?.security || defaultQualityAttribute,
-      maintainability: parsed.qualityAttributes?.maintainability || defaultQualityAttribute,
-      availability: parsed.qualityAttributes?.availability || defaultQualityAttribute,
+      maintainability:
+        parsed.qualityAttributes?.maintainability || defaultQualityAttribute,
+      availability:
+        parsed.qualityAttributes?.availability || defaultQualityAttribute,
       technologyStack: this.buildDefaultTechnologyStack(parsed.technologyStack),
-      dataStrategy: { approach: 'centralized', databases: [], dataFlow: [], consistency: 'strong' },
-      deploymentStrategy: this.buildDefaultDeploymentStrategy(parsed.deploymentStrategy),
+      dataStrategy: {
+        approach: 'centralized',
+        databases: [],
+        dataFlow: [],
+        consistency: 'strong',
+      },
+      deploymentStrategy: this.buildDefaultDeploymentStrategy(
+        parsed.deploymentStrategy
+      ),
       diagrams: [],
       decisions: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
   private buildDefaultTechnologyStack(technologyStack?: any) {
-    return technologyStack || { frontend: [], backend: [], database: [], infrastructure: [], monitoring: [] };
+    return (
+      technologyStack || {
+        frontend: [],
+        backend: [],
+        database: [],
+        infrastructure: [],
+        monitoring: [],
+      }
+    );
   }
 
   private buildDefaultDeploymentStrategy(deploymentStrategy?: any) {
-    return deploymentStrategy || { 
-      approach: 'containerized' as const, 
-      environment: [], 
-      cicd: { pipeline: '', stages: [], tools: [], automation: [] }, 
-      scaling: { horizontal: true, vertical: false, autoScaling: false, triggers: [] } 
-    };
+    return (
+      deploymentStrategy || {
+        approach: 'containerized' as const,
+        environment: [],
+        cicd: { pipeline: '', stages: [], tools: [], automation: [] },
+        scaling: {
+          horizontal: true,
+          vertical: false,
+          autoScaling: false,
+          triggers: [],
+        },
+      }
+    );
   }
 
   private identifyStrengths(architecture: SystemArchitecture): string[] {
@@ -228,7 +277,10 @@ export class SystemArchitectAgent {
       strengths.push('Clear component separation');
     }
 
-    if (architecture.technologyStack && architecture.technologyStack.monitoring?.length > 0) {
+    if (
+      architecture.technologyStack &&
+      architecture.technologyStack.monitoring?.length > 0
+    ) {
       strengths.push('Monitoring capabilities included');
     }
 
@@ -239,14 +291,15 @@ export class SystemArchitectAgent {
     const risks: any[] = [];
 
     // Single point of failure check
-    const dbComponents = architecture.components?.filter(c => c.type === 'database') || [];
+    const dbComponents =
+      architecture.components?.filter(c => c.type === 'database') || [];
     if (dbComponents.length === 1) {
       risks.push({
         type: 'technical',
         description: 'Single database may become a bottleneck',
         impact: 'medium',
         probability: 'medium',
-        mitigation: ['Implement database clustering', 'Add read replicas']
+        mitigation: ['Implement database clustering', 'Add read replicas'],
       });
     }
 
@@ -279,7 +332,9 @@ Container_Boundary(system, "${architecture.name}") {
 `;
 
     architecture.components?.forEach(component => {
-      diagram += `  Component(${component.name.replace(/\s+/g, '_')}, "${component.name}", "${component.description}")\n`;
+      diagram += `  Component(${component.name.replace(/\s+/g, '_')}, "${
+        component.name
+      }", "${component.description}")\n`;
     });
 
     diagram += '}\n@enduml';

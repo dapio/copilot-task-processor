@@ -53,7 +53,7 @@ type ProjectSection =
   | 'history';
 
 export const ProjectDetailsDashboard = memo<ProjectDetailsDashboardProps>(
-  ({ project, onBack, onProjectUpdate }) => {
+  ({ project, onBack }) => {
     const [activeSection, setActiveSection] =
       useState<ProjectSection>('overview');
     const [loading, setLoading] = useState(false);

@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { ApprovalStep, IterationConfig } from './enhanced-workflow-templates';
+import { ApprovalStep } from './enhanced-workflow-templates';
 import ChatIntegrationService from './chat-integration.service';
 
 export interface ApprovalRequest {
@@ -473,7 +473,7 @@ Please review the attached artifacts and provide your decision.`,
       notification.attempts++;
 
       return true;
-    } catch (error) {
+    } catch {
       notification.status = 'failed';
       notification.attempts++;
 

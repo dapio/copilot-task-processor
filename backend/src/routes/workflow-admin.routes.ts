@@ -48,7 +48,7 @@ const initializeAdminPanel = async () => {
 
     // Mock provider for now - replace with actual provider system
     const mockProvider = {
-      generateText: async (prompt: string, options?: any) => ({
+      generateText: async () => ({
         success: true as const,
         data: { text: 'Mock response from AI assistant' },
       }),
@@ -295,7 +295,7 @@ router.post(
   '/finalize',
   async (req: Request, res: Response): Promise<Response | void> => {
     try {
-      const { sessionId, approvals }: FinalizeWorkflowRequest = req.body;
+      const { sessionId }: FinalizeWorkflowRequest = req.body;
 
       if (!sessionId || !sessionId.trim()) {
         return res.status(400).json({
@@ -305,7 +305,7 @@ router.post(
       }
 
       const adminPanel = await initializeAdminPanel();
-      const result = await adminPanel.finalizeWorkflow(sessionId, approvals);
+      const result = await adminPanel.finalizeWorkflow(sessionId);
 
       if (!result.success) {
         return res.status(400).json(result);

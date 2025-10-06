@@ -352,7 +352,7 @@ export class SecureStorage {
   }
 }
 
-export default {
+const securityUtils = {
   sanitizeHtml,
   sanitizeUrl,
   isValidEmail,
@@ -374,3 +374,5 @@ export default {
   CSRFProtection,
   SecureStorage,
 };
+
+export default securityUtils;

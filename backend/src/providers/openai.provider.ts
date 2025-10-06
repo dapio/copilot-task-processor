@@ -4,22 +4,22 @@
  */
 
 import { OpenAI } from 'openai';
-import { 
-  IMLProvider, 
-  GenerationOptions, 
-  EmbeddingOptions, 
-  MLError, 
-  GenerationResult, 
-  EmbeddingResult, 
+import {
+  IMLProvider,
+  GenerationOptions,
+  EmbeddingOptions,
+  MLError,
+  GenerationResult,
+  EmbeddingResult,
   AnalysisResult,
   Result,
-  MLProviderConfig 
+  MLProviderConfig,
 } from './ml-provider.interface';
 
 export class OpenAIProvider implements IMLProvider {
   public readonly name = 'openai';
   public readonly version = '1.0.0';
-  
+
   private client: OpenAI;
   private config: MLProviderConfig;
 
@@ -39,7 +39,7 @@ export class OpenAIProvider implements IMLProvider {
     try {
       const healthResult = await this.healthCheck();
       return healthResult.success && healthResult.data.status !== 'unhealthy';
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -48,7 +48,7 @@ export class OpenAIProvider implements IMLProvider {
    * Generate text using OpenAI models
    */
   async generateText(
-    prompt: string, 
+    prompt: string,
     options: GenerationOptions = {}
   ): Promise<Result<GenerationResult, MLError>> {
     try {
@@ -69,8 +69,8 @@ export class OpenAIProvider implements IMLProvider {
           error: {
             code: 'EMPTY_RESPONSE',
             message: 'OpenAI returned empty response',
-            retryable: true
-          }
+            retryable: true,
+          },
         };
       }
 
@@ -78,23 +78,24 @@ export class OpenAIProvider implements IMLProvider {
         success: true,
         data: {
           text: choice.message.content,
-          usage: response.usage ? {
-            promptTokens: response.usage.prompt_tokens,
-            completionTokens: response.usage.completion_tokens,
-            totalTokens: response.usage.total_tokens,
-          } : undefined,
+          usage: response.usage
+            ? {
+                promptTokens: response.usage.prompt_tokens,
+                completionTokens: response.usage.completion_tokens,
+                totalTokens: response.usage.total_tokens,
+              }
+            : undefined,
           metadata: {
             model: response.model,
             finishReason: choice.finish_reason,
             logprobs: choice.logprobs,
-          }
-        }
+          },
+        },
       };
-
     } catch (error: any) {
       return {
         success: false,
-        error: this.handleOpenAIError(error)
+        error: this.handleOpenAIError(error),
       };
     }
   }
@@ -103,7 +104,7 @@ export class OpenAIProvider implements IMLProvider {
    * Generate embeddings using OpenAI
    */
   async generateEmbedding(
-    text: string, 
+    text: string,
     options: EmbeddingOptions = {}
   ): Promise<Result<EmbeddingResult, MLError>> {
     try {
@@ -120,8 +121,8 @@ export class OpenAIProvider implements IMLProvider {
           error: {
             code: 'EMPTY_EMBEDDING',
             message: 'OpenAI returned empty embedding',
-            retryable: true
-          }
+            retryable: true,
+          },
         };
       }
 
@@ -129,19 +130,20 @@ export class OpenAIProvider implements IMLProvider {
         success: true,
         data: {
           embedding,
-          usage: response.usage ? {
-            tokens: response.usage.total_tokens,
-          } : undefined,
+          usage: response.usage
+            ? {
+                tokens: response.usage.total_tokens,
+              }
+            : undefined,
           metadata: {
             model: response.model,
-          }
-        }
+          },
+        },
       };
-
     } catch (error: any) {
       return {
         success: false,
-        error: this.handleOpenAIError(error)
+        error: this.handleOpenAIError(error),
       };
     }
   }
@@ -150,7 +152,7 @@ export class OpenAIProvider implements IMLProvider {
    * Analyze document using structured prompt
    */
   async analyzeDocument(
-    content: string, 
+    content: string,
     context: Record<string, any> = {}
   ): Promise<Result<AnalysisResult, MLError>> {
     const analysisPrompt = `
@@ -182,7 +184,7 @@ Respond with valid JSON only.
 
     try {
       const analysisData = JSON.parse(textResult.data.text);
-      
+
       return {
         success: true,
         data: {
@@ -193,10 +195,9 @@ Respond with valid JSON only.
           metadata: {
             usage: textResult.data.usage,
             rawResponse: textResult.data.text,
-          }
-        }
+          },
+        },
       };
-
     } catch (parseError) {
       return {
         success: false,
@@ -204,8 +205,8 @@ Respond with valid JSON only.
           code: 'PARSE_ERROR',
           message: 'Failed to parse analysis response',
           details: { parseError, rawResponse: textResult.data.text },
-          retryable: true
-        }
+          retryable: true,
+        },
       };
     }
   }
@@ -213,7 +214,12 @@ Respond with valid JSON only.
   /**
    * Health check for OpenAI provider
    */
-  async healthCheck(): Promise<Result<{ status: 'healthy' | 'degraded' | 'unhealthy', details?: string }, MLError>> {
+  async healthCheck(): Promise<
+    Result<
+      { status: 'healthy' | 'degraded' | 'unhealthy'; details?: string },
+      MLError
+    >
+  > {
     try {
       // Simple test request
       const response = await this.client.chat.completions.create({
@@ -225,25 +231,24 @@ Respond with valid JSON only.
       if (response.choices && response.choices.length > 0) {
         return {
           success: true,
-          data: { 
+          data: {
             status: 'healthy',
-            details: `Model: ${response.model}, Usage: ${response.usage?.total_tokens} tokens`
-          }
+            details: `Model: ${response.model}, Usage: ${response.usage?.total_tokens} tokens`,
+          },
         };
       }
 
       return {
         success: true,
-        data: { 
+        data: {
           status: 'degraded',
-          details: 'Received response but no choices'
-        }
+          details: 'Received response but no choices',
+        },
       };
-
     } catch (error: any) {
       return {
         success: false,
-        error: this.handleOpenAIError(error)
+        error: this.handleOpenAIError(error),
       };
     }
   }
@@ -255,19 +260,21 @@ Respond with valid JSON only.
     try {
       const models = await this.client.models.list();
       const modelIds = models.data
-        .filter(model => model.id.includes('gpt') || model.id.includes('text-embedding'))
+        .filter(
+          model =>
+            model.id.includes('gpt') || model.id.includes('text-embedding')
+        )
         .map(model => model.id)
         .sort();
 
       return {
         success: true,
-        data: modelIds
+        data: modelIds,
       };
-
     } catch (error: any) {
       return {
         success: false,
-        error: this.handleOpenAIError(error)
+        error: this.handleOpenAIError(error),
       };
     }
   }
@@ -283,14 +290,14 @@ Respond with valid JSON only.
             code: 'AUTHENTICATION_ERROR',
             message: 'Invalid OpenAI API key',
             retryable: false,
-            details: error
+            details: error,
           };
         case 429:
           return {
             code: 'RATE_LIMIT_ERROR',
             message: 'OpenAI rate limit exceeded',
             retryable: true,
-            details: error
+            details: error,
           };
         case 500:
         case 502:
@@ -300,14 +307,14 @@ Respond with valid JSON only.
             code: 'SERVER_ERROR',
             message: 'OpenAI server error',
             retryable: true,
-            details: error
+            details: error,
           };
         default:
           return {
             code: 'API_ERROR',
             message: `OpenAI API error: ${error.message}`,
             retryable: error.status >= 500,
-            details: error
+            details: error,
           };
       }
     }
@@ -317,7 +324,7 @@ Respond with valid JSON only.
         code: 'CONNECTION_ERROR',
         message: 'Cannot connect to OpenAI API',
         retryable: true,
-        details: error
+        details: error,
       };
     }
 
@@ -325,7 +332,7 @@ Respond with valid JSON only.
       code: 'UNKNOWN_ERROR',
       message: error.message || 'Unknown OpenAI error',
       retryable: false,
-      details: error
+      details: error,
     };
   }
 }

@@ -66,8 +66,7 @@ export class EmailNotificationHandler
   }
 
   async execute(
-    input: EmailNotificationInput,
-    _context: Record<string, any>
+    input: EmailNotificationInput
   ): Promise<Result<EmailNotificationOutput, StepExecutionError>> {
     const startTime = Date.now();
 
@@ -129,10 +128,7 @@ export class EmailNotificationHandler
 
     // Process template if provided
     if (input.template) {
-      const processedContent = await this.processTemplate(
-        input.template.name,
-        input.template.variables
-      );
+      const processedContent = await this.processTemplate(input.template.name);
 
       if (processedContent.subject) {
         subject = processedContent.subject;
@@ -157,10 +153,7 @@ export class EmailNotificationHandler
   /**
    * Process email template (mock implementation)
    */
-  private async processTemplate(
-    templateName: string,
-    _variables: Record<string, any>
-  ): Promise<{
+  private async processTemplate(templateName: string): Promise<{
     subject?: string;
     body?: string;
   }> {

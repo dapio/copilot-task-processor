@@ -10,7 +10,6 @@ import {
   Project,
   KnowledgeFeed,
   ResearchResult,
-  ApiResponse,
 } from '../services/agentsApiService';
 import { ApiError } from '../services/apiService';
 
@@ -75,7 +74,7 @@ export function useAgentsApi() {
       const isConnected = await agentsApiService.healthCheck();
       setAgentsState(prev => ({ ...prev, connected: isConnected }));
       return isConnected;
-    } catch (error) {
+    } catch {
       setAgentsState(prev => ({ ...prev, connected: false }));
       return false;
     }

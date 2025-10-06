@@ -3,12 +3,12 @@
  * ThinkCode AI Platform - Centralized Provider Management
  */
 
-import { 
-  IMLProvider, 
-  IMLProviderFactory, 
-  MLProviderConfig, 
-  MLError, 
-  Result 
+import {
+  IMLProvider,
+  IMLProviderFactory,
+  MLProviderConfig,
+  MLError,
+  Result,
 } from './ml-provider.interface';
 import { OpenAIProvider } from './openai.provider';
 
@@ -19,8 +19,8 @@ class MockProvider implements IMLProvider {
   public readonly name = 'mock';
   public readonly version = '1.0.0';
 
-  constructor(_config: MLProviderConfig) {
-    // Config parameter marked as unused with underscore prefix
+  constructor() {
+    // Constructor without parameters
   }
 
   async isAvailable(): Promise<boolean> {
@@ -33,8 +33,8 @@ class MockProvider implements IMLProvider {
       data: {
         text: `Mock response for: "${prompt.substring(0, 50)}..."`,
         usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-        metadata: { model: 'mock-gpt', provider: 'mock' }
-      }
+        metadata: { model: 'mock-gpt', provider: 'mock' },
+      },
     };
   }
 
@@ -42,10 +42,12 @@ class MockProvider implements IMLProvider {
     return {
       success: true,
       data: {
-        embedding: Array(1536).fill(0).map(() => Math.random() - 0.5),
+        embedding: Array(1536)
+          .fill(0)
+          .map(() => Math.random() - 0.5),
         usage: { tokens: 5 },
-        metadata: { model: 'mock-embedding' }
-      }
+        metadata: { model: 'mock-embedding' },
+      },
     };
   }
 
@@ -57,22 +59,22 @@ class MockProvider implements IMLProvider {
         complexity: 5,
         suggestions: ['Mock suggestion 1', 'Mock suggestion 2'],
         confidence: 0.8,
-        metadata: { provider: 'mock' }
-      }
+        metadata: { provider: 'mock' },
+      },
     };
   }
 
   async healthCheck(): Promise<Result<any, MLError>> {
     return {
       success: true,
-      data: { status: 'healthy', details: 'Mock provider always healthy' }
+      data: { status: 'healthy', details: 'Mock provider always healthy' },
     };
   }
 
   async getSupportedModels(): Promise<Result<string[], MLError>> {
     return {
       success: true,
-      data: ['mock-gpt-4', 'mock-gpt-3.5-turbo', 'mock-text-embedding']
+      data: ['mock-gpt-4', 'mock-gpt-3.5-turbo', 'mock-text-embedding'],
     };
   }
 }
@@ -96,7 +98,9 @@ export class MLProviderFactory implements IMLProviderFactory {
   /**
    * Create ML Provider instance
    */
-  async createProvider(config: MLProviderConfig): Promise<Result<IMLProvider, MLError>> {
+  async createProvider(
+    config: MLProviderConfig
+  ): Promise<Result<IMLProvider, MLError>> {
     try {
       // Check cache first
       const cacheKey = `${config.type}-${config.name}`;
@@ -116,21 +120,21 @@ export class MLProviderFactory implements IMLProviderFactory {
         case 'openai':
           provider = new OpenAIProvider(config);
           break;
-        
+
         case 'mock':
-          provider = new MockProvider(config);
+          provider = new MockProvider();
           break;
 
         // Future providers can be added here
         case 'anthropic':
           throw new Error('Anthropic provider not implemented yet');
-        
+
         case 'local':
           throw new Error('Local provider not implemented yet');
-        
+
         case 'azure':
           throw new Error('Azure OpenAI provider not implemented yet');
-        
+
         case 'google':
           throw new Error('Google provider not implemented yet');
 
@@ -140,8 +144,8 @@ export class MLProviderFactory implements IMLProviderFactory {
             error: {
               code: 'UNSUPPORTED_PROVIDER',
               message: `Unsupported provider type: ${config.type}`,
-              retryable: false
-            }
+              retryable: false,
+            },
           };
       }
 
@@ -153,8 +157,8 @@ export class MLProviderFactory implements IMLProviderFactory {
           error: {
             code: 'PROVIDER_UNAVAILABLE',
             message: `Provider ${config.type} is not available`,
-            retryable: true
-          }
+            retryable: true,
+          },
         };
       }
 
@@ -162,7 +166,6 @@ export class MLProviderFactory implements IMLProviderFactory {
       this.providerCache.set(cacheKey, provider);
 
       return { success: true, data: provider };
-
     } catch (error: any) {
       return {
         success: false,
@@ -170,8 +173,8 @@ export class MLProviderFactory implements IMLProviderFactory {
           code: 'PROVIDER_CREATION_ERROR',
           message: `Failed to create provider: ${error.message}`,
           details: error,
-          retryable: false
-        }
+          retryable: false,
+        },
       };
     }
   }
@@ -200,16 +203,20 @@ export class MLProviderFactory implements IMLProviderFactory {
   /**
    * Create provider with fallback to mock
    */
-  async createProviderWithFallback(config: MLProviderConfig): Promise<Result<IMLProvider, MLError>> {
+  async createProviderWithFallback(
+    config: MLProviderConfig
+  ): Promise<Result<IMLProvider, MLError>> {
     const primaryResult = await this.createProvider(config);
-    
+
     if (primaryResult.success) {
       return primaryResult;
     }
 
     // Fallback to mock provider
-    console.warn(`Primary provider ${config.type} failed, falling back to mock provider`);
-    
+    console.warn(
+      `Primary provider ${config.type} failed, falling back to mock provider`
+    );
+
     const mockConfig: MLProviderConfig = {
       ...config,
       type: 'mock',
@@ -224,11 +231,15 @@ export class MLProviderFactory implements IMLProviderFactory {
 /**
  * Convenient factory functions
  */
-export const createMLProvider = (config: MLProviderConfig): Promise<Result<IMLProvider, MLError>> => {
+export const createMLProvider = (
+  config: MLProviderConfig
+): Promise<Result<IMLProvider, MLError>> => {
   return MLProviderFactory.getInstance().createProvider(config);
 };
 
-export const createMLProviderWithFallback = (config: MLProviderConfig): Promise<Result<IMLProvider, MLError>> => {
+export const createMLProviderWithFallback = (
+  config: MLProviderConfig
+): Promise<Result<IMLProvider, MLError>> => {
   return MLProviderFactory.getInstance().createProviderWithFallback(config);
 };
 

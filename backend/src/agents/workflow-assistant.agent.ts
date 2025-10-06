@@ -127,7 +127,7 @@ export class WorkflowAssistantAgent {
   /**
    * Get conversation for execution
    */
-  getConversation(executionId?: string): ConversationMessage[] {
+  getConversation(): ConversationMessage[] {
     // Access through logic if needed
     return [];
   }
@@ -135,7 +135,7 @@ export class WorkflowAssistantAgent {
   /**
    * Clear conversation for execution
    */
-  async clearConversation(executionId: string): Promise<void> {
+  async clearConversation(): Promise<void> {
     // Implementation to clear conversation history
   }
 
@@ -155,7 +155,7 @@ export class WorkflowAssistantAgent {
   /**
    * Configure assistant settings
    */
-  configureAssistant(config: any): void {
+  configureAssistant(): void {
     // Update assistant configuration
   }
 

@@ -75,8 +75,7 @@ export class WorkflowExecutionManager {
    */
   async startExecution(
     templateId: string,
-    input: any = {},
-    options: ExecutionOptions = {}
+    input: any = {}
   ): Promise<Result<ExecutionResult, WorkflowEngineError>> {
     try {
       // Get workflow template with validation
@@ -91,11 +90,7 @@ export class WorkflowExecutionManager {
       if (!validation.success) return validation as any;
 
       // Create execution record
-      const execution = await this.createExecution(
-        template.data,
-        input,
-        options
-      );
+      const execution = await this.createExecution(template.data, input);
       if (!execution.success) return execution as any;
 
       // Start monitoring
@@ -448,8 +443,7 @@ export class WorkflowExecutionManager {
 
   private async createExecution(
     template: WorkflowTemplate,
-    input: any,
-    options: ExecutionOptions
+    input: any
   ): Promise<Result<WorkflowExecution, WorkflowEngineError>> {
     try {
       const executionData = executionToCreateData(

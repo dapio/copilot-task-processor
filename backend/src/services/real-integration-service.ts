@@ -339,7 +339,7 @@ export class RealIntegrationService {
           uptime: networkResponseTime,
         },
       };
-    } catch (error) {
+    } catch {
       return {
         status: 'unreachable',
         responseTime: Date.now() - startTime,
@@ -362,14 +362,18 @@ export class RealIntegrationService {
         memoryUtilization > 90
           ? 'error'
           : memoryUtilization > 70
-            ? 'degraded'
-            : 'accessible';
+          ? 'degraded'
+          : 'accessible';
 
       return {
         status: status as any,
         responseTime: Date.now() - startTime,
         lastChecked: new Date().toISOString(),
-        details: `Memory usage: ${usedMemoryMB.toFixed(2)}MB / ${totalMemoryMB.toFixed(2)}MB (${memoryUtilization.toFixed(1)}%)`,
+        details: `Memory usage: ${usedMemoryMB.toFixed(
+          2
+        )}MB / ${totalMemoryMB.toFixed(2)}MB (${memoryUtilization.toFixed(
+          1
+        )}%)`,
         metrics: {
           memory: memoryUtilization,
         },
@@ -415,7 +419,7 @@ export class RealIntegrationService {
     } catch (error) {
       // Fallback method for disk space check
       try {
-        const stats = await fs.stat(process.cwd());
+        await fs.stat(process.cwd());
         return {
           status: 'accessible',
           responseTime: Date.now() - startTime,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   FileImage,
   Eye,
@@ -233,11 +234,12 @@ export const ProjectMockupsSection: React.FC<ProjectMockupsSectionProps> = ({
               onClick={() => onMockupSelect?.(mockup.id)}
             >
               <div className={styles.mockupPreview}>
-                {/* TODO: Replace with Next.js Image component for optimization */}
-                <img
+                <Image
                   src={mockup.imageUrl}
                   alt={mockup.name}
                   className={styles.mockupImage}
+                  width={300}
+                  height={200}
                 />
                 <div className={styles.mockupOverlay}>
                   <button className={styles.viewButton} title="Zobacz mockup">

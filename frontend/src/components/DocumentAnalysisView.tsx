@@ -6,10 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import { Activity, RefreshCw } from 'lucide-react';
 import { useBackendApi } from '../hooks/useBackendApi';
-import {
-  DocumentAnalysisRequest,
-  createDocumentAnalysisRequest,
-} from '../services/backendApiService';
+import { createDocumentAnalysisRequest } from '../services/backendApiService';
 import { Button, Alert, AlertDescription } from './ui/basic-components';
 import FileUploadArea from './document-analysis/FileUploadArea';
 import AnalysisOptionsPanel from './document-analysis/AnalysisOptionsPanel';

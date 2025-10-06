@@ -8,7 +8,6 @@ import {
   TaskProcessingRequest,
   TaskProcessingResult,
   IntegrationTestResult,
-  BackendResponse,
 } from '../services/backendApiService';
 import { ApiError } from '../services/apiService';
 

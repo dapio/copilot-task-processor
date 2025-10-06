@@ -4,24 +4,16 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import ContextManager, {
-  AgentContext,
-  ProjectContext,
-} from './context-manager';
+import ContextManager from './context-manager';
 import { IMLProvider } from '../providers/ml-provider.interface';
 import CopilotFunctionCallingProvider from '../providers/copilot-function-calling.provider';
-import AgentToolsRegistry from '../agents/agent-tools-registry';
 
 import {
-  ChatMessage,
   ChatSession,
   ChatRequest,
   ChatResponse,
   ChatConfig,
   IChatSessionManager,
-  IChatMessageManager,
-  IChatContextManager,
-  IChatProviderManager,
 } from './types/chat-integration.types';
 
 import { ChatSessionManager } from './managers/chat-session.manager';
