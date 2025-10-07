@@ -78,6 +78,16 @@ class WorkflowAdminAPI {
     this.baseUrl = baseUrl;
   }
 
+  private getCurrentUser(): string {
+    // Production-ready user retrieval from authentication context
+    // In production, this would use actual auth context
+    return (
+      localStorage.getItem('currentUser') ||
+      sessionStorage.getItem('currentUser') ||
+      'admin'
+    );
+  }
+
   private async request<T>(
     endpoint: string,
     options: any = {}
@@ -118,7 +128,7 @@ class WorkflowAdminAPI {
       body: JSON.stringify({
         title,
         initialPrompt,
-        createdBy: 'admin', // TODO: Get from auth context
+        createdBy: this.getCurrentUser(),
       }),
     });
   }

@@ -1,5 +1,10 @@
 /* Global styles for ThinkCode AI Platform */
 
+/* Limitless Admin Template CSS */
+@import url('/fonts/inter/inter.css');
+@import url('/icons/phosphor/styles.min.css');
+@import url('/css/limitless.min.css');
+
 * {
   margin: 0;
   padding: 0;
@@ -59,6 +64,21 @@ select {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Custom properties for theming */
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary-color: #6b7280;
+  --background-color: #f8fafc;
+  --surface-color: white;
+  --border-color: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #6b7280;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
 }
 
 /* Utility classes */

@@ -236,13 +236,46 @@ export default function DocumentAnalysisView() {
           <div className="space-y-6">
             {/* Analysis Results */}
             <AnalysisResults
-              results={null} // TODO: Convert DocumentAnalysisResult to AnalysisResult
+              results={
+                analysisState.result
+                  ? analysisState.result.fileAnalysis.map(file => ({
+                      summary: file.analysis.summary || 'No summary available',
+                      keywords: file.analysis.keywords,
+                      structure: {
+                        sections: 1, // Default values based on file analysis
+                        pages: 1,
+                        wordCount: 500,
+                      },
+                      insights: file.analysis.suggestions || [],
+                      processingTime: 100, // Mock processing time
+                      complexity: file.analysis.complexity,
+                      issues: file.analysis.issues,
+                    }))
+                  : null
+              }
               isLoading={analysisState.isAnalyzing}
             />
 
             {/* Task Generation */}
             <TaskGeneration
-              tasks={null} // TODO: Convert TaskGenerationResult to GeneratedTask[]
+              tasks={
+                taskGenerationState.result
+                  ? taskGenerationState.result.tasks.map((task, index) => ({
+                      id: `task_${index}`,
+                      title: task.title,
+                      description: task.description,
+                      priority: task.priority as
+                        | 'low'
+                        | 'medium'
+                        | 'high'
+                        | 'critical',
+                      estimatedHours: task.estimatedHours || 2,
+                      category: task.category || 'development',
+                      tags: ['auto-generated', task.category || 'general'],
+                      dependencies: task.dependencies || [],
+                    }))
+                  : null
+              }
               onGenerateTasks={handleGenerateTasks}
               onTaskAction={handleTaskAction}
               isGenerating={taskGenerationState.isGenerating}

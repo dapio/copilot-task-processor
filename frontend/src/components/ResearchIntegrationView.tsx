@@ -129,7 +129,7 @@ export default function ResearchIntegrationView() {
                 ? 'warning'
                 : 'fail',
             message: result.summary,
-            duration: Math.floor(Math.random() * 100) + 50, // Random duration for demo
+            duration: undefined, // Duration should come from API test results
             details: {
               url: result.url,
               source: result.source,

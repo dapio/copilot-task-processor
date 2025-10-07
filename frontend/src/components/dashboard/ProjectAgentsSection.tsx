@@ -12,8 +12,17 @@ interface ProjectAgentsSectionProps {
 export const ProjectAgentsSection: React.FC<ProjectAgentsSectionProps> = ({
   projectAgents,
   onAgentSelect,
-  // onAgentAssign - TODO: Implementation
+  onAgentAssign,
 }) => {
+  const handleAgentAssign = (agentId: string) => {
+    // For now, just trigger assignment with default task
+    onAgentAssign?.(agentId, 'default-task');
+  };
+
+  const handleAgentChat = (agentId: string) => {
+    // Open chat interface with agent
+    console.log('Opening chat with agent:', agentId);
+  };
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'online':
@@ -169,7 +178,7 @@ export const ProjectAgentsSection: React.FC<ProjectAgentsSectionProps> = ({
                   disabled={agent.status !== 'online'}
                   onClick={e => {
                     e.stopPropagation();
-                    // onAgentAssign?.(agent.id, ''); // TODO: Select task to assign
+                    handleAgentAssign(agent.id);
                   }}
                   title={
                     agent.status !== 'online'
@@ -183,7 +192,7 @@ export const ProjectAgentsSection: React.FC<ProjectAgentsSectionProps> = ({
                   className={styles.chatButton}
                   onClick={e => {
                     e.stopPropagation();
-                    // TODO: Open chat with agent
+                    handleAgentChat(agent.id);
                   }}
                 >
                   Czat

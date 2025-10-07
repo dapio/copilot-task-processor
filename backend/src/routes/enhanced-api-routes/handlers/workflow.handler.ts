@@ -180,11 +180,63 @@ export class WorkflowRoutesHandler {
           }
         );
       } else if (validatedData.customSteps) {
-        // TODO: Implementacja custom workflow
-        result = {
-          success: false,
-          error: 'Custom workflow nie jest jeszcze zaimplementowany',
-        };
+        // Custom workflow implementation
+        try {
+          console.log(
+            `🔧 Creating custom workflow with ${validatedData.customSteps.length} steps`
+          );
+
+          // Create custom workflow template
+          const customTemplate = {
+            id: `custom-${Date.now()}`,
+            name: `Custom Workflow - ${new Date().toISOString().substr(0, 19)}`,
+            description: `User-defined custom workflow with ${validatedData.customSteps.length} steps`,
+            category: 'custom',
+            complexity: 'medium' as const,
+            steps: validatedData.customSteps.map(
+              (step: any, index: number) => ({
+                id: `step-${index + 1}`,
+                name: step.name || `Custom Step ${index + 1}`,
+                type: step.type || 'generic',
+                config: step.config || {},
+                dependencies: step.dependencies || [],
+              })
+            ),
+            approvals: [],
+            estimatedDuration: validatedData.customSteps.length * 300, // 5min per step
+            metadata: {
+              projectId: validatedData.projectId,
+              isCustom: true,
+              createdBy: 'user',
+            },
+          };
+
+          // Execute custom workflow
+          result = await this.deps.workflowController.executeWorkflow(
+            customTemplate.id,
+            {
+              template: customTemplate,
+              contextType: validatedData.contextType,
+              priority: validatedData.priority,
+              metadata: {
+                projectId: validatedData.projectId,
+              },
+            }
+          );
+
+          console.log(
+            `✅ Custom workflow execution result:`,
+            result.success ? 'SUCCESS' : 'FAILED'
+          );
+        } catch (error) {
+          console.error('❌ Custom workflow execution failed:', error);
+          result = {
+            success: false,
+            error: `Custom workflow execution failed: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
+          };
+        }
       } else {
         result = {
           success: false,

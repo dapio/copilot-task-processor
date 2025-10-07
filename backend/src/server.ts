@@ -60,19 +60,26 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Error handling middleware
-const errorHandler = (error: Error, _req: Request, res: Response): void => {
+const errorHandler = (
+  error: any,
+  _req: Request,
+  res: Response,
+  _next: any
+): void => {
   console.error('Server Error:', error);
 
-  if (error.message.includes('File type')) {
+  const errorMessage = error?.message || 'Unknown error';
+
+  if (errorMessage.includes('File type')) {
     res.status(400).json({
       success: false,
       error: 'INVALID_FILE_TYPE',
-      message: error.message,
+      message: errorMessage,
     });
     return;
   }
 
-  if (error.message.includes('File too large')) {
+  if (errorMessage.includes('File too large')) {
     res.status(413).json({
       success: false,
       error: 'FILE_TOO_LARGE',
@@ -624,7 +631,7 @@ app.get('/api/communications/agents', async (req: Request, res: Response) => {
 app.use(errorHandler);
 
 // 404 handler
-app.use('*', (req: Request, res: Response) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     error: 'NOT_FOUND',

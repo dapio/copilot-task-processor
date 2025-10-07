@@ -11,6 +11,7 @@ import cleanupRoutes from './cleanup.routes';
 import chatRoutes from './chat.routes';
 import projectsRoutes from './projects.routes';
 import tasksRoutes from './tasks';
+import dashboardRoutes from './dashboard.routes';
 
 // Export all routes with their prefixes
 export const apiRoutes = [
@@ -20,9 +21,17 @@ export const apiRoutes = [
   { path: '/api/chat', router: chatRoutes },
   { path: '/api/projects', router: projectsRoutes },
   { path: '/api/tasks', router: tasksRoutes },
+  { path: '/api/dashboard', router: dashboardRoutes },
 ];
 
 // Individual exports for flexibility
-export { agentsRoutes, jiraRoutes, cleanupRoutes, chatRoutes, projectsRoutes, tasksRoutes };
+export {
+  agentsRoutes,
+  jiraRoutes,
+  cleanupRoutes,
+  chatRoutes,
+  projectsRoutes,
+  tasksRoutes,
+};
 
 export default apiRoutes;

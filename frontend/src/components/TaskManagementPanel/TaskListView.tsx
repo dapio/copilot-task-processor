@@ -146,3 +146,4 @@ const TaskListView: React.FC<TaskListViewProps> = ({
 };
 
 const MemoizedTaskListView = React.memo(TaskListView);
+export default MemoizedTaskListView;

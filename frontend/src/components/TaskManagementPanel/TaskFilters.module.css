@@ -23,7 +23,7 @@
 
 .searchInput {
   width: 100%;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 2.5rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -38,11 +38,39 @@
 
 .searchIcon {
   position: absolute;
-  right: 0.75rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: #6b7280;
   pointer-events: none;
+}
+
+.clearButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  color: #374151;
+}
+
+.clearButton:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.clearButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.clearButton:active {
+  background-color: #e5e7eb;
 }
 
 .filterGroup {

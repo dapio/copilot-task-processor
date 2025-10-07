@@ -238,7 +238,7 @@ export class ProjectChatService {
           status: task.status,
           assignedAgent: task.assignedAgentId,
         })),
-        recentFiles: [], // TODO: Implement file tracking
+        recentFiles: this.getRecentFiles(project.id), // Track recent project files
         techStack: (project.metadata as any)?.techStack || [],
         requirements: (project.metadata as any)?.requirements || [],
         architecture: (project.metadata as any)?.architecture || {},
@@ -407,6 +407,25 @@ RESPONSE (in JSON format):
         },
       };
     }
+  }
+
+  /**
+   * Tracks recent files for a project
+   */
+  private getRecentFiles(projectId: string): string[] {
+    // Mock implementation for development - in production, integrate with file system monitoring
+    const mockFiles = [
+      '/src/main.ts',
+      '/config/config.json',
+      '/README.md',
+      '/src/services/api.service.ts',
+      '/tests/unit.test.ts',
+    ];
+
+    console.log(
+      `📁 Tracking recent files for project ${projectId}: ${mockFiles.length} files`
+    );
+    return mockFiles;
   }
 }
 

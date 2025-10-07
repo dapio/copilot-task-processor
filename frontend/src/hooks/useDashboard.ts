@@ -47,8 +47,7 @@ export const useDashboard = () => {
       }
     }
 
-    // Fallback to empty array if API fails
-    return [];
+    throw new Error('Nie można załadować projektów z API');
   }, [executeWithRetry]);
 
   // Ładowanie agentów
@@ -62,8 +61,7 @@ export const useDashboard = () => {
       }
     }
 
-    // Fallback to empty array if API fails
-    return [];
+    throw new Error('Nie można załadować agentów z API');
   }, [executeWithRetry]);
 
   // Ładowanie konwersacji
@@ -82,8 +80,7 @@ export const useDashboard = () => {
       }
     }
 
-    // Fallback to empty array if API fails
-    return [];
+    throw new Error('Nie można załadować konwersacji z API');
   }, [executeWithRetry]);
 
   // Ładowanie metryk
@@ -100,36 +97,40 @@ export const useDashboard = () => {
       }
     }
 
-    // Fallback do obliczenia metryk z lokalnych danych
-    return calculateMetricsFromData(projects, agents);
-  }, [executeWithRetry, projects, agents]);
+    throw new Error('Nie można załadować metryk z API');
+  }, [executeWithRetry]);
 
   const loadInitialData = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
       // Równoległe ładowanie danych
-      const [projectsResult, agentsResult, conversationsResult, metricsResult] =
+      const [projectsResult, agentsResult, conversationsResult] =
         await Promise.allSettled([
           loadProjects(),
           loadAgents(),
           loadConversations(),
-          loadMetrics(),
         ]);
 
       // Przetwarzanie wyników
+      let loadedProjects: ProjectData[] = [];
+      let loadedAgents: Agent[] = [];
+
       if (projectsResult.status === 'fulfilled') {
-        setProjects(projectsResult.value);
+        loadedProjects = projectsResult.value;
+        setProjects(loadedProjects);
       }
       if (agentsResult.status === 'fulfilled') {
-        setAgents(agentsResult.value);
+        loadedAgents = agentsResult.value;
+        setAgents(loadedAgents);
       }
       if (conversationsResult.status === 'fulfilled') {
         setConversations(conversationsResult.value);
       }
-      if (metricsResult.status === 'fulfilled') {
-        setMetrics(metricsResult.value);
-      }
+
+      // Ładuj metryki po załadowaniu projektów i agentów
+      const metricsResult = await loadMetrics();
+      setMetrics(metricsResult);
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -295,28 +296,3 @@ export const useDashboard = () => {
     refreshData: loadInitialData,
   };
 };
-
-const calculateMetricsFromData = (
-  projects: ProjectData[],
-  agents: Agent[]
-): DashboardMetrics => ({
-  totalProjects: projects.length,
-  activeProjects: projects.filter(p => p.status === 'active').length,
-  completedProjects: projects.filter(p => p.status === 'completed').length,
-  totalTasks: projects.reduce((sum, p) => sum + (p.tasks?.length || 0), 0),
-  completedTasks: projects.reduce(
-    (sum, p) => sum + (p.tasks?.filter(t => t.status === 'done').length || 0),
-    0
-  ),
-  activeAgents: agents.filter(a => a.status === 'online' || a.status === 'busy')
-    .length,
-  averageProjectCompletion:
-    projects.length > 0
-      ? projects.reduce((sum, p) => sum + p.progress, 0) / projects.length
-      : 0,
-  monthlyProjectsCompleted: projects.filter(
-    p =>
-      p.status === 'completed' &&
-      new Date(p.endDate || '').getMonth() === new Date().getMonth()
-  ).length,
-});

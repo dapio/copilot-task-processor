@@ -97,9 +97,37 @@ export const EnterpriseDashboard = memo(() => {
         <ProjectDetailsDashboard
           project={state.selectedProject}
           onBack={() => selectProject(null)}
-          onProjectUpdate={updatedProject => {
-            // TODO: Implementacja aktualizacji projektu
-            selectProject(updatedProject);
+          onProjectUpdate={async updatedProject => {
+            // Handle project update with API call and state management
+            try {
+              console.log('Updating project:', updatedProject.id);
+
+              // Attempt to update project via API
+              const response = await fetch(
+                `/api/projects/${updatedProject.id}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(updatedProject),
+                }
+              );
+
+              if (response.ok) {
+                const updated = await response.json();
+                selectProject(updated);
+                console.log('Project updated successfully');
+              } else {
+                // Fallback - update local state only
+                console.warn('API update failed, updating local state only');
+                selectProject(updatedProject);
+              }
+            } catch (error) {
+              console.error('Error updating project:', error);
+              // Fallback - still update local state
+              selectProject(updatedProject);
+            }
           }}
         />
       );

@@ -28,6 +28,17 @@ export const ProjectWorkflowSection: React.FC<ProjectWorkflowSectionProps> = ({
   onStepAction,
   loading = false,
 }) => {
+  const [stepOptionsOpen, setStepOptionsOpen] = useState<string | null>(null);
+
+  const handleStepOptions = (stepId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setStepOptionsOpen(stepOptionsOpen === stepId ? null : stepId);
+  };
+
+  const handleStepOptionAction = (stepId: string, action: string) => {
+    onStepAction?.(stepId, action);
+    setStepOptionsOpen(null);
+  };
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
 
   const getStepStatusIcon = (status: string) => {
@@ -210,12 +221,41 @@ export const ProjectWorkflowSection: React.FC<ProjectWorkflowSectionProps> = ({
                   className={styles.stepOptionsButton}
                   onClick={e => {
                     e.stopPropagation();
-                    // TODO: Step options menu
+                    handleStepOptions(step.id, e);
                   }}
                   title="Opcje kroku"
                 >
                   <MoreVertical size={16} />
                 </button>
+
+                {stepOptionsOpen === step.id && (
+                  <div className={styles.stepOptionsMenu}>
+                    <button
+                      onClick={() => handleStepOptionAction(step.id, 'restart')}
+                    >
+                      <RotateCcw size={14} /> Uruchom ponownie
+                    </button>
+                    <button
+                      onClick={() => handleStepOptionAction(step.id, 'skip')}
+                    >
+                      <ArrowRight size={14} /> Pomiń krok
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleStepOptionAction(step.id, 'configure')
+                      }
+                    >
+                      <Settings size={14} /> Konfiguruj
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleStepOptionAction(step.id, 'reassign')
+                      }
+                    >
+                      Przypisz ponownie
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

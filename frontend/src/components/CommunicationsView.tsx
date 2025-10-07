@@ -38,20 +38,23 @@ export const CommunicationsView: React.FC = () => {
 
   const loadCommunications = async () => {
     try {
-      // TODO: Implement real API calls
-      // const messagesResponse = await fetch('/api/messages');
-      // const agentsResponse = await fetch('/api/agents');
-      // const messages = await messagesResponse.json();
-      // const agents = await agentsResponse.json();
-      // setMessages(messages);
-      // setAgents(agents);
+      setLoading(true);
 
-      // For now, set empty arrays - data will be loaded from real API later
-      setMessages([]);
-      setAgents([]);
-      setLoading(false);
+      const messagesResponse = await fetch('/api/messages');
+      const agentsResponse = await fetch('/api/agents');
+
+      if (messagesResponse.ok && agentsResponse.ok) {
+        const messages = await messagesResponse.json();
+        const agents = await agentsResponse.json();
+        setMessages(messages);
+        setAgents(agents);
+      } else {
+        throw new Error('Nie można załadować danych komunikacji z API');
+      }
     } catch (error) {
       console.error('Failed to load communications:', error);
+      throw error; // Re-throw to let parent components handle
+    } finally {
       setLoading(false);
     }
   };

@@ -30,6 +30,9 @@ interface AnalysisResult {
   };
   insights: string[];
   processingTime: number;
+  complexity?: number;
+  issues?: string[];
+  confidence?: number;
 }
 
 interface AnalysisResultsProps {

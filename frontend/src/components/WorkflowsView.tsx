@@ -37,6 +37,7 @@ interface WorkflowStep {
 export const WorkflowsView: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
@@ -45,16 +46,19 @@ export const WorkflowsView: React.FC = () => {
 
   const loadWorkflows = async () => {
     try {
-      // TODO: Implement real API call to load workflows
-      // const response = await fetch('/api/workflows');
-      // const workflows = await response.json();
-      // setWorkflows(workflows);
+      setLoading(true);
+      const response = await fetch('/api/workflows');
 
-      // For now, set empty array - workflows will be loaded from real API later
-      setWorkflows([]);
-      setLoading(false);
+      if (response.ok) {
+        const workflows = await response.json();
+        setWorkflows(workflows);
+      } else {
+        throw new Error('Nie można załadować workflow z API');
+      }
     } catch (error) {
       console.error('Failed to load workflows:', error);
+      setError('Nie można załadować workflow z API');
+    } finally {
       setLoading(false);
     }
   };

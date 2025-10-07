@@ -6,6 +6,7 @@
 import { PrismaClient } from '@prisma/client';
 import { ApprovalStep } from './enhanced-workflow-templates';
 import ChatIntegrationService from './chat-integration.service';
+import { NotificationService } from './notification.service';
 
 export interface ApprovalRequest {
   id: string;
@@ -109,6 +110,7 @@ export interface StakeholderNotification {
 export class ApprovalSystem {
   private prisma: PrismaClient;
   private chatService: ChatIntegrationService;
+  private notificationService: NotificationService;
   private approvalRequests: Map<string, ApprovalRequest> = new Map();
   private iterationSessions: Map<string, IterationSession> = new Map();
   private notifications: Map<string, StakeholderNotification> = new Map();
@@ -116,6 +118,7 @@ export class ApprovalSystem {
   constructor(prisma: PrismaClient, chatService: ChatIntegrationService) {
     this.prisma = prisma;
     this.chatService = chatService;
+    this.notificationService = new NotificationService(prisma);
     this.startApprovalTimeoutChecker();
   }
 
@@ -260,31 +263,84 @@ export class ApprovalSystem {
     requestedChanges: string[];
     maxIterations?: number;
   }): Promise<string> {
-    const iterationId = `iteration_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const iterationId = this.generateIterationId();
+    const { iterationNumber, maxIterations } =
+      await this.validateIterationLimits(
+        options.workflowExecutionId,
+        options.stepId,
+        options.maxIterations
+      );
 
-    // Sprawdź ile iteracji już było dla tego kroku
+    const chatSessionId = await this.createIterationChatSession(
+      options.workflowExecutionId,
+      options.stepId,
+      iterationNumber
+    );
+
+    const iterationSession = await this.createIterationSession(
+      iterationId,
+      options,
+      iterationNumber,
+      maxIterations,
+      chatSessionId
+    );
+
+    this.iterationSessions.set(iterationId, iterationSession);
+
+    await this.sendIterationStartMessage(
+      chatSessionId,
+      iterationNumber,
+      options
+    );
+
+    return iterationId;
+  }
+
+  /**
+   * Generate unique iteration ID
+   */
+  private generateIterationId(): string {
+    return `iteration_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Validate iteration limits and get current iteration number
+   */
+  private async validateIterationLimits(
+    workflowExecutionId: string,
+    stepId: string,
+    maxIterations?: number
+  ): Promise<{ iterationNumber: number; maxIterations: number }> {
     const existingIterations = Array.from(
       this.iterationSessions.values()
     ).filter(
       iteration =>
-        iteration.workflowExecutionId === options.workflowExecutionId &&
-        iteration.stepId === options.stepId
+        iteration.workflowExecutionId === workflowExecutionId &&
+        iteration.stepId === stepId
     );
 
     const iterationNumber = existingIterations.length + 1;
-    const maxIterations = options.maxIterations || 3;
+    const maxIterationsLimit = maxIterations || 3;
 
-    if (iterationNumber > maxIterations) {
+    if (iterationNumber > maxIterationsLimit) {
       throw new Error(
-        `Maximum iterations (${maxIterations}) reached for step ${options.stepId}`
+        `Maximum iterations (${maxIterationsLimit}) reached for step ${stepId}`
       );
     }
 
-    // Stwórz chat session dla iteracji
+    return { iterationNumber, maxIterations: maxIterationsLimit };
+  }
+
+  /**
+   * Create chat session for iteration
+   */
+  private async createIterationChatSession(
+    workflowExecutionId: string,
+    stepId: string,
+    iterationNumber: number
+  ): Promise<string> {
     const sessionResult = await this.chatService.createSession(
-      `${options.workflowExecutionId}_${options.stepId}_iteration_${iterationNumber}`,
+      `${workflowExecutionId}_${stepId}_iteration_${iterationNumber}`,
       'agent'
     );
 
@@ -294,9 +350,20 @@ export class ApprovalSystem {
       );
     }
 
-    const chatSessionId = sessionResult.data.id;
+    return sessionResult.data.id;
+  }
 
-    const iterationSession: IterationSession = {
+  /**
+   * Create iteration session object
+   */
+  private async createIterationSession(
+    iterationId: string,
+    options: any,
+    iterationNumber: number,
+    maxIterations: number,
+    chatSessionId: string
+  ): Promise<IterationSession> {
+    return {
       id: iterationId,
       workflowExecutionId: options.workflowExecutionId,
       stepId: options.stepId,
@@ -307,7 +374,10 @@ export class ApprovalSystem {
       triggerDetails: options.triggerDetails,
 
       changes: {
-        previousVersion: '', // TODO: Pobierz z workflow step result
+        previousVersion: await this.getPreviousStepVersion(
+          options.workflowExecutionId,
+          options.stepId
+        ),
         requestedChanges: options.requestedChanges,
       },
 
@@ -315,10 +385,16 @@ export class ApprovalSystem {
       chatSessionId,
       createdAt: new Date(),
     };
+  }
 
-    this.iterationSessions.set(iterationId, iterationSession);
-
-    // Wyślij wiadomość startową do chat session
+  /**
+   * Send iteration start message to chat session
+   */
+  private async sendIterationStartMessage(
+    chatSessionId: string,
+    iterationNumber: number,
+    options: any
+  ): Promise<void> {
     await this.chatService.processMessage({
       sessionId: chatSessionId,
       message: `Starting iteration ${iterationNumber} for step "${
@@ -329,7 +405,7 @@ Trigger: ${options.trigger}
 Details: ${options.triggerDetails}
 
 Requested changes:
-${options.requestedChanges.map(change => `- ${change}`).join('\n')}
+${options.requestedChanges.map((change: string) => `- ${change}`).join('\n')}
 
 Please implement the requested changes and provide the updated result.`,
       provider: 'github-copilot',
@@ -339,8 +415,6 @@ Please implement the requested changes and provide the updated result.`,
         temperature: 0.7,
       },
     });
-
-    return iterationId;
   }
 
   /**
@@ -455,25 +529,59 @@ Please review the attached artifacts and provide your decision.`,
   }
 
   /**
-   * Dostarcza notyfikację
+   * Dostarcza notyfikację używając NotificationService
    */
   private async deliverNotification(
     notification: StakeholderNotification
   ): Promise<boolean> {
     try {
-      // TODO: Implement actual notification delivery (email, Slack, webhook)
-      console.log(
-        `📧 Notification sent to ${notification.recipientInfo.email}:`
-      );
-      console.log(`   Subject: ${notification.content.subject}`);
-      console.log(`   Priority: ${notification.content.priority}`);
+      // Determine notification type based on available recipient info
+      let notificationType: 'email' | 'slack' | 'webhook' = 'email';
+      const recipient: any = {};
 
-      notification.status = 'sent';
-      notification.sentAt = new Date();
-      notification.attempts++;
+      if (notification.recipientInfo.email) {
+        notificationType = 'email';
+        recipient.email = notification.recipientInfo.email;
+      } else if (notification.recipientInfo.slackChannel) {
+        notificationType = 'slack';
+        recipient.slackChannel = notification.recipientInfo.slackChannel;
+      } else if (notification.recipientInfo.webhookUrl) {
+        notificationType = 'webhook';
+        recipient.webhookUrl = notification.recipientInfo.webhookUrl;
+      }
 
-      return true;
-    } catch {
+      // Send through unified NotificationService
+      const result = await this.notificationService.sendNotification({
+        type: notificationType,
+        recipient,
+        content: {
+          subject: notification.content.subject,
+          message: notification.content.message,
+          priority: notification.content.priority as
+            | 'low'
+            | 'medium'
+            | 'high'
+            | 'urgent',
+          actionUrl: notification.content.actionUrl,
+        },
+        options: {
+          retryAttempts: notification.maxAttempts - notification.attempts,
+        },
+      });
+
+      if (result.success) {
+        notification.status = 'delivered';
+        notification.sentAt = new Date();
+        notification.attempts++;
+        return true;
+      } else {
+        notification.status = 'failed';
+        notification.attempts++;
+        console.error(`Notification delivery failed: ${result.error.message}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error delivering notification:', error);
       notification.status = 'failed';
       notification.attempts++;
 
@@ -574,8 +682,114 @@ Please review the attached artifacts and provide your decision.`,
    * Eskaluje approval do wyższego poziomu
    */
   private async escalateApproval(approval: ApprovalRequest): Promise<void> {
-    // TODO: Implement escalation logic (notify manager, tech lead, etc.)
-    console.log(`🚨 Approval ${approval.id} escalated due to timeout`);
+    console.log(`🚨 Escalating approval ${approval.id} due to timeout`);
+
+    // Determine escalation hierarchy
+    const escalationTarget = this.getEscalationTarget(approval.approverType);
+
+    if (!escalationTarget) {
+      console.warn(`No escalation target found for ${approval.approverType}`);
+      return;
+    }
+
+    // Create escalation notification
+    const escalationId = `escalation_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
+    const escalationNotification: StakeholderNotification = {
+      id: escalationId,
+      type: 'escalation',
+      recipientType: escalationTarget.type,
+      recipientInfo: {
+        userId: escalationTarget.userId,
+        email: escalationTarget.email,
+        slackChannel: escalationTarget.slackChannel,
+      },
+      content: {
+        subject: `ESCALATED: ${approval.content.title}`,
+        message:
+          `An approval request has been escalated to you due to timeout.\n\n` +
+          `Original Request: ${approval.content.title}\n` +
+          `Description: ${approval.content.description}\n` +
+          `Original Approver: ${approval.approverType}\n` +
+          `Created: ${approval.createdAt.toISOString()}\n` +
+          `Timeout: ${approval.timeoutAt?.toISOString() || 'N/A'}\n\n` +
+          `Please review and take action immediately.`,
+        actionUrl: `${
+          process.env.FRONTEND_URL || 'http://localhost:3001'
+        }/approvals/${approval.id}`,
+        priority: 'urgent',
+      },
+      status: 'pending',
+      attempts: 0,
+      maxAttempts: 5,
+      createdAt: new Date(),
+    };
+
+    // Send escalation notification
+    this.notifications.set(escalationId, escalationNotification);
+    await this.deliverNotification(escalationNotification);
+
+    // Update approval to reflect escalation
+    approval.approverType = escalationTarget.type;
+    approval.approverInfo = {
+      userId: escalationTarget.userId,
+      email: escalationTarget.email,
+      role: escalationTarget.name || `Escalated ${escalationTarget.type}`,
+    };
+
+    // Extend timeout for escalated approval
+    if (approval.timeoutAt) {
+      approval.timeoutAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    }
+
+    console.log(
+      `✅ Approval ${approval.id} escalated to ${escalationTarget.type}`
+    );
+  }
+
+  /**
+   * Get escalation target based on current approver type
+   */
+  private getEscalationTarget(
+    currentApproverType: ApprovalStep['approverType']
+  ): {
+    type: ApprovalStep['approverType'];
+    userId?: string;
+    email?: string;
+    slackChannel?: string;
+    name?: string;
+  } | null {
+    // Define escalation hierarchy
+    const escalationHierarchy: Record<string, any> = {
+      human_reviewer: {
+        type: 'tech_lead',
+        email: process.env.TECH_LEAD_EMAIL || 'tech-lead@company.com',
+        slackChannel: '#tech-leads',
+        name: 'Tech Lead',
+      },
+      business_analyst: {
+        type: 'project_manager',
+        email: process.env.PROJECT_MANAGER_EMAIL || 'pm@company.com',
+        slackChannel: '#project-managers',
+        name: 'Project Manager',
+      },
+      tech_lead: {
+        type: 'engineering_manager',
+        email: process.env.ENGINEERING_MANAGER_EMAIL || 'em@company.com',
+        slackChannel: '#engineering-managers',
+        name: 'Engineering Manager',
+      },
+      project_manager: {
+        type: 'senior_stakeholder',
+        email: process.env.SENIOR_STAKEHOLDER_EMAIL || 'senior@company.com',
+        slackChannel: '#senior-leadership',
+        name: 'Senior Stakeholder',
+      },
+    };
+
+    return escalationHierarchy[currentApproverType] || null;
   }
 
   // === Public API Methods ===
@@ -629,14 +843,87 @@ Please review the attached artifacts and provide your decision.`,
       return acc;
     }, {} as Record<string, number>);
 
+    // Calculate average response time from completed approvals
+    const completedApprovals = allApprovals.filter(
+      a => a.status !== 'pending' && a.response?.approvedAt
+    );
+
+    let averageResponseTime = 0;
+    if (completedApprovals.length > 0) {
+      const totalResponseTime = completedApprovals.reduce((sum, approval) => {
+        if (approval.response?.approvedAt) {
+          return (
+            sum +
+            (approval.response.approvedAt.getTime() -
+              approval.createdAt.getTime())
+          );
+        }
+        return sum;
+      }, 0);
+      averageResponseTime =
+        totalResponseTime / completedApprovals.length / (1000 * 60); // Convert to minutes
+    }
+
     return {
       pendingCount,
       approvedToday,
       rejectedToday,
-      averageResponseTime: 0, // TODO: Calculate from actual data
+      averageResponseTime,
       byApproverType,
     };
   }
+
+  /**
+   * Get previous step version from workflow execution results
+   */
+  private async getPreviousStepVersion(
+    workflowExecutionId: string,
+    stepId: string
+  ): Promise<string> {
+    try {
+      // Try to get from database first
+      const execution = await this.prisma.workflowExecution.findUnique({
+        where: { id: workflowExecutionId },
+      });
+
+      if (execution?.result) {
+        const result = execution.result as any;
+        // Try to extract step-specific result
+        const stepResult =
+          result?.steps?.[stepId] || result?.stepResults?.[stepId];
+        if (stepResult) {
+          return (
+            stepResult.artifacts?.[0] ||
+            stepResult.output ||
+            JSON.stringify(stepResult)
+          );
+        }
+        // If no step-specific result, return general result
+        return result.artifacts?.[0] || result.output || JSON.stringify(result);
+      }
+
+      // Fallback to checking iteration sessions for previous versions
+      const relatedIterations = Array.from(this.iterationSessions.values())
+        .filter(
+          session =>
+            session.workflowExecutionId === workflowExecutionId &&
+            session.stepId === stepId &&
+            session.status === 'completed'
+        )
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+      if (relatedIterations.length > 0) {
+        return relatedIterations[0].changes.previousVersion;
+      }
+
+      return 'No previous version available';
+    } catch (error) {
+      console.error('Error retrieving previous step version:', error);
+      return 'Error retrieving previous version';
+    }
+  }
+
+  // Notification methods moved to NotificationService for better modularity
 }
 
 export default ApprovalSystem;

@@ -52,10 +52,36 @@ export const ProjectMockupsSection: React.FC<ProjectMockupsSectionProps> = ({
   onUploadMockup,
   onMockupAction,
   onMockupSelect,
-  // loading = false - TODO: Use for upload states
+  loading = false,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [mockupOptionsOpen, setMockupOptionsOpen] = useState<string | null>(
+    null
+  );
+
+  const handleDownloadMockup = (mockup: Mockup) => {
+    // Create download link for mockup file
+    const link = document.createElement('a');
+    link.href = mockup.imageUrl;
+    link.download = mockup.name + '.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleMockupOptions = (mockupId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMockupOptionsOpen(mockupOptionsOpen === mockupId ? null : mockupId);
+  };
+
+  const handleMockupOptionAction = (
+    mockupId: string,
+    action: 'approve' | 'reject' | 'comment' | 'delete'
+  ) => {
+    onMockupAction?.(mockupId, action);
+    setMockupOptionsOpen(null);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -338,7 +364,7 @@ export const ProjectMockupsSection: React.FC<ProjectMockupsSectionProps> = ({
                 <button
                   onClick={e => {
                     e.stopPropagation();
-                    // TODO: Download mockup
+                    handleDownloadMockup(mockup);
                   }}
                   className={styles.downloadButton}
                   title="Pobierz mockup"
@@ -349,13 +375,47 @@ export const ProjectMockupsSection: React.FC<ProjectMockupsSectionProps> = ({
                 <button
                   onClick={e => {
                     e.stopPropagation();
-                    // TODO: More options menu
+                    handleMockupOptions(mockup.id, e);
                   }}
                   className={styles.moreButton}
                   title="Więcej opcji"
                 >
                   <MoreVertical size={16} />
                 </button>
+
+                {mockupOptionsOpen === mockup.id && (
+                  <div className={styles.mockupOptionsMenu}>
+                    <button
+                      onClick={() =>
+                        handleMockupOptionAction(mockup.id, 'approve')
+                      }
+                    >
+                      <ThumbsUp size={14} /> Zatwierdź
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleMockupOptionAction(mockup.id, 'reject')
+                      }
+                    >
+                      <ThumbsDown size={14} /> Odrzuć
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleMockupOptionAction(mockup.id, 'comment')
+                      }
+                    >
+                      <MessageSquare size={14} /> Skomentuj
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleMockupOptionAction(mockup.id, 'delete')
+                      }
+                      className={styles.deleteOption}
+                    >
+                      Usuń
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

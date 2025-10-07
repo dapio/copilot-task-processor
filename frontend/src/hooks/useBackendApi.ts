@@ -151,6 +151,16 @@ export function useBackendApi() {
     }
   }, []);
 
+  // Auto-check connection on mount
+  useEffect(() => {
+    checkConnection();
+
+    // Check connection every 30 seconds
+    const interval = setInterval(checkConnection, 30000);
+
+    return () => clearInterval(interval);
+  }, [checkConnection]);
+
   /**
    * Analyze documents
    */

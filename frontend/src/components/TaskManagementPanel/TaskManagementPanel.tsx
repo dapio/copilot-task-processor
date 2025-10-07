@@ -425,7 +425,7 @@ const TaskManagementPanel: React.FC<{ projectId?: string }> = ({
       ) : (
         <TaskListView
           tasks={filteredTasks}
-          onTaskSelect={task => console.log('Selected task:', task)}
+          onTaskSelect={(task: any) => console.log('Selected task:', task)}
         />
       )}
     </div>

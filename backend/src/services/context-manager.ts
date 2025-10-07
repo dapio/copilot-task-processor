@@ -212,7 +212,21 @@ export class ContextManager {
         await this.deleteAgentContext(agentCtx.id);
       }
 
-      // TODO: Usuń z bazy danych
+      // Remove from database (using Project model for now as there's no dedicated context model)
+      try {
+        // For now, we'll store context in the project's metadata field
+        await this.prisma.project.updateMany({
+          where: { id: contextId.replace('ctx_', '') }, // Remove context prefix if exists
+          data: {
+            metadata: {}, // Clear context metadata
+          },
+        });
+        console.log(`🗑️ Cleared project context ${contextId} from database`);
+      } catch (dbError) {
+        console.error('Failed to delete from database:', dbError);
+        // Don't fail if database deletion fails, in-memory deletion already succeeded
+      }
+
       return true;
     } catch (error) {
       console.error('Failed to delete project context:', error);
@@ -333,7 +347,19 @@ export class ContextManager {
    */
   async deleteAgentContext(contextId: string): Promise<boolean> {
     this.agentContexts.delete(contextId);
-    // TODO: Usuń z bazy danych
+
+    // Remove from database (using Agent model for context storage)
+    try {
+      await this.prisma.agent.updateMany({
+        where: { id: contextId.replace('agent_ctx_', '') }, // Remove agent context prefix if exists
+        data: {
+          metadata: {}, // Clear agent context metadata
+        },
+      });
+      console.log(`🗑️ Cleared agent context ${contextId} from database`);
+    } catch (dbError) {
+      console.error('Failed to delete agent context from database:', dbError);
+    }
     return true;
   }
 
@@ -556,29 +582,157 @@ export class ContextManager {
   // === Private Methods ===
 
   private async persistProjectContext(context: ProjectContext): Promise<void> {
-    // TODO: Zaimplementuj persystencję w bazie danych
-    console.log('Persisting project context:', context.id);
+    try {
+      // Store context in project's metadata field
+      const contextData = JSON.parse(
+        JSON.stringify({
+          contextId: context.id,
+          name: context.name,
+          description: context.description,
+          systemPrompt: context.systemPrompt,
+          settings: context.settings,
+          workspace: context.workspace,
+          metadata: context.metadata,
+          sharedWith: context.sharedWith,
+          updatedAt: context.updatedAt,
+        })
+      );
+
+      await this.prisma.project.updateMany({
+        where: { id: context.projectId },
+        data: {
+          metadata: contextData,
+        },
+      });
+
+      console.log(`💾 Persisted project context ${context.id} to database`);
+    } catch (error) {
+      console.error('Failed to persist project context:', error);
+      throw error;
+    }
   }
 
   private async persistAgentContext(context: AgentContext): Promise<void> {
-    // TODO: Zaimplementuj persystencję w bazie danych
-    console.log('Persisting agent context:', context.id);
+    try {
+      // Store context in agent's metadata field
+      const contextData = JSON.parse(
+        JSON.stringify({
+          contextId: context.id,
+          parentProjectContextId: context.parentProjectContextId,
+          name: context.name,
+          description: context.description,
+          systemPrompt: context.systemPrompt,
+          conversationHistory: context.conversationHistory.slice(-50), // Keep only last 50 messages
+          state: context.state,
+          settings: context.settings,
+          metadata: context.metadata,
+          lastAccessedAt: context.lastAccessedAt,
+          updatedAt: context.updatedAt,
+        })
+      );
+
+      await this.prisma.agent.updateMany({
+        where: { id: context.agentId },
+        data: {
+          metadata: contextData,
+        },
+      });
+
+      console.log(`💾 Persisted agent context ${context.id} to database`);
+    } catch (error) {
+      console.error('Failed to persist agent context:', error);
+      throw error;
+    }
   }
 
   private async loadProjectContext(
     contextId: string
   ): Promise<ProjectContext | null> {
-    // TODO: Załaduj z bazy danych
-    console.log('Loading project context:', contextId);
-    return null;
+    try {
+      // Try to load context from project metadata
+      // For SQLite, we'll search by extracting the projectId from contextId
+      const projectId = contextId.replace('project_ctx_', '');
+      const project = await this.prisma.project.findFirst({
+        where: { id: projectId },
+      });
+
+      if (!project || !project.metadata) {
+        console.log(`📂 No project context found for ${contextId}`);
+        return null;
+      }
+
+      const contextData = project.metadata as any;
+      const projectContext: ProjectContext = {
+        id: contextData.contextId || contextId,
+        projectId: project.id,
+        name: contextData.name || project.name,
+        description: contextData.description || project.description,
+        systemPrompt: contextData.systemPrompt,
+        settings: contextData.settings || {
+          maxHistoryMessages: 100,
+          autoSave: true,
+          persistentMemory: true,
+          contextSharing: false,
+        },
+        workspace: contextData.workspace,
+        metadata: contextData.metadata || {},
+        createdAt: project.createdAt,
+        updatedAt: contextData.updatedAt || project.updatedAt,
+        sharedWith: contextData.sharedWith || [],
+      };
+
+      console.log(`📂 Loaded project context ${contextId} from database`);
+      return projectContext;
+    } catch (error) {
+      console.error('Failed to load project context:', error);
+      return null;
+    }
   }
 
   private async loadAgentContext(
     contextId: string
   ): Promise<AgentContext | null> {
-    // TODO: Załaduj z bazy danych
-    console.log('Loading agent context:', contextId);
-    return null;
+    try {
+      // Try to load context from agent metadata
+      // For SQLite, we'll search by extracting the agentId from contextId
+      const agentId = contextId.replace('agent_ctx_', '');
+      const agent = await this.prisma.agent.findFirst({
+        where: { id: agentId },
+      });
+
+      if (!agent || !agent.metadata) {
+        console.log(`🤖 No agent context found for ${contextId}`);
+        return null;
+      }
+
+      const contextData = agent.metadata as any;
+      const agentContext: AgentContext = {
+        id: contextData.contextId || contextId,
+        agentId: agent.id,
+        parentProjectContextId: contextData.parentProjectContextId,
+        name: contextData.name || agent.name,
+        description: contextData.description,
+        systemPrompt: contextData.systemPrompt,
+        conversationHistory: contextData.conversationHistory || [],
+        state: contextData.state || {},
+        settings: contextData.settings || {
+          maxHistoryMessages: 50,
+          inheritFromProject: true,
+          autoCleanup: true,
+          memoryRetention: 7,
+        },
+        metadata: contextData.metadata || {},
+        createdAt: agent.createdAt,
+        updatedAt: contextData.updatedAt || agent.updatedAt,
+        lastAccessedAt: contextData.lastAccessedAt || new Date(),
+      };
+
+      console.log(`🤖 Loaded agent context ${contextId} from database`);
+      return agentContext;
+    } catch (error) {
+      console.error('Failed to load agent context:', error);
+      return null;
+    }
   }
 
   private async getAgentSystemPrompt(
@@ -597,7 +751,21 @@ export class ContextManager {
       }
     }
 
-    // TODO: Załaduj specyficzny prompt dla agenta z bazy
+    // Load agent-specific prompt from database
+    try {
+      const agent = await this.prisma.agent.findUnique({
+        where: { id: agentId },
+      });
+
+      if (agent?.metadata) {
+        const agentData = agent.metadata as any;
+        if (agentData.systemPrompt) {
+          prompt = `${prompt}\n\n**AGENT SPECIFIC:**\n${agentData.systemPrompt}`;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load agent prompt from database:', error);
+    }
 
     return prompt;
   }
