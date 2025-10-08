@@ -5,11 +5,11 @@
 
 import express, { Express } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { 
+import {
   IAgentServer,
   AgentServerConfig,
   AgentServerDependencies,
-  AgentServerState 
+  AgentServerState,
 } from './types/agents-server.types';
 
 import { AgentMiddlewareManager } from './managers/agent-middleware.manager';
@@ -34,26 +34,31 @@ export class AgentsServer implements IAgentServer {
   constructor(config?: Partial<AgentServerConfig>) {
     this.config = {
       port: parseInt(process.env.AGENTS_PORT || '3006', 10),
-      corsOrigins: ['http://localhost:3001', 'http://127.0.0.1:3001'],
+      corsOrigins: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+      ],
       bodyLimit: '50mb',
       environment: process.env.NODE_ENV || 'development',
-      ...config
+      ...config,
     };
 
     this.app = express();
-    
+
     // Initialize dependencies
     this.dependencies = {
       prisma: new PrismaClient(),
       researchService: new RealResearchService(),
-      integrationService: new RealIntegrationService()
+      integrationService: new RealIntegrationService(),
     };
 
     this.state = {
       isRunning: false,
       startTime: new Date(),
       requestCount: 0,
-      errorCount: 0
+      errorCount: 0,
     };
 
     // Initialize managers
@@ -96,7 +101,7 @@ export class AgentsServer implements IAgentServer {
       this.app.use('/api/enhanced', enhancedRoutes);
       this.app.use('/api/assistant', assistantRoutes);
       this.app.use('/api/workflow-admin', workflowAdminRoutes);
-      
+
       console.log('Legacy routes mounted successfully');
     } catch (error) {
       console.error('Failed to mount legacy routes:', error);
@@ -113,7 +118,7 @@ export class AgentsServer implements IAgentServer {
         this.server = this.app.listen(this.config.port, () => {
           this.state.isRunning = true;
           this.state.startTime = new Date();
-          
+
           console.log(`
 🚀 Agents Server started successfully!
 📡 Port: ${this.config.port}
@@ -121,7 +126,7 @@ export class AgentsServer implements IAgentServer {
 🕐 Started: ${this.state.startTime.toISOString()}
 📋 Health: http://localhost:${this.config.port}/api/health
           `);
-          
+
           resolve();
         });
 
@@ -130,7 +135,6 @@ export class AgentsServer implements IAgentServer {
           this.state.errorCount++;
           reject(error);
         });
-
       } catch (error) {
         console.error('Failed to start server:', error);
         reject(error);
@@ -184,8 +188,8 @@ export class AgentsServer implements IAgentServer {
       ...this.state,
       // Calculate uptime in milliseconds
       ...(this.state.isRunning && {
-        uptime: Date.now() - this.state.startTime.getTime()
-      })
+        uptime: Date.now() - this.state.startTime.getTime(),
+      }),
     };
   }
 
@@ -194,14 +198,14 @@ export class AgentsServer implements IAgentServer {
    */
   async restart(): Promise<void> {
     console.log('Restarting agents server...');
-    
+
     await this.stop();
-    
+
     // Wait a moment for cleanup
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     await this.start();
-    
+
     console.log('Agents server restarted successfully');
   }
 
@@ -230,7 +234,9 @@ export class AgentsServer implements IAgentServer {
 // Export singleton instance and factory
 let serverInstance: AgentsServer | null = null;
 
-export const createAgentsServer = (config?: Partial<AgentServerConfig>): AgentsServer => {
+export const createAgentsServer = (
+  config?: Partial<AgentServerConfig>
+): AgentsServer => {
   if (!serverInstance) {
     serverInstance = new AgentsServer(config);
   }
@@ -242,18 +248,25 @@ export const getAgentsServer = (): AgentsServer | null => {
 };
 
 // Auto-start server when module is loaded directly
-if (require.main === module) {
+const isMainModule = typeof require !== 'undefined' && require.main === module;
+const isDirectExecution =
+  process.argv[1]?.includes('agents-server.ts') ||
+  process.argv[1]?.includes('agents-server.js');
+
+if (isMainModule || isDirectExecution) {
   const server = createAgentsServer();
-  
-  server.start().catch((error) => {
+
+  server.start().catch(error => {
     console.error('Failed to start agents server:', error);
     process.exit(1);
   });
 
   // Graceful shutdown
   const gracefulShutdown = async (signal: string) => {
-    console.log(`\n${signal} received. Shutting down agents server gracefully...`);
-    
+    console.log(
+      `\n${signal} received. Shutting down agents server gracefully...`
+    );
+
     try {
       await server.stop();
       console.log('Agents server shutdown complete');

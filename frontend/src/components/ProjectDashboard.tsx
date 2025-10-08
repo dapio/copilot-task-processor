@@ -11,6 +11,7 @@ import TaskManagement from './TaskManagement';
 import WorkflowManagement from './WorkflowManagement';
 import MockupManagement from './MockupManagement';
 import Configuration from './Configuration';
+import ProjectProgress from './ProjectProgress';
 import styles from '../styles/project-dashboard.module.css';
 
 interface ProjectDashboardProps {
@@ -37,19 +38,29 @@ export default function ProjectDashboard({
       <ProjectHeader project={project} onSwitchProject={handleSwitchProject} />
 
       <div className={styles.content}>
-        <ProjectNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        {/* Lewa strona - główna zawartość z zakładkami */}
+        <div className={styles.mainContent}>
+          <ProjectNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <div className={styles.tabContent}>
-          {activeTab === 'overview' && <ProjectOverview project={project} />}
-          {activeTab === 'agents' && <AgentManagement projectId={project.id} />}
-          {activeTab === 'tasks' && <TaskManagement projectId={project.id} />}
-          {activeTab === 'workflows' && (
-            <WorkflowManagement projectId={project.id} />
-          )}
-          {activeTab === 'mockups' && (
-            <MockupManagement projectId={project.id} />
-          )}
-          {activeTab === 'config' && <Configuration projectId={project.id} />}
+          <div className={styles.tabContent}>
+            {activeTab === 'overview' && <ProjectOverview project={project} />}
+            {activeTab === 'agents' && (
+              <AgentManagement projectId={project.id} />
+            )}
+            {activeTab === 'tasks' && <TaskManagement projectId={project.id} />}
+            {activeTab === 'workflows' && (
+              <WorkflowManagement projectId={project.id} />
+            )}
+            {activeTab === 'mockups' && (
+              <MockupManagement projectId={project.id} />
+            )}
+            {activeTab === 'config' && <Configuration projectId={project.id} />}
+          </div>
+        </div>
+
+        {/* Sidebar z Progress i Chat - zawsze widoczny */}
+        <div className={styles.sidebar}>
+          <ProjectProgress projectId={project.id} />
         </div>
       </div>
     </div>

@@ -69,57 +69,46 @@ export class DataRetentionManager {
   }
 
   /**
-   * Czyści stare zadania
+   * Czyści stare zadania - TYLKO CACHE I PLIKI TYMCZASOWE, NIE DANE!
    */
   private async cleanupOldTasks(
     retentionDays: number
   ): Promise<{ processed: number; removed: number; error?: string }> {
     try {
-      const cutoffDate = new Date(
-        Date.now() - retentionDays * 24 * 60 * 60 * 1000
-      );
-
-      const deleteResult = await this.prisma.task.deleteMany({
-        where: {
-          status: 'completed',
-          updatedAt: { lt: cutoffDate },
-        },
-      });
-
+      // UWAGA: Nie usuwamy danych z bazy! Tylko czyscimy cache
+      console.log(`[CLEANUP] Czyszczenie cache dla zadań starszych niż ${retentionDays} dni - BEZ USUWANIA Z BAZY`);
+      
+      // Tutaj można dodać czyszczenie cache Redis, plików tymczasowych itp.
+      // ALE NIE USUWAMY DANYCH Z BAZY DANYCH!
+      
       return {
-        processed: deleteResult.count,
-        removed: deleteResult.count,
+        processed: 0,
+        removed: 0,
       };
     } catch (error) {
       return {
         processed: 0,
         removed: 0,
-        error: `Błąd podczas czyszczenia zadań: ${error}`,
+        error: `Błąd podczas czyszczenia cache zadań: ${error}`,
       };
     }
   }
 
   /**
-   * Czyści stare wykonania workflow
+   * Czyści stare wykonania workflow - TYLKO CACHE, NIE DANE!
    */
   private async cleanupOldExecutions(
     retentionDays: number
   ): Promise<{ processed: number; removed: number; error?: string }> {
     try {
-      const cutoffDate = new Date(
-        Date.now() - retentionDays * 24 * 60 * 60 * 1000
-      );
-
-      const deleteResult = await this.prisma.workflowExecution.deleteMany({
-        where: {
-          status: { in: ['completed', 'failed'] },
-          startedAt: { lt: cutoffDate },
-        },
-      });
-
+      console.log(`[CLEANUP] Czyszczenie cache dla wykonań starszych niż ${retentionDays} dni - BEZ USUWANIA Z BAZY`);
+      
+      // Tutaj można dodać czyszczenie cache Redis, plików tymczasowych itp.
+      // ALE NIE USUWAMY DANYCH Z BAZY DANYCH!
+      
       return {
-        processed: deleteResult.count,
-        removed: deleteResult.count,
+        processed: 0,
+        removed: 0,
       };
     } catch (error) {
       return {
@@ -131,62 +120,51 @@ export class DataRetentionManager {
   }
 
   /**
-   * Czyści stare wyniki badań
+   * Czyści stare wyniki badań - TYLKO CACHE, NIE DANE!
    */
   private async cleanupOldResearch(
     retentionDays: number
   ): Promise<{ processed: number; removed: number; error?: string }> {
     try {
-      const cutoffDate = new Date(
-        Date.now() - retentionDays * 24 * 60 * 60 * 1000
-      );
-
-      const deleteResult = await this.prisma.researchResult.deleteMany({
-        where: {
-          createdAt: { lt: cutoffDate },
-        },
-      });
-
+      console.log(`[CLEANUP] Czyszczenie cache dla badań starszych niż ${retentionDays} dni - BEZ USUWANIA Z BAZY`);
+      
+      // Tutaj można dodać czyszczenie cache Redis, plików tymczasowych itp.
+      // ALE NIE USUWAMY DANYCH Z BAZY DANYCH!
+      
       return {
-        processed: deleteResult.count,
-        removed: deleteResult.count,
+        processed: 0,
+        removed: 0,
       };
     } catch (error) {
       return {
         processed: 0,
         removed: 0,
-        error: `Błąd podczas czyszczenia wyników badań: ${error}`,
+        error: `Błąd podczas czyszczenia cache badań: ${error}`,
       };
     }
   }
 
   /**
-   * Czyści stare zatwierdzenia makiet
+   * Czyści stare zatwierdzenia makiet - TYLKO CACHE, NIE DANE!
    */
   private async cleanupOldMockups(
     retentionDays: number
   ): Promise<{ processed: number; removed: number; error?: string }> {
     try {
-      const cutoffDate = new Date(
-        Date.now() - retentionDays * 24 * 60 * 60 * 1000
-      );
-
-      const deleteResult = await this.prisma.mockupApproval.deleteMany({
-        where: {
-          status: { in: ['approved', 'rejected'] },
-          updatedAt: { lt: cutoffDate },
-        },
-      });
-
+      console.log(`[CLEANUP] Czyszczenie cache dla makiet starszych niż ${retentionDays} dni - BEZ USUWANIA Z BAZY`);
+      
+      // Tutaj można dodać czyszczenie cache Redis, plików tymczasowych itp.
+      // ALE NIE USUWAMY DANYCH Z BAZY DANYCH!
+      
       return {
-        processed: deleteResult.count,
-        removed: deleteResult.count,
+        processed: 0,
+        removed: 0,
       };
     } catch (error) {
       return {
         processed: 0,
         removed: 0,
-        error: `Błąd podczas czyszczenia zatwierdzeń makiet: ${error}`,
+        error: `Błąd podczas czyszczenia cache makiet: ${error}`,
       };
     }
   }

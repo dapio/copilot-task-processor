@@ -1,296 +1,335 @@
-import { useState, useEffect } from 'react';
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  User,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+} from 'lucide-react';
+import { Agent } from '../types/project';
+import { agentApiService } from '../services/agentApiService';
 import styles from '../styles/management-components.module.css';
 
-interface Agent {
-  id: string;
-  name: string;
-  type: string;
-  status: 'active' | 'inactive' | 'error';
-  capabilities: string[];
-  description: string;
-  lastUsed: Date;
-  configuration: Record<string, any>;
-}
+// Agent types based on API
+const AGENT_TYPES = [
+  'document-processor',
+  'task-automation',
+  'workflow-manager',
+  'data-analyst',
+  'custom',
+] as const;
 
-interface AgentManagementProps {
-  projectId: string;
-}
+type AgentType = (typeof AGENT_TYPES)[number];
+type AgentStatus = Agent['status'];
 
-export default function AgentManagement({ projectId }: AgentManagementProps) {
+export default function AgentManagement() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 
-  useEffect(() => {
-    loadAgents();
-  }, [projectId]);
-
-  const loadAgents = async () => {
+  // Load agents from API
+  const loadAgents = useCallback(async () => {
     setLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      const mockData: Agent[] = [
-        {
-          id: '1',
-          name: 'Document Processor',
-          type: 'Processing',
-          status: 'active',
-          capabilities: ['PDF Analysis', 'Text Extraction', 'OCR'],
-          description:
-            'Specialized agent for processing various document formats and extracting structured information.',
-          lastUsed: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          configuration: {
-            maxFileSize: '50MB',
-            supportedFormats: ['PDF', 'DOC', 'TXT'],
-          },
-        },
-        {
-          id: '2',
-          name: 'Code Analyzer',
-          type: 'Analysis',
-          status: 'active',
-          capabilities: [
-            'Code Review',
-            'Bug Detection',
-            'Performance Analysis',
-          ],
-          description:
-            'Advanced AI agent for analyzing code quality, detecting bugs, and suggesting improvements.',
-          lastUsed: new Date(Date.now() - 5 * 60 * 60 * 1000),
-          configuration: {
-            languages: ['TypeScript', 'Python', 'JavaScript'],
-            complexity: 'high',
-          },
-        },
-        {
-          id: '3',
-          name: 'API Connector',
-          type: 'Integration',
-          status: 'inactive',
-          capabilities: ['REST API', 'GraphQL', 'Webhooks'],
-          description:
-            'Facilitates connections with external APIs and handles data synchronization.',
-          lastUsed: new Date(Date.now() - 24 * 60 * 60 * 1000),
-          configuration: {
-            timeout: '30s',
-            retries: 3,
-            authentication: 'Bearer',
-          },
-        },
-      ];
+    setError(null);
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setAgents(mockData);
-    } catch (error) {
-      console.error('Error loading agents:', error);
+    try {
+      const response = await agentApiService.getAgents();
+      if (response.success && response.data) {
+        setAgents(response.data);
+      } else {
+        setError('Błąd ładowania agentów');
+        console.error('Error loading agents:', response.error);
+      }
+    } catch (err) {
+      setError('Błąd połączenia z API agentów');
+      console.error('Error loading agents:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleCreateAgent = async (agentData: Partial<Agent>) => {
-    // TODO: Replace with actual API call
-    const newAgent: Agent = {
-      id: Date.now().toString(),
-      name: agentData.name || 'New Agent',
-      type: agentData.type || 'Generic',
-      status: 'inactive',
-      capabilities: agentData.capabilities || [],
-      description: agentData.description || '',
-      lastUsed: new Date(),
-      configuration: agentData.configuration || {},
-    };
+  useEffect(() => {
+    loadAgents();
+  }, [loadAgents]);
 
-    setAgents(prev => [...prev, newAgent]);
-    setShowCreateModal(false);
-  };
-
-  const handleDeleteAgent = async (agentId: string) => {
-    if (window.confirm('Czy na pewno chcesz usunąć tego agenta?')) {
-      setAgents(prev => prev.filter(agent => agent.id !== agentId));
+  const handleCreateAgent = async (agentData: {
+    name: string;
+    type: string;
+    capabilities?: string[];
+  }) => {
+    try {
+      const response = await agentApiService.createAgent(agentData);
+      if (response.success && response.data) {
+        setAgents(prev => [...prev, response.data!]);
+        setShowCreateModal(false);
+      } else {
+        setError('Błąd tworzenia agenta');
+        console.error('Error creating agent:', response.error);
+      }
+    } catch (err) {
+      setError('Błąd połączenia z API podczas tworzenia agenta');
+      console.error('Error creating agent:', err);
     }
   };
 
-  const handleToggleStatus = async (agentId: string) => {
-    setAgents(prev =>
-      prev.map(agent =>
-        agent.id === agentId
-          ? {
-              ...agent,
-              status: agent.status === 'active' ? 'inactive' : 'active',
-            }
-          : agent
-      )
-    );
+  const handleUpdateAgent = async (agentData: {
+    name?: string;
+    type?: string;
+    status?: 'idle' | 'active' | 'busy' | 'error';
+  }) => {
+    if (!editingAgent) return;
+
+    try {
+      const response = await agentApiService.updateAgent(
+        editingAgent.id,
+        agentData
+      );
+      if (response.success && response.data) {
+        setAgents(prev =>
+          prev.map(agent =>
+            agent.id === editingAgent.id ? response.data! : agent
+          )
+        );
+        setShowEditModal(false);
+        setEditingAgent(null);
+      } else {
+        setError('Błąd aktualizacji agenta');
+        console.error('Error updating agent:', response.error);
+      }
+    } catch (err) {
+      setError('Błąd połączenia z API podczas aktualizacji agenta');
+      console.error('Error updating agent:', err);
+    }
+  };
+
+  const handleDeleteAgent = async (agentId: string) => {
+    if (!confirm('Czy na pewno chcesz usunąć tego agenta?')) return;
+
+    try {
+      const response = await agentApiService.deleteAgent(agentId);
+      if (response.success) {
+        setAgents(prev => prev.filter(agent => agent.id !== agentId));
+      } else {
+        setError('Błąd usuwania agenta');
+        console.error('Error deleting agent:', response.error);
+      }
+    } catch (err) {
+      setError('Błąd połączenia z API podczas usuwania agenta');
+      console.error('Error deleting agent:', err);
+    }
+  };
+
+  const getStatusIcon = (status: AgentStatus) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircle size={16} className={styles.statusActive} />;
+      case 'inactive':
+        return <AlertCircle size={16} className={styles.statusInactive} />;
+      case 'error':
+        return <Clock size={16} className={styles.statusBusy} />;
+      default:
+        return <Clock size={16} className={styles.statusInactive} />;
+    }
   };
 
   const filteredAgents = agents.filter(
     agent =>
       agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.capabilities.some(cap =>
-        cap.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      agent.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}>⚙️</div>
-        <p className={styles.loadingText}>Ładowanie agentów...</p>
+      <div className={styles.container}>
+        <div className={styles.loadingSpinner}>Ładowanie agentów...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorMessage}>
+          {error}
+          <button onClick={loadAgents} className={styles.retryButton}>
+            Spróbuj ponownie
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={styles.managementContainer}>
-      {/* Header */}
-      <div className={styles.managementHeader}>
-        <div className={styles.headerLeft}>
-          <div className={styles.searchContainer}>
-            <input
-              type="text"
-              placeholder="Szukaj agentów..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
-            <span className={styles.searchIcon}>🔍</span>
-          </div>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div className={styles.titleSection}>
+          <h2 className={styles.title}>Zarządzanie Agentami AI</h2>
+          <p className={styles.subtitle}>
+            Konfiguruj i monitoruj agentów w Twoim projekcie
+          </p>
         </div>
-        <div className={styles.headerRight}>
-          <div className={styles.statsContainer}>
-            <div className={styles.statBadge} data-status="active">
-              <span className={styles.statNumber}>
-                {agents.filter(a => a.status === 'active').length}
-              </span>
-              <span className={styles.statLabel}>Aktywne</span>
-            </div>
-            <div className={styles.statBadge} data-status="inactive">
-              <span className={styles.statNumber}>
-                {agents.filter(a => a.status === 'inactive').length}
-              </span>
-              <span className={styles.statLabel}>Nieaktywne</span>
-            </div>
-          </div>
+
+        <div className={styles.actions}>
           <button
             onClick={() => setShowCreateModal(true)}
-            className={styles.createButton}
-            title="Utwórz nowego agenta"
+            className={`${styles.button} ${styles.primary}`}
           >
-            <span className={styles.buttonIcon}>➕</span>
-            Nowy Agent
+            <Plus size={16} />
+            Dodaj Agenta
           </button>
         </div>
       </div>
 
-      {/* Agents Grid */}
-      {filteredAgents.length > 0 ? (
-        <div className={styles.itemsGrid}>
-          {filteredAgents.map(agent => (
-            <div
-              key={agent.id}
-              className={styles.itemCard}
-              data-status={agent.status}
-            >
-              <div className={styles.cardHeader}>
-                <div className={styles.cardTitle}>
-                  <span className={styles.itemIcon}>🤖</span>
-                  <span className={styles.itemName}>{agent.name}</span>
+      <div className={styles.controls}>
+        <div className={styles.searchContainer}>
+          <Search size={16} className={styles.searchIcon} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Szukaj agentów..."
+            className={styles.searchInput}
+          />
+        </div>
+      </div>
+
+      <div className={styles.grid}>
+        {filteredAgents.map(agent => (
+          <div key={agent.id} className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.agentInfo}>
+                <div className={styles.agentIcon}>
+                  <User size={24} />
                 </div>
-                <div className={styles.cardActions}>
-                  <button
-                    onClick={() => handleToggleStatus(agent.id)}
-                    className={styles.statusToggle}
-                    data-status={agent.status}
-                    title={
-                      agent.status === 'active'
-                        ? 'Dezaktywuj agenta'
-                        : 'Aktywuj agenta'
-                    }
-                  >
-                    {agent.status === 'active' ? '⏸️' : '▶️'}
-                  </button>
-                  <button
-                    onClick={() => setSelectedAgent(agent)}
-                    className={styles.editButton}
-                    title="Edytuj agenta"
-                  >
-                    ⚙️
-                  </button>
-                  <button
-                    onClick={() => handleDeleteAgent(agent.id)}
-                    className={styles.deleteButton}
-                    title="Usuń agenta"
-                  >
-                    🗑️
-                  </button>
+                <div className={styles.agentDetails}>
+                  <h3 className={styles.agentName}>{agent.name}</h3>
+                  <span className={styles.agentType}>{agent.type}</span>
                 </div>
               </div>
 
-              <div className={styles.cardContent}>
-                <div className={styles.itemMeta}>
-                  <span className={styles.itemType}>{agent.type}</span>
-                  <span className={styles.lastUsed}>
-                    Ostatnio używany:{' '}
-                    {agent.lastUsed.toLocaleDateString('pl-PL')}
-                  </span>
-                </div>
-
-                <p className={styles.itemDescription}>{agent.description}</p>
-
-                <div className={styles.capabilitiesList}>
-                  {agent.capabilities.slice(0, 3).map(capability => (
-                    <span key={capability} className={styles.capabilityTag}>
-                      {capability}
-                    </span>
-                  ))}
-                  {agent.capabilities.length > 3 && (
-                    <span className={styles.moreCapabilities}>
-                      +{agent.capabilities.length - 3} więcej
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.cardFooter}>
-                <div className={styles.configInfo}>
-                  <span className={styles.configLabel}>Konfiguracja:</span>
-                  <span className={styles.configCount}>
-                    {Object.keys(agent.configuration).length} parametrów
-                  </span>
-                </div>
-                <div
-                  className={styles.statusIndicator}
-                  data-status={agent.status}
-                >
-                  {agent.status === 'active' ? '🟢 Aktywny' : '⭕ Nieaktywny'}
-                </div>
+              <div className={styles.agentStatus}>
+                {getStatusIcon(agent.status)}
+                <span className={styles.statusText}>{agent.status}</span>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
+
+            <div className={styles.cardBody}>
+              <p className={styles.agentDescription}>
+                {agent.description || 'Brak opisu'}
+              </p>
+
+              {/* Capabilities */}
+              {agent.configuration?.capabilities &&
+                agent.configuration.capabilities.length > 0 && (
+                  <div className={styles.capabilities}>
+                    <span className={styles.sectionLabel}>Możliwości:</span>
+                    <div className={styles.capabilityTags}>
+                      {agent.configuration.capabilities
+                        .slice(0, 3)
+                        .map((capability, index) => (
+                          <span key={index} className={styles.capabilityTag}>
+                            {capability}
+                          </span>
+                        ))}
+                      {agent.configuration.capabilities.length > 3 && (
+                        <span className={styles.moreCapabilities}>
+                          +{agent.configuration.capabilities.length - 3} więcej
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Metrics */}
+              {agent.metrics && (
+                <div className={styles.metrics}>
+                  <span className={styles.sectionLabel}>Statystyki:</span>
+                  <div className={styles.metricsGrid}>
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricValue}>
+                        {agent.metrics.totalExecutions}
+                      </span>
+                      <span className={styles.metricLabel}>Wykonania</span>
+                    </div>
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricValue}>
+                        {(agent.metrics.errorRate * 100).toFixed(1)}%
+                      </span>
+                      <span className={styles.metricLabel}>Błędów</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className={styles.agentMeta}>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Model:</span>
+                  <span className={styles.metaValue}>
+                    {agent.configuration?.model || 'N/A'}
+                  </span>
+                </div>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Utworzono:</span>
+                  <span className={styles.metaValue}>
+                    {new Date(agent.createdAt).toLocaleDateString('pl-PL')}
+                  </span>
+                </div>
+
+                {agent.tags && agent.tags.length > 0 && (
+                  <div className={styles.tags}>
+                    {agent.tags.map((tag, index) => (
+                      <span key={index} className={styles.tag}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.cardActions}>
+              <button
+                onClick={() => {
+                  setEditingAgent(agent);
+                  setShowEditModal(true);
+                }}
+                className={`${styles.button} ${styles.secondary}`}
+                title="Edytuj agenta"
+              >
+                <Edit size={16} />
+              </button>
+
+              <button
+                onClick={() => handleDeleteAgent(agent.id)}
+                className={`${styles.button} ${styles.danger}`}
+                title="Usuń agenta"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredAgents.length === 0 && (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🤖</div>
-          <h3 className={styles.emptyTitle}>Brak agentów</h3>
-          <p className={styles.emptyDescription}>
-            {searchTerm
-              ? `Nie znaleziono agentów pasujących do "${searchTerm}"`
-              : 'Nie masz jeszcze żadnych agentów w tym projekcie. Utwórz swojego pierwszego agenta, aby rozpocząć automatyzację procesów.'}
-          </p>
-          {!searchTerm && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className={styles.emptyAction}
-            >
-              Utwórz pierwszego agenta
-            </button>
-          )}
+          <User size={48} className={styles.emptyIcon} />
+          <h3>Brak agentów</h3>
+          <p>Nie znaleziono agentów pasujących do kryteriów wyszukiwania.</p>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className={`${styles.button} ${styles.primary}`}
+          >
+            <Plus size={16} />
+            Dodaj pierwszego agenta
+          </button>
         </div>
       )}
 
@@ -303,16 +342,14 @@ export default function AgentManagement({ projectId }: AgentManagementProps) {
       )}
 
       {/* Edit Agent Modal */}
-      {selectedAgent && (
+      {showEditModal && editingAgent && (
         <EditAgentModal
-          agent={selectedAgent}
-          onClose={() => setSelectedAgent(null)}
-          onSave={updatedAgent => {
-            setAgents(prev =>
-              prev.map(a => (a.id === updatedAgent.id ? updatedAgent : a))
-            );
-            setSelectedAgent(null);
+          agent={editingAgent}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingAgent(null);
           }}
+          onUpdate={handleUpdateAgent}
         />
       )}
     </div>
@@ -320,102 +357,77 @@ export default function AgentManagement({ projectId }: AgentManagementProps) {
 }
 
 // Create Agent Modal Component
-interface CreateAgentModalProps {
+function CreateAgentModal({
+  onClose,
+  onCreate,
+}: {
   onClose: () => void;
-  onCreate: (data: Partial<Agent>) => void;
-}
-
-function CreateAgentModal({ onClose, onCreate }: CreateAgentModalProps) {
+  onCreate: (data: {
+    name: string;
+    type: string;
+    capabilities?: string[];
+  }) => void;
+}) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'Generic',
+    type: 'document-processor' as AgentType,
     description: '',
-    capabilities: [] as string[],
-    configuration: {},
+    capabilities: '',
   });
-  const [currentCapability, setCurrentCapability] = useState('');
-
-  const agentTypes = [
-    'Processing',
-    'Analysis',
-    'Integration',
-    'Communication',
-    'Monitoring',
-    'Generic',
-  ];
-
-  const handleAddCapability = () => {
-    if (
-      currentCapability.trim() &&
-      !formData.capabilities.includes(currentCapability.trim())
-    ) {
-      setFormData(prev => ({
-        ...prev,
-        capabilities: [...prev.capabilities, currentCapability.trim()],
-      }));
-      setCurrentCapability('');
-    }
-  };
-
-  const handleRemoveCapability = (capability: string) => {
-    setFormData(prev => ({
-      ...prev,
-      capabilities: prev.capabilities.filter(cap => cap !== capability),
-    }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name.trim()) {
-      onCreate(formData);
-    }
+
+    const agentData = {
+      name: formData.name,
+      type: formData.type,
+      capabilities: formData.capabilities
+        ? formData.capabilities.split(',').map(tag => tag.trim())
+        : [],
+    };
+
+    onCreate(agentData);
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+    <div className={styles.modal}>
+      <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Utwórz nowego agenta</h3>
-          <button
-            onClick={onClose}
-            className={styles.closeButton}
-            title="Zamknij"
-          >
-            ✕
+          <h3>Dodaj Nowego Agenta</h3>
+          <button onClick={onClose} className={styles.closeButton}>
+            ×
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.modalForm}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label htmlFor="agent-name" className={styles.formLabel}>
-              Nazwa agenta
-            </label>
+            <label htmlFor="name">Nazwa Agenta</label>
             <input
-              id="agent-name"
+              id="name"
               type="text"
               value={formData.name}
               onChange={e =>
                 setFormData(prev => ({ ...prev, name: e.target.value }))
               }
-              className={styles.formInput}
-              placeholder="Wprowadź nazwę agenta..."
               required
+              className={styles.input}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="agent-type" className={styles.formLabel}>
-              Typ agenta
-            </label>
+            <label htmlFor="type">Typ Agenta</label>
             <select
-              id="agent-type"
+              id="type"
               value={formData.type}
               onChange={e =>
-                setFormData(prev => ({ ...prev, type: e.target.value }))
+                setFormData(prev => ({
+                  ...prev,
+                  type: e.target.value as AgentType,
+                }))
               }
-              className={styles.formSelect}
+              className={styles.select}
             >
-              {agentTypes.map(type => (
+              {AGENT_TYPES.map(type => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -424,73 +436,47 @@ function CreateAgentModal({ onClose, onCreate }: CreateAgentModalProps) {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="agent-description" className={styles.formLabel}>
-              Opis
-            </label>
+            <label htmlFor="description">Opis</label>
             <textarea
-              id="agent-description"
+              id="description"
               value={formData.description}
               onChange={e =>
                 setFormData(prev => ({ ...prev, description: e.target.value }))
               }
-              className={styles.formTextarea}
-              placeholder="Opisz funkcjonalność agenta..."
+              className={styles.textarea}
               rows={3}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Możliwości</label>
-            <div className={styles.capabilityInput}>
-              <input
-                type="text"
-                value={currentCapability}
-                onChange={e => setCurrentCapability(e.target.value)}
-                className={styles.formInput}
-                placeholder="Dodaj możliwość..."
-                onKeyPress={e =>
-                  e.key === 'Enter' &&
-                  (e.preventDefault(), handleAddCapability())
-                }
-              />
-              <button
-                type="button"
-                onClick={handleAddCapability}
-                className={styles.addCapabilityButton}
-                title="Dodaj możliwość"
-              >
-                ➕
-              </button>
-            </div>
-            {formData.capabilities.length > 0 && (
-              <div className={styles.capabilitiesList}>
-                {formData.capabilities.map(capability => (
-                  <span key={capability} className={styles.capabilityTag}>
-                    {capability}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCapability(capability)}
-                      className={styles.removeCapability}
-                      title="Usuń możliwość"
-                    >
-                      ✕
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
+            <label htmlFor="capabilities">
+              Capabilities (oddzielone przecinkami)
+            </label>
+            <input
+              id="capabilities"
+              type="text"
+              value={formData.capabilities}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, capabilities: e.target.value }))
+              }
+              placeholder="np: AI, analiza, badania"
+              className={styles.input}
+            />
           </div>
 
           <div className={styles.modalActions}>
             <button
               type="button"
               onClick={onClose}
-              className={styles.cancelButton}
+              className={`${styles.button} ${styles.secondary}`}
             >
               Anuluj
             </button>
-            <button type="submit" className={styles.submitButton}>
-              Utwórz agenta
+            <button
+              type="submit"
+              className={`${styles.button} ${styles.primary}`}
+            >
+              Dodaj Agenta
             </button>
           </div>
         </form>
@@ -500,92 +486,183 @@ function CreateAgentModal({ onClose, onCreate }: CreateAgentModalProps) {
 }
 
 // Edit Agent Modal Component
-interface EditAgentModalProps {
+function EditAgentModal({
+  agent,
+  onClose,
+  onUpdate,
+}: {
   agent: Agent;
   onClose: () => void;
-  onSave: (agent: Agent) => void;
-}
+  onUpdate: (data: {
+    name?: string;
+    type?: string;
+    status?: 'idle' | 'active' | 'busy' | 'error';
+  }) => void;
+}) {
+  // Map Agent status to UpdateAgentRequest status
+  const mapStatus = (
+    agentStatus: string
+  ): 'idle' | 'active' | 'busy' | 'error' => {
+    switch (agentStatus) {
+      case 'active':
+        return 'active';
+      case 'inactive':
+        return 'idle';
+      case 'error':
+        return 'error';
+      case 'training':
+        return 'busy';
+      default:
+        return 'idle';
+    }
+  };
 
-function EditAgentModal({ agent, onClose, onSave }: EditAgentModalProps) {
-  const [formData, setFormData] = useState({ ...agent });
+  const [formData, setFormData] = useState({
+    name: agent.name,
+    type: agent.type,
+    status: mapStatus(agent.status),
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+
+    const agentData = {
+      name: formData.name,
+      type: formData.type,
+      status: formData.status,
+    };
+
+    onUpdate(agentData);
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+    <div className={styles.modal}>
+      <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Edytuj agenta: {agent.name}</h3>
-          <button
-            onClick={onClose}
-            className={styles.closeButton}
-            title="Zamknij"
-          >
-            ✕
+          <h3>Edytuj Agenta</h3>
+          <button onClick={onClose} className={styles.closeButton}>
+            ×
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.modalForm}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label htmlFor="edit-agent-name" className={styles.formLabel}>
-              Nazwa agenta
-            </label>
+            <label htmlFor="edit-name">Nazwa Agenta</label>
             <input
-              id="edit-agent-name"
+              id="edit-name"
               type="text"
               value={formData.name}
               onChange={e =>
                 setFormData(prev => ({ ...prev, name: e.target.value }))
               }
-              className={styles.formInput}
               required
+              className={styles.input}
             />
+          </div>
+
+          {/* Display read-only info */}
+          <div className={styles.formGroup}>
+            <label>Opis</label>
+            <p className={styles.readOnlyText}>{agent.description}</p>
           </div>
 
           <div className={styles.formGroup}>
-            <label
-              htmlFor="edit-agent-description"
-              className={styles.formLabel}
-            >
-              Opis
-            </label>
-            <textarea
-              id="edit-agent-description"
-              value={formData.description}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, description: e.target.value }))
-              }
-              className={styles.formTextarea}
-              rows={3}
-            />
+            <label>Model</label>
+            <p className={styles.readOnlyText}>{agent.configuration?.model}</p>
           </div>
 
-          <div className={styles.configSection}>
-            <h4 className={styles.sectionTitle}>Konfiguracja</h4>
-            <div className={styles.configGrid}>
-              {Object.entries(formData.configuration).map(([key, value]) => (
-                <div key={key} className={styles.configItem}>
-                  <span className={styles.configKey}>{key}:</span>
-                  <span className={styles.configValue}>
-                    {JSON.stringify(value)}
-                  </span>
-                </div>
+          <div className={styles.formGroup}>
+            <label>Możliwości</label>
+            <div className={styles.capabilityTags}>
+              {agent.configuration?.capabilities?.map((capability, index) => (
+                <span key={index} className={styles.capabilityTag}>
+                  {capability}
+                </span>
               ))}
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Statystyki</label>
+            <div className={styles.metricsGrid}>
+              <div className={styles.metricItem}>
+                <span className={styles.metricValue}>
+                  {agent.metrics?.totalExecutions || 0}
+                </span>
+                <span className={styles.metricLabel}>Wykonania</span>
+              </div>
+              <div className={styles.metricItem}>
+                <span className={styles.metricValue}>
+                  {agent.metrics?.successfulExecutions || 0}
+                </span>
+                <span className={styles.metricLabel}>Sukces</span>
+              </div>
+              <div className={styles.metricItem}>
+                <span className={styles.metricValue}>
+                  {((agent.metrics?.errorRate || 0) * 100).toFixed(1)}%
+                </span>
+                <span className={styles.metricLabel}>Błędów</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="edit-type">Typ Agenta</label>
+            <select
+              id="edit-type"
+              value={formData.type}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  type: e.target.value as AgentType,
+                }))
+              }
+              className={styles.select}
+            >
+              {AGENT_TYPES.map(type => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="edit-status">Status</label>
+            <select
+              id="edit-status"
+              value={formData.status}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  status: e.target.value as
+                    | 'idle'
+                    | 'active'
+                    | 'busy'
+                    | 'error',
+                }))
+              }
+              className={styles.select}
+            >
+              <option value="idle">Idle</option>
+              <option value="active">Active</option>
+              <option value="busy">Busy</option>
+              <option value="error">Error</option>
+            </select>
           </div>
 
           <div className={styles.modalActions}>
             <button
               type="button"
               onClick={onClose}
-              className={styles.cancelButton}
+              className={`${styles.button} ${styles.secondary}`}
             >
               Anuluj
             </button>
-            <button type="submit" className={styles.submitButton}>
+            <button
+              type="submit"
+              className={`${styles.button} ${styles.primary}`}
+            >
               Zapisz zmiany
             </button>
           </div>

@@ -354,4 +354,59 @@ Deployment_Node(server, "Server", "Production Environment") {
 @enduml
     `.trim();
   }
+
+  /**
+   * Get agent information
+   */
+  getAgentInfo() {
+    return {
+      id: this.agentId,
+      projectId: 'default-project', // Default project for now
+      name: 'Marcus Chen',
+      type: 'workflow-manager', // Map role to type
+      status: 'active' as 'active' | 'inactive' | 'error' | 'training',
+      description:
+        'System Architect - analytical, strategic, detail-oriented, forward-thinking',
+      configuration: {
+        model: 'gpt-4',
+        maxTokens: 4096,
+        temperature: 0.4,
+        systemPrompt:
+          'You are Marcus Chen, a System Architect. analytical, strategic, detail-oriented, forward-thinking. Working style: methodical, comprehensive, documentation-focused',
+        tools: ['system_design', 'architecture_analysis', 'diagram_generation'],
+        capabilities: [
+          'architecture_design',
+          'system_analysis',
+          'technology_selection',
+          'scalability_planning',
+          'architecture_review',
+          'diagram_generation',
+          'risk_assessment',
+        ],
+        constraints: {
+          maxExecutionTime: 600, // 10 minutes for complex analysis
+          maxMemoryUsage: 1024, // 1GB
+          allowedDomains: ['localhost', '*.internal'],
+          rateLimits: [],
+        },
+      },
+      metrics: {
+        totalExecutions: 0,
+        successfulExecutions: 0,
+        failedExecutions: 0,
+        averageExecutionTime: 0,
+        lastExecution: null,
+        errorRate: 0,
+      },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date(),
+      tags: [
+        'architecture',
+        'system-design',
+        'scalability',
+        'strategy',
+        'patterns',
+      ],
+    };
+  }
 }

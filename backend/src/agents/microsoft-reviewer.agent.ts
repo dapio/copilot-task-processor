@@ -578,4 +578,53 @@ ${validation.recommendations.map((rec: string) => `• ${rec}`).join('\n')}
     };
     return translations[compliance as keyof typeof translations] || compliance;
   }
+
+  /**
+   * Get agent information
+   */
+  getAgentInfo() {
+    return {
+      id: 'microsoft-reviewer',
+      projectId: 'default-project', // Default project for now
+      name: 'Sarah Wilson',
+      type: 'document-processor', // Map role to type
+      status: 'active' as 'active' | 'inactive' | 'error' | 'training',
+      description:
+        'Microsoft Code Reviewer - thorough, security-focused, quality-driven, collaborative',
+      configuration: {
+        model: 'gpt-4',
+        maxTokens: 4096,
+        temperature: 0.1,
+        systemPrompt:
+          'You are Sarah Wilson, a Microsoft Code Reviewer. thorough, security-focused, quality-driven, collaborative. Working style: systematic, security-first, quality-focused',
+        tools: ['code_review', 'security_analysis', 'compliance_check'],
+        capabilities: [
+          'code_review',
+          'security_analysis',
+          'performance_optimization',
+          'best_practices_enforcement',
+          'microsoft_assessment',
+          'compliance_check',
+          'vulnerability_detection',
+        ],
+        constraints: {
+          maxExecutionTime: 300, // 5 minutes
+          maxMemoryUsage: 512, // 512MB
+          allowedDomains: ['localhost', '*.internal'],
+          rateLimits: [],
+        },
+      },
+      metrics: {
+        totalExecutions: 0,
+        successfulExecutions: 0,
+        failedExecutions: 0,
+        averageExecutionTime: 0,
+        lastExecution: null,
+        errorRate: 0,
+      },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date(),
+      tags: ['microsoft', 'security', 'review', 'compliance', 'best-practices'],
+    };
+  }
 }

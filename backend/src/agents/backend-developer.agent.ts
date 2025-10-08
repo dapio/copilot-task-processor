@@ -4,13 +4,17 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { IMLProvider, Result, MLError } from '../providers/ml-provider.interface';
+import {
+  IMLProvider,
+  Result,
+  MLError,
+} from '../providers/ml-provider.interface';
 import { BackendDeveloperLogic } from './services/backend-developer.logic';
 import type {
   CodeGenerationResult,
   DatabaseDesignResult,
   APIDesignResult,
-  PerformanceOptimizationResult
+  PerformanceOptimizationResult,
 } from './types/backend-developer.types';
 
 export class BackendDeveloperAgent {
@@ -29,7 +33,11 @@ export class BackendDeveloperAgent {
     technology: string,
     constraints: any = {}
   ): Promise<Result<CodeGenerationResult, MLError>> {
-    return await this.logic.generateServiceCode(requirements, technology, constraints);
+    return await this.logic.generateServiceCode(
+      requirements,
+      technology,
+      constraints
+    );
   }
 
   /**
@@ -40,7 +48,11 @@ export class BackendDeveloperAgent {
     dataModels: any[],
     constraints: any = {}
   ): Promise<Result<DatabaseDesignResult, MLError>> {
-    return await this.logic.designDatabase(requirements, dataModels, constraints);
+    return await this.logic.designDatabase(
+      requirements,
+      dataModels,
+      constraints
+    );
   }
 
   /**
@@ -62,7 +74,11 @@ export class BackendDeveloperAgent {
     requirements: any,
     bottlenecks: any[]
   ): Promise<Result<PerformanceOptimizationResult, MLError>> {
-    return await this.logic.optimizePerformance(currentMetrics, requirements, bottlenecks);
+    return await this.logic.optimizePerformance(
+      currentMetrics,
+      requirements,
+      bottlenecks
+    );
   }
 
   /**
@@ -84,7 +100,11 @@ export class BackendDeveloperAgent {
     environment: any,
     requirements: any
   ): Promise<Result<any, MLError>> {
-    return await this.logic.designDeployment(application, environment, requirements);
+    return await this.logic.designDeployment(
+      application,
+      environment,
+      requirements
+    );
   }
 
   /**
@@ -95,7 +115,11 @@ export class BackendDeveloperAgent {
     services: any[],
     constraints: any = {}
   ): Promise<Result<any, MLError>> {
-    return await this.logic.designMicroservices(requirements, services, constraints);
+    return await this.logic.designMicroservices(
+      requirements,
+      services,
+      constraints
+    );
   }
 
   /**
@@ -116,18 +140,45 @@ export class BackendDeveloperAgent {
     const config = BackendDeveloperLogic.getBackendAgentConfig();
     return {
       id: this.agentId,
-      ...config,
-      status: 'active',
-      capabilities: [
-        'service_code_generation',
-        'database_design',
-        'api_design',
-        'performance_optimization',
-        'security_assessment',
-        'deployment_strategy',
-        'microservices_architecture',
-        'code_review',
-      ],
+      projectId: 'default-project', // Default project for now
+      name: config.name,
+      type: 'custom', // Map role to type
+      status: 'active' as 'active' | 'inactive' | 'error' | 'training',
+      description: `${config.role} - ${config.personality}`,
+      configuration: {
+        model: 'gpt-4',
+        maxTokens: 4096,
+        temperature: 0.7,
+        systemPrompt: `You are ${config.name}, a ${config.role}. ${config.personality}. Working style: ${config.workingStyle}`,
+        tools: ['code_generation', 'database_design', 'api_design'],
+        capabilities: [
+          'service_code_generation',
+          'database_design',
+          'api_design',
+          'performance_optimization',
+          'security_assessment',
+          'deployment_strategy',
+          'microservices_architecture',
+          'code_review',
+        ],
+        constraints: {
+          maxExecutionTime: 300, // 5 minutes
+          maxMemoryUsage: 1024, // 1GB
+          allowedDomains: ['localhost', '*.internal'],
+          rateLimits: [],
+        },
+      },
+      metrics: {
+        totalExecutions: 0,
+        successfulExecutions: 0,
+        failedExecutions: 0,
+        averageExecutionTime: 0,
+        lastExecution: null,
+        errorRate: 0,
+      },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date(),
+      tags: ['backend', 'nodejs', 'typescript', 'api', 'database'],
     };
   }
 }
@@ -139,5 +190,5 @@ export type {
   CodeGenerationResult,
   DatabaseDesignResult,
   APIDesignResult,
-  PerformanceOptimizationResult
+  PerformanceOptimizationResult,
 } from './types/backend-developer.types';

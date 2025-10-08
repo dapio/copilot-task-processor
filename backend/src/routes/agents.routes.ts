@@ -37,6 +37,51 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/agents
+ * Create a new agent
+ */
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const {
+      name,
+      type,
+      capabilities = [],
+      config = {},
+      metadata = {},
+    } = req.body;
+
+    if (!name) {
+      return res.status(400).json({
+        error: 'Agent name is required',
+      });
+    }
+
+    const agent = await prisma.agent.create({
+      data: {
+        name,
+        type: type || 'custom',
+        status: 'idle',
+        capabilities: JSON.stringify(capabilities),
+        config,
+        metadata: {
+          ...metadata,
+          createdBy: 'api',
+        },
+      },
+    });
+
+    console.log('✅ Agent created:', agent);
+    res.status(201).json(agent);
+  } catch (error: any) {
+    console.error('Failed to create agent:', error);
+    res.status(500).json({
+      error: 'Failed to create agent',
+      details: error.message,
+    });
+  }
+});
+
+/**
  * GET /api/agents/metrics
  * Get agent performance metrics
  */

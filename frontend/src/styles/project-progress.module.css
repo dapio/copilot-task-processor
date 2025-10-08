@@ -1,0 +1,591 @@
+/* Project Progress Styles */
+/* ThinkCode AI Platform - Workflow Progress Tracker */
+
+.container {
+  /* Sidebar container - no padding/background */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.loadingSpinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.workflowTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.workflowDescription {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.workflowStats {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.statLabel {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.statValue {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  transition: width 0.3s ease;
+}
+
+.progressFill[data-progress='0'] {
+  width: 0%;
+}
+.progressFill[data-progress='5'] {
+  width: 5%;
+}
+.progressFill[data-progress='10'] {
+  width: 10%;
+}
+.progressFill[data-progress='15'] {
+  width: 15%;
+}
+.progressFill[data-progress='20'] {
+  width: 20%;
+}
+.progressFill[data-progress='25'] {
+  width: 25%;
+}
+.progressFill[data-progress='30'] {
+  width: 30%;
+}
+.progressFill[data-progress='35'] {
+  width: 35%;
+}
+.progressFill[data-progress='40'] {
+  width: 40%;
+}
+.progressFill[data-progress='45'] {
+  width: 45%;
+}
+.progressFill[data-progress='50'] {
+  width: 50%;
+}
+.progressFill[data-progress='55'] {
+  width: 55%;
+}
+.progressFill[data-progress='60'] {
+  width: 60%;
+}
+.progressFill[data-progress='65'] {
+  width: 65%;
+}
+.progressFill[data-progress='70'] {
+  width: 70%;
+}
+.progressFill[data-progress='75'] {
+  width: 75%;
+}
+.progressFill[data-progress='80'] {
+  width: 80%;
+}
+.progressFill[data-progress='85'] {
+  width: 85%;
+}
+.progressFill[data-progress='90'] {
+  width: 90%;
+}
+.progressFill[data-progress='95'] {
+  width: 95%;
+}
+.progressFill[data-progress='100'] {
+  width: 100%;
+}
+
+/* Workflow Section - Left part of sidebar */
+.workflowSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+/* Chat Section - Right part of sidebar */
+.chatSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  max-height: 500px;
+}
+
+.workflowPanel {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.chatPanel {
+  /* Chat panel is now embedded within chatContainer */
+  height: fit-content;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stepsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stepCard {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.currentStep {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.stepIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.stepInfo {
+  flex: 1;
+}
+
+.stepName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.stepDescription {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.85rem;
+}
+
+.stepMeta {
+  flex-shrink: 0;
+}
+
+.stepOrder {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stepDetails {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stepDetailItem {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.detailLabel {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.detailValue {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.approvalBadge {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.stepArrow {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Status styles */
+.statusCompleted {
+  color: #059669;
+}
+
+.statusInProgress {
+  color: #3b82f6;
+}
+
+.statusFailed {
+  color: #dc2626;
+}
+
+.statusApproval {
+  color: #d97706;
+}
+
+.statusPending {
+  color: #94a3b8;
+}
+
+/* Step status styles - dark glass morphism */
+.statusCompleted {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #22c55e;
+}
+
+.statusInProgress {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+}
+
+.statusFailed {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+}
+
+.statusRequires_approval {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+}
+
+.statusPending {
+  background: rgba(148, 163, 184, 0.15);
+  border-color: #94a3b8;
+}
+
+/* Chat styles */
+.chatContainer {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  max-height: 400px;
+}
+
+.chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.message {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.messageIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.message.user .messageIcon {
+  background: #3b82f6;
+}
+
+.message.assistant .messageIcon {
+  background: #10b981;
+}
+
+.messageContent {
+  flex: 1;
+  max-width: 80%;
+}
+
+.message.user .messageContent {
+  text-align: right;
+}
+
+.messageText {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  color: #ffffff;
+  line-height: 1.4;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.message.user .messageText {
+  background: #3b82f6;
+  color: white;
+}
+
+.messageTime {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.message.user .messageTime {
+  justify-content: flex-end;
+}
+
+.stepContext {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.typingIndicator {
+  display: flex;
+  gap: 4px;
+  padding: 0.75rem 1rem;
+  background: #f1f5f9;
+  border-radius: 12px;
+}
+
+.typingIndicator span {
+  width: 8px;
+  height: 8px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: typing 1.5s ease-in-out infinite;
+}
+
+.typingIndicator span:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.typingIndicator span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.typingIndicator span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
+.chatInput {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.messageInput {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  resize: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #ffffff;
+}
+
+.messageInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.messageInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sendButton {
+  background: rgba(59, 130, 246, 0.8);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.sendButton:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.sendButton:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Responsive design - sidebar adjustments */
+@media (max-width: 1400px) {
+  .workflowStats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stepCard {
+    padding: 0.75rem;
+  }
+
+  .stepDetails {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .workflowSection,
+  .chatSection {
+    gap: 0.75rem;
+  }
+
+  .header {
+    padding: 0.75rem;
+  }
+
+  .workflowPanel,
+  .chatContainer {
+    padding: 0.75rem;
+  }
+
+  .stepDetails {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .chatContainer {
+    height: 300px;
+    max-height: 300px;
+  }
+
+  .chatSection {
+    max-height: 400px;
+  }
+}

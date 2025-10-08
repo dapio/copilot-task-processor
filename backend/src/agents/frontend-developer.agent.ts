@@ -4,13 +4,17 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { IMLProvider, Result, MLError } from '../providers/ml-provider.interface';
+import {
+  IMLProvider,
+  Result,
+  MLError,
+} from '../providers/ml-provider.interface';
 import { FrontendDeveloperLogic } from './services/frontend-developer.logic';
 import type {
   FrontendArchitecture,
   ComponentGenerationResult,
   PerformanceOptimizationResult,
-  AccessibilityImplementationResult
+  AccessibilityImplementationResult,
 } from './types/frontend-developer.types';
 
 export class FrontendDeveloperAgent {
@@ -29,7 +33,11 @@ export class FrontendDeveloperAgent {
     requirements: any,
     designSystem?: any
   ): Promise<Result<ComponentGenerationResult, MLError>> {
-    return await this.logic.generateComponent(componentName, requirements, designSystem);
+    return await this.logic.generateComponent(
+      componentName,
+      requirements,
+      designSystem
+    );
   }
 
   /**
@@ -40,7 +48,11 @@ export class FrontendDeveloperAgent {
     requirements: any[],
     constraints: any = {}
   ): Promise<Result<FrontendArchitecture, MLError>> {
-    return await this.logic.designFrontendArchitecture(projectId, requirements, constraints);
+    return await this.logic.designFrontendArchitecture(
+      projectId,
+      requirements,
+      constraints
+    );
   }
 
   /**
@@ -50,7 +62,10 @@ export class FrontendDeveloperAgent {
     componentCode: string,
     performanceMetrics: any
   ): Promise<Result<PerformanceOptimizationResult, MLError>> {
-    return await this.logic.optimizePerformance(componentCode, performanceMetrics);
+    return await this.logic.optimizePerformance(
+      componentCode,
+      performanceMetrics
+    );
   }
 
   /**
@@ -60,7 +75,10 @@ export class FrontendDeveloperAgent {
     componentCode: string,
     accessibilityRequirements: any
   ): Promise<Result<AccessibilityImplementationResult, MLError>> {
-    return await this.logic.implementAccessibility(componentCode, accessibilityRequirements);
+    return await this.logic.implementAccessibility(
+      componentCode,
+      accessibilityRequirements
+    );
   }
 
   /**
@@ -90,20 +108,47 @@ export class FrontendDeveloperAgent {
     const config = FrontendDeveloperLogic.getAgentConfig();
     return {
       id: this.agentId,
-      ...config,
-      status: 'active',
-      capabilities: [
-        'react_component_generation',
-        'typescript_development',
-        'frontend_architecture_design',
-        'performance_optimization',
-        'accessibility_implementation',
-        'responsive_design',
-        'state_management',
-        'testing_implementation',
-        'component_analysis',
-        'ui_ux_implementation',
-      ],
+      projectId: 'default-project', // Default project for now
+      name: config.name,
+      type: 'custom', // Map role to type
+      status: 'active' as 'active' | 'inactive' | 'error' | 'training',
+      description: `${config.role} - ${config.personality}`,
+      configuration: {
+        model: 'gpt-4',
+        maxTokens: 4096,
+        temperature: 0.3,
+        systemPrompt: `You are ${config.name}, a ${config.role}. ${config.personality}. Working style: ${config.workingStyle}`,
+        tools: ['react_generation', 'component_analysis', 'ui_design'],
+        capabilities: [
+          'react_component_generation',
+          'typescript_development',
+          'frontend_architecture_design',
+          'performance_optimization',
+          'accessibility_implementation',
+          'responsive_design',
+          'state_management',
+          'testing_implementation',
+          'component_analysis',
+          'ui_ux_implementation',
+        ],
+        constraints: {
+          maxExecutionTime: 300, // 5 minutes
+          maxMemoryUsage: 1024, // 1GB
+          allowedDomains: ['localhost', '*.internal'],
+          rateLimits: [],
+        },
+      },
+      metrics: {
+        totalExecutions: 0,
+        successfulExecutions: 0,
+        failedExecutions: 0,
+        averageExecutionTime: 0,
+        lastExecution: null,
+        errorRate: 0,
+      },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date(),
+      tags: ['frontend', 'react', 'typescript', 'ui', 'accessibility'],
     };
   }
 }
@@ -115,5 +160,5 @@ export type {
   FrontendArchitecture,
   ComponentGenerationResult,
   PerformanceOptimizationResult,
-  AccessibilityImplementationResult
+  AccessibilityImplementationResult,
 } from './types/frontend-developer.types';

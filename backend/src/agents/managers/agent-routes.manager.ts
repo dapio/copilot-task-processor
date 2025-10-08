@@ -75,6 +75,24 @@ export class AgentRoutesManager implements IAgentRoutes {
 
     // Get agent statistics
     this.app.get('/api/agents/:id/stats', this.handleGetAgentStats.bind(this));
+
+    // Project workflow progress endpoints
+    this.app.get(
+      '/api/projects/:projectId/workflow',
+      this.handleGetProjectWorkflow.bind(this)
+    );
+    this.app.post(
+      '/api/projects/:projectId/workflow/start',
+      this.handleStartWorkflow.bind(this)
+    );
+    this.app.get(
+      '/api/projects/:projectId/chat',
+      this.handleGetChatHistory.bind(this)
+    );
+    this.app.post(
+      '/api/projects/:projectId/chat',
+      this.handleSendMessage.bind(this)
+    );
   }
 
   /**
@@ -205,18 +223,62 @@ export class AgentRoutesManager implements IAgentRoutes {
   // Agent handlers
   private async handleGetAgents(req: Request, res: Response): Promise<void> {
     try {
-      const agents = await this.deps.prisma.agent.findMany({
-        include: {
-          _count: {
-            select: {
-              tasks: true,
-              executions: true,
-              workflowSteps: true,
-            },
-          },
-        },
-        orderBy: { name: 'asc' },
-      });
+      // Import all real agents
+      const { default: BackendDeveloperAgent } = await import(
+        '../backend-developer.agent'
+      );
+      const { default: FrontendDeveloperAgent } = await import(
+        '../frontend-developer.agent'
+      );
+      const { default: BusinessAnalystAgent } = await import(
+        '../business-analyst.agent'
+      );
+      const { default: QAEngineerAgent } = await import('../qa-engineer.agent');
+      const { SystemArchitectAgent } = await import(
+        '../system-architect.agent'
+      );
+      const { MicrosoftReviewerAgent } = await import(
+        '../microsoft-reviewer.agent'
+      );
+      const { default: WorkflowAssistantAgent } = await import(
+        '../workflow-assistant.agent'
+      );
+
+      // Create instances and get their info
+      const backendAgent = new BackendDeveloperAgent(
+        this.deps.prisma,
+        this.deps.researchService as any
+      );
+      const frontendAgent = new FrontendDeveloperAgent(
+        this.deps.prisma,
+        this.deps.researchService as any
+      );
+      const businessAgent = new BusinessAnalystAgent(
+        this.deps.prisma,
+        this.deps.researchService as any
+      );
+      const qaAgent = new QAEngineerAgent(
+        this.deps.prisma,
+        this.deps.researchService as any
+      );
+      const architectAgent = new SystemArchitectAgent();
+      const reviewerAgent = new MicrosoftReviewerAgent(
+        this.deps.researchService as any
+      );
+      const workflowAgent = new WorkflowAssistantAgent(
+        this.deps.prisma,
+        this.deps.researchService as any
+      );
+
+      const agents = [
+        backendAgent.getAgentInfo(),
+        frontendAgent.getAgentInfo(),
+        businessAgent.getAgentInfo(),
+        qaAgent.getAgentInfo(),
+        architectAgent.getAgentInfo(),
+        reviewerAgent.getAgentInfo(),
+        workflowAgent.getAgentInfo(),
+      ];
 
       const response: ApiResponse = {
         success: true,
@@ -460,6 +522,229 @@ export class AgentRoutesManager implements IAgentRoutes {
     res: Response
   ): Promise<void> {
     res.status(501).json({ success: false, error: 'Not implemented yet' });
+  }
+
+  // Project Workflow Progress handlers
+  private async handleGetProjectWorkflow(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    try {
+      const { projectId } = req.params;
+
+      // TODO: Use projectId to get specific project workflow from database
+      const mockWorkflow = this.createMockWorkflow();
+
+      const response: ApiResponse = {
+        success: true,
+        data: mockWorkflow,
+        timestamp: new Date().toISOString(),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching project workflow:', error);
+      const response: ApiResponse = {
+        success: false,
+        error: 'Failed to fetch project workflow',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+      res.status(500).json(response);
+    }
+  }
+
+  private createMockWorkflow() {
+    return {
+      id: 'workflow-1',
+      name: 'Workflow Rozwoju Nowego Projektu',
+      description:
+        'Kompletny workflow dla rozwoju nowych aplikacji od wymagań do wdrożenia',
+      type: 'new_project',
+      currentStepIndex: 1,
+      status: 'in_progress',
+      progress: 25,
+      startedAt: new Date().toISOString(),
+      estimatedCompletion: new Date(
+        Date.now() + 2 * 60 * 60 * 1000
+      ).toISOString(),
+      steps: this.createMockWorkflowSteps(),
+    };
+  }
+
+  private createMockWorkflowSteps() {
+    return [
+      {
+        id: 'step-1',
+        name: 'Walidacja Wymagań',
+        description: 'Analiza i walidacja wymagań projektowych',
+        status: 'completed',
+        order: 1,
+        estimatedDuration: 30,
+        actualDuration: 25,
+        agentResponsible: 'Business Analyst',
+        completedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 'step-2',
+        name: 'Generowanie Mockupów',
+        description: 'Tworzenie prototypów interfejsu użytkownika',
+        status: 'in_progress',
+        order: 2,
+        estimatedDuration: 45,
+        agentResponsible: 'Frontend Developer',
+        startedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        approvalRequired: true,
+      },
+      {
+        id: 'step-3',
+        name: 'Projektowanie Architektury',
+        description: 'Projektowanie architektury systemu',
+        status: 'pending',
+        order: 3,
+        estimatedDuration: 60,
+        agentResponsible: 'System Architect',
+        approvalRequired: true,
+      },
+      {
+        id: 'step-4',
+        name: 'Implementacja Backend',
+        description: 'Rozwój logiki biznesowej i API',
+        status: 'pending',
+        order: 4,
+        estimatedDuration: 90,
+        agentResponsible: 'Backend Developer',
+      },
+      {
+        id: 'step-5',
+        name: 'Implementacja Frontend',
+        description: 'Implementacja interfejsu użytkownika',
+        status: 'pending',
+        order: 5,
+        estimatedDuration: 75,
+        agentResponsible: 'Frontend Developer',
+      },
+      {
+        id: 'step-6',
+        name: 'Testy i Walidacja',
+        description: 'Testowanie funkcjonalności i wydajności',
+        status: 'pending',
+        order: 6,
+        estimatedDuration: 45,
+        agentResponsible: 'QA Engineer',
+      },
+    ];
+  }
+
+  private async handleStartWorkflow(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    try {
+      const { projectId } = req.params;
+      const { workflowType } = req.body;
+
+      // TODO: Use projectId and workflowType to start specific workflow
+      const response: ApiResponse = {
+        success: true,
+        data: {
+          message: `Workflow ${workflowType} started for project ${projectId}`,
+        },
+        timestamp: new Date().toISOString(),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error starting workflow:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to start workflow',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  private async handleGetChatHistory(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    try {
+      const { projectId } = req.params;
+
+      // TODO: Use projectId to get project-specific chat history
+      // Mock chat history
+      const mockMessages = [
+        {
+          id: 'msg-1',
+          role: 'assistant',
+          content:
+            'Witaj! Rozpocząłem workflow dla Twojego nowego projektu. Pierwsze wymagania zostały pomyślnie zwalidowane przez Business Analyst. Czy chciałbyś przejrzeć wyniki?',
+          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          stepContext: 'step-1',
+        },
+        {
+          id: 'msg-2',
+          role: 'user',
+          content: 'Tak, chciałbym zobaczyć wyniki walidacji wymagań.',
+          timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+        },
+        {
+          id: 'msg-3',
+          role: 'assistant',
+          content:
+            'Świetnie! Frontend Developer rozpoczął już pracę nad mockupami. Aktualnie trwa tworzenie prototypów głównych widoków aplikacji. Czy masz jakieś preferencje dotyczące designu?',
+          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          stepContext: 'step-2',
+        },
+      ];
+
+      const response: ApiResponse = {
+        success: true,
+        data: mockMessages,
+        count: mockMessages.length,
+        timestamp: new Date().toISOString(),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch chat history',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  private async handleSendMessage(req: Request, res: Response): Promise<void> {
+    try {
+      const { projectId } = req.params;
+      const { message } = req.body;
+
+      // TODO: Use projectId for project-specific AI context and integrate with GitHub Copilot
+      const aiResponse = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `Rozumiem Twoje pytanie: "${message}". W kontekście projektu ${projectId}, mogę pomóc Ci z analizą workflow i następnych kroków...`,
+        timestamp: new Date().toISOString(),
+        stepContext: 'step-2',
+      };
+
+      const response: ApiResponse = {
+        success: true,
+        data: aiResponse,
+        timestamp: new Date().toISOString(),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send message',
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   /**

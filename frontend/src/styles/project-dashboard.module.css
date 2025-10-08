@@ -210,13 +210,15 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* Content Area */
+/* Content Area - Flex Layout */
 .content {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  gap: 2rem;
   padding: 2rem;
+  height: calc(100vh - 120px);
+  align-items: flex-start;
 }
 
 /* Navigation Tabs */
@@ -675,5 +677,82 @@
 
   .statIcon {
     font-size: 1.4rem;
+  }
+
+  .dashboardLayout {
+    gap: 1rem;
+  }
+
+  .mainContent {
+    flex: 1;
+  }
+
+  .sidebar {
+    min-width: 280px;
+  }
+}
+
+/* Main Content - Left Side - maksymalna szerokość */
+.mainContent {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+/* Sidebar - Right Side - Workflow & Chat obok siebie */
+.sidebar {
+  flex: 1;
+  min-width: 600px;
+  max-width: 800px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.sidebarSection {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.sidebarTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebarIcon {
+  font-size: 1.2rem;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+  .content {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .mainContent {
+    flex: 1;
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+    min-width: auto;
+    max-width: none;
   }
 }

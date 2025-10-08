@@ -131,9 +131,12 @@ export function ProjectProvider({ children }: ProjectProviderProps) {
           },
         }));
         dispatch({ type: 'SET_PROJECTS', payload: projects });
+      } else {
+        // No cached projects, set empty array
+        dispatch({ type: 'SET_PROJECTS', payload: [] });
       }
 
-      // TODO: Load from API
+      // TODO: Load from API and merge with cached data
       // const response = await projectService.getProjects();
       // dispatch({ type: 'SET_PROJECTS', payload: response.projects });
     } catch (error) {
@@ -142,6 +145,8 @@ export function ProjectProvider({ children }: ProjectProviderProps) {
         type: 'SET_ERROR',
         payload: 'Nie udało się załadować projektów',
       });
+      // Set empty array on error too
+      dispatch({ type: 'SET_PROJECTS', payload: [] });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -237,9 +242,9 @@ export function ProjectProvider({ children }: ProjectProviderProps) {
         };
 
         // Create project directory structure
-        const fileService = await import('../services/projectFileService');
+        const fileService = await import('../services/projectFileManager');
         const fileResult =
-          await fileService.projectFileService.createProjectStructure(
+          await fileService.projectFileManager.createProjectStructure(
             newProject
           );
 

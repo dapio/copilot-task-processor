@@ -166,17 +166,44 @@ export class WorkflowAssistantAgent {
     const config = WorkflowAssistantLogic.getAssistantConfig();
     return {
       id: this.agentId,
-      ...config,
-      status: 'active',
-      capabilities: [
-        'workflow_guidance',
-        'troubleshooting_support',
-        'decision_assistance',
-        'performance_optimization',
-        'proactive_recommendations',
-        'contextual_help',
-        'user_experience_optimization',
-      ],
+      projectId: 'default-project', // Default project for now
+      name: config.name,
+      type: 'workflow-manager', // Map role to type
+      status: 'active' as 'active' | 'inactive' | 'error' | 'training',
+      description: `${config.role} - ${config.personality}`,
+      configuration: {
+        model: 'gpt-4',
+        maxTokens: 4096,
+        temperature: 0.6,
+        systemPrompt: `You are ${config.name}, a ${config.role}. ${config.personality}.`,
+        tools: ['workflow_guidance', 'troubleshooting', 'recommendations'],
+        capabilities: [
+          'workflow_guidance',
+          'troubleshooting_support',
+          'decision_assistance',
+          'performance_optimization',
+          'proactive_recommendations',
+          'contextual_help',
+          'user_experience_optimization',
+        ],
+        constraints: {
+          maxExecutionTime: 300, // 5 minutes
+          maxMemoryUsage: 512, // 512MB
+          allowedDomains: ['localhost', '*.internal'],
+          rateLimits: [],
+        },
+      },
+      metrics: {
+        totalExecutions: 0,
+        successfulExecutions: 0,
+        failedExecutions: 0,
+        averageExecutionTime: 0,
+        lastExecution: null,
+        errorRate: 0,
+      },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date(),
+      tags: ['workflow', 'assistant', 'guidance', 'optimization', 'support'],
     };
   }
 }

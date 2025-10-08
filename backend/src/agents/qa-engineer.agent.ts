@@ -4,14 +4,18 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { IMLProvider, Result, MLError } from '../providers/ml-provider.interface';
+import {
+  IMLProvider,
+  Result,
+  MLError,
+} from '../providers/ml-provider.interface';
 import { QAEngineerLogic } from './services/qa-engineer.logic';
 import type {
   TestCase,
   TestPlanResult,
   TestSuiteResult,
   QualityAssessmentResult,
-  CoverageReport
+  CoverageReport,
 } from './types/qa-engineer.types';
 
 export class QAEngineerAgent {
@@ -48,7 +52,9 @@ export class QAEngineerAgent {
   async generateAutomationCode(
     testCase: TestCase,
     framework: string
-  ): Promise<Result<{ code: string; setup: string; teardown: string }, MLError>> {
+  ): Promise<
+    Result<{ code: string; setup: string; teardown: string }, MLError>
+  > {
     return await this.logic.generateAutomationCode(testCase, framework);
   }
 
@@ -109,7 +115,10 @@ export class QAEngineerAgent {
     executionResults: any,
     expectedOutcomes: any
   ): Promise<Result<any, MLError>> {
-    return await this.logic.validateTestResults(executionResults, expectedOutcomes);
+    return await this.logic.validateTestResults(
+      executionResults,
+      expectedOutcomes
+    );
   }
 
   /**
@@ -119,19 +128,46 @@ export class QAEngineerAgent {
     const config = QAEngineerLogic.getQAAgentConfig();
     return {
       id: this.agentId,
-      ...config,
-      status: 'active',
-      capabilities: [
-        'test_plan_generation',
-        'test_suite_creation',
-        'test_automation',
-        'quality_assessment',
-        'defect_analysis',
-        'performance_testing',
-        'security_testing',
-        'coverage_analysis',
-        'results_validation',
-      ],
+      projectId: 'default-project', // Default project for now
+      name: config.name,
+      type: 'task-automation', // Map role to type
+      status: 'active' as 'active' | 'inactive' | 'error' | 'training',
+      description: `${config.role} - ${config.personality}`,
+      configuration: {
+        model: 'gpt-4',
+        maxTokens: 4096,
+        temperature: 0.2,
+        systemPrompt: `You are ${config.name}, a ${config.role}. ${config.personality}. Working style: ${config.workingStyle}`,
+        tools: ['test_generation', 'quality_assessment', 'automation'],
+        capabilities: [
+          'test_plan_generation',
+          'test_suite_creation',
+          'test_automation',
+          'quality_assessment',
+          'defect_analysis',
+          'performance_testing',
+          'security_testing',
+          'coverage_analysis',
+          'results_validation',
+        ],
+        constraints: {
+          maxExecutionTime: 300, // 5 minutes
+          maxMemoryUsage: 512, // 512MB
+          allowedDomains: ['localhost', '*.internal'],
+          rateLimits: [],
+        },
+      },
+      metrics: {
+        totalExecutions: 0,
+        successfulExecutions: 0,
+        failedExecutions: 0,
+        averageExecutionTime: 0,
+        lastExecution: null,
+        errorRate: 0,
+      },
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date(),
+      tags: ['qa', 'testing', 'automation', 'quality', 'validation'],
     };
   }
 }
@@ -144,5 +180,5 @@ export type {
   TestPlanResult,
   TestSuiteResult,
   QualityAssessmentResult,
-  CoverageReport
+  CoverageReport,
 } from './types/qa-engineer.types';
