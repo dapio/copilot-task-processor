@@ -197,12 +197,6 @@ export default function ProjectProgress({ projectId }: ProjectProgressProps) {
                 key={step.id}
                 className={`${styles.stepCard} ${
                   index === workflow.currentStep - 1 ? styles.currentStep : ''
-                } ${
-                  styles[
-                    `status${step.status
-                      .charAt(0)
-                      .toUpperCase()}${step.status.slice(1)}`
-                  ]
                 }`}
               >
                 <div className={styles.stepHeader}>
@@ -211,12 +205,14 @@ export default function ProjectProgress({ projectId }: ProjectProgressProps) {
                   </div>
 
                   <div className={styles.stepInfo}>
-                    <h4 className={styles.stepName}>{step.name}</h4>
-                    <p className={styles.stepDescription}>{step.description}</p>
+                    <span className={styles.stepName}>#{step.order} {step.name}</span>
+                    {step.status === 'in_progress' && (
+                      <ArrowRight className={styles.activeIndicator} size={16} />
+                    )}
                   </div>
 
                   <div className={styles.stepMeta}>
-                    <span className={styles.stepOrder}>#{step.order}</span>
+                    <span className={styles.stepStatus}>{step.status}</span>
                   </div>
                 </div>
 

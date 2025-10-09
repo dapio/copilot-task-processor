@@ -1,0 +1,388 @@
+/* Smart Help System Styles - Inteligentny system pomocy */
+
+.helpContainer {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 320px;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 999;
+  overflow: hidden;
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.helpToggle {
+  position: fixed;
+  bottom: 20px;
+  right: 80px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.4);
+  transition: all 0.3s ease;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.helpToggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.6);
+}
+
+/* Header */
+.helpHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.helpTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.helpIcon {
+  font-size: 18px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Content */
+.helpContent {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.helpTip {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 4px solid;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.helpTip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+/* Tip Types */
+.helpTip.onboarding {
+  border-color: #10b981;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(16, 185, 129, 0.05)
+  );
+}
+
+.helpTip.workflow {
+  border-color: #3b82f6;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(59, 130, 246, 0.05)
+  );
+}
+
+.helpTip.troubleshooting {
+  border-color: #ef4444;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.1),
+    rgba(239, 68, 68, 0.05)
+  );
+}
+
+.helpTip.optimization {
+  border-color: #f59e0b;
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.1),
+    rgba(245, 158, 11, 0.05)
+  );
+}
+
+/* Priority Indicators */
+.helpTip.urgent::before {
+  content: '🚨';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  animation: blink 1s infinite;
+}
+
+.helpTip.high::before {
+  content: '⚡';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.helpTip.medium::before {
+  content: '💡';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.7;
+}
+
+.helpTip.low::before {
+  content: '💭';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.5;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.tipHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  padding-right: 20px;
+}
+
+.tipTitle {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+.dismissButton {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.dismissButton:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tipContent {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 12px 0;
+}
+
+.tipActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tipActionButton {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.tipActionButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(2px);
+}
+
+/* Footer */
+.helpFooter {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profileLabel {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.profileSelect {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profileSelect:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.profileSelect:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.profileSelect option {
+  background: #1f2937;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .helpContainer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 70vh;
+  }
+
+  .helpToggle {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .tipActions {
+    flex-direction: column;
+  }
+
+  .userProfile {
+    justify-content: center;
+  }
+}
+
+/* Scrollbar Styling */
+.helpContent::-webkit-scrollbar {
+  width: 4px;
+}
+
+.helpContent::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.helpContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.helpContent::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Advanced Animations */
+.helpTip {
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.helpTip:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.helpTip:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.helpTip:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Interactive Feedback */
+.tipActionButton:active {
+  transform: scale(0.98) translateX(2px);
+}
+
+.helpToggle:active {
+  transform: scale(0.95);
+}
+
+.dismissButton:active {
+  transform: scale(0.9);
+}

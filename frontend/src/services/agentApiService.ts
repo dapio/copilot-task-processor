@@ -159,6 +159,50 @@ class AgentApiService {
     });
   }
 
+  // ===== FILE UPLOAD API METHODS =====
+
+  /**
+   * Upload plików do projektu
+   */
+  async uploadFiles(
+    projectId: string,
+    files: FileList
+  ): Promise<AgentApiResponse<any>> {
+    const formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+
+    formData.append('projectId', projectId);
+
+    try {
+      const response = await fetch(
+        `${AGENTS_API_BASE}/projects/${projectId}/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${errorText || response.statusText}`,
+        };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Upload failed',
+      };
+    }
+  }
+
   // ===== CHAT API METHODS =====
 
   /**

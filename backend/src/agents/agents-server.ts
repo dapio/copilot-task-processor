@@ -1,9 +1,10 @@
 /**
- * Agents Server - Refactored Main Class
- * Modular architecture for agents API server
+ * Agents Server - Refactored Main Class with Real-time Communication
+ * Modular architecture for agents API server with WebSocket support
  */
 
 import express, { Express } from 'express';
+import { createServer } from 'http';
 import { PrismaClient } from '@prisma/client';
 import {
   IAgentServer,
@@ -16,14 +17,17 @@ import { AgentMiddlewareManager } from './managers/agent-middleware.manager';
 import { AgentRoutesManager } from './managers/agent-routes.manager';
 import { RealResearchService } from '../services/real-research.service';
 import { RealIntegrationService } from '../services/real-integration-service';
+import { webSocketService } from '../services/websocket.service';
 
 // Import existing route modules
 import enhancedRoutes from '../routes/enhanced-api.routes';
 import assistantRoutes from '../routes/assistant.routes';
 import workflowAdminRoutes from '../routes/workflow-admin.routes';
+import projectsRoutes from '../routes/projects.routes';
 
 export class AgentsServer implements IAgentServer {
   private app: Express;
+  private httpServer?: any;
   private server?: any;
   private config: AgentServerConfig;
   private dependencies: AgentServerDependencies;
@@ -101,6 +105,7 @@ export class AgentsServer implements IAgentServer {
       this.app.use('/api/enhanced', enhancedRoutes);
       this.app.use('/api/assistant', assistantRoutes);
       this.app.use('/api/workflow-admin', workflowAdminRoutes);
+      this.app.use('/api/projects', projectsRoutes);
 
       console.log('Legacy routes mounted successfully');
     } catch (error) {
@@ -110,12 +115,18 @@ export class AgentsServer implements IAgentServer {
   }
 
   /**
-   * Start the server
+   * Start the server with WebSocket support
    */
   async start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.app.listen(this.config.port, () => {
+        // Create HTTP server
+        this.httpServer = createServer(this.app);
+
+        // Initialize WebSocket service
+        webSocketService.initialize(this.httpServer);
+
+        this.server = this.httpServer.listen(this.config.port, () => {
           this.state.isRunning = true;
           this.state.startTime = new Date();
 
@@ -125,6 +136,7 @@ export class AgentsServer implements IAgentServer {
 🌍 Environment: ${this.config.environment}
 🕐 Started: ${this.state.startTime.toISOString()}
 📋 Health: http://localhost:${this.config.port}/api/health
+🔗 WebSocket: Ready for real-time communication
           `);
 
           resolve();
