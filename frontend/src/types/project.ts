@@ -16,6 +16,7 @@ export interface Project {
   tags: string[];
   repository?: RepositoryConfig;
   fileStructure: ProjectFileStructure;
+  hasFiles?: boolean;
 }
 
 export interface ProjectSettings {

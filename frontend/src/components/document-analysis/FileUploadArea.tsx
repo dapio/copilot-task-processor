@@ -154,7 +154,7 @@ export default function FileUploadArea({
           onDragOver={handleDragOver}
           aria-label="Upload files by clicking or dragging"
         >
-          <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
           <p className="text-lg font-medium text-gray-700">
             Drop files here or click to select
           </p>

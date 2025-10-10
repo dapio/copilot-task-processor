@@ -1,0 +1,1058 @@
+/* Enhanced Workflow Dashboard Styles */
+.workflowContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.workflowHeader {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.statusIndicator.connected {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.statusIndicator.disconnected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.connected .statusDot {
+  background-color: #22c55e;
+  animation: pulse 2s infinite;
+}
+
+.disconnected .statusDot {
+  background-color: #ef4444;
+}
+
+.statusText {
+  font-size: 0.875rem;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Real-time Update Notification */
+.updateNotification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notificationContent {
+  background: #22c55e;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  max-width: 400px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.workflowTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.workflowSubtitle {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
+}
+
+.workflowLayout {
+  display: flex;
+  height: calc(100vh - 200px);
+  background: rgba(255, 255, 255, 0.98);
+  margin: 0;
+}
+
+/* Left Panel - Current Step Details */
+.leftPanel {
+  flex: 2;
+  padding: 2rem;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.stepHeader {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.stepTitleSection {
+  margin-bottom: 1rem;
+}
+
+.stepTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.stepDescription {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.stepStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stepStatusText {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.statusIconApproved {
+  color: #10b981;
+}
+
+.statusIconPending {
+  color: #f59e0b;
+}
+
+.statusIconRejected {
+  color: #ef4444;
+}
+
+.statusIconRevision {
+  color: #f97316;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stepAgents {
+  margin-bottom: 2rem;
+}
+
+.agentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agentCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.agentCard:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.agentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.agentInfo {
+  flex: 1;
+}
+
+.agentName {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.agentSpecialties {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.filesSection {
+  margin-bottom: 2rem;
+}
+
+.filesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.fileItem:hover {
+  background: #f3f4f6;
+}
+
+.fileIcon {
+  color: #6b7280;
+}
+
+.fileInfo {
+  flex: 1;
+}
+
+.fileName {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.fileDetails {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.tasksSection {
+  margin-bottom: 2rem;
+}
+
+.tasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taskItem {
+  padding: 1.25rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.taskItem:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.taskHeader {
+  display: flex;
+  justify-content: between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.taskTitle {
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+}
+
+.taskPriority {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priorityCritical {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.priorityHigh {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+
+.priorityMedium {
+  background: #fefce8;
+  color: #ca8a04;
+  border: 1px solid #fde68a;
+}
+
+.priorityLow {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.taskDescription {
+  margin-bottom: 0.75rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.taskQuestions {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+}
+
+.taskQuestions strong {
+  color: #92400e;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.taskQuestions ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.taskQuestions li {
+  color: #78350f;
+  margin-bottom: 0.25rem;
+}
+
+.taskProgress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.taskProgressBar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.taskProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  transition: width 0.3s ease;
+}
+
+.taskProgressText {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  min-width: 40px;
+}
+
+.stepActions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #f3f4f6;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.actionStart {
+  background: #3b82f6;
+  color: white;
+}
+
+.actionStart:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.actionGroup {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.actionApprove {
+  background: #10b981;
+  color: white;
+}
+
+.actionApprove:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.actionRevision {
+  background: #f59e0b;
+  color: white;
+}
+
+.actionRevision:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.actionReject {
+  background: #ef4444;
+  color: white;
+}
+
+.actionReject:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.noStepSelected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Right Panel - Steps List */
+.rightPanel {
+  flex: 1;
+  padding: 2rem;
+  background: #f9fafb;
+  overflow-y: auto;
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stepCard {
+  padding: 1.25rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.stepCardClickable {
+  cursor: pointer;
+}
+
+.stepCardClickable:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.stepCardActive {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.stepCardDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stepCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.stepCardNumber {
+  width: 32px;
+  height: 32px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.stepCardTitle {
+  flex: 1;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.stepCardAgents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.stepAgentChip {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid currentColor;
+}
+
+.stepCardActivity {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.activityBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.stepConnector {
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  background: white;
+  padding: 0.25rem;
+  border-radius: 50%;
+}
+
+/* Bottom Chat Panel */
+.chatPanel {
+  background: white;
+  border-top: 2px solid #e5e7eb;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHeader {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.chatTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.chatMessages {
+  flex: 1;
+  padding: 1rem 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chatMessage {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 80%;
+}
+
+.chatMessageUser {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chatMessageAgent {
+  align-self: flex-start;
+}
+
+.messageAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.messageContent {
+  flex: 1;
+}
+
+.messageHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chatMessageUser .messageHeader {
+  justify-content: flex-end;
+}
+
+.messageSender {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.messageTime {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.messageImportant {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.messageText {
+  background: #f3f4f6;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.chatMessageUser .messageText {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.messageListItem {
+  margin-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.chatInput {
+  padding: 1rem 2rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.chatTextarea {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.chatTextarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.chatSendButton {
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chatSendButton:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.chatSendButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Dialog Styles */
+.dialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.dialogContent {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dialogClose {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.dialogClose:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.dialogBody {
+  padding: 1.5rem;
+}
+
+.dialogLabel {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.75rem;
+}
+
+.dialogTextarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.dialogTextarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dialogActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.dialogCancel {
+  padding: 0.75rem 1.5rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dialogCancel:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.dialogConfirm {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.confirmApprove {
+  background: #10b981;
+}
+
+.confirmApprove:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.confirmReject {
+  background: #ef4444;
+}
+
+.confirmReject:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.confirmRevision {
+  background: #f59e0b;
+}
+
+.confirmRevision:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+/* Loading States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .workflowLayout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    flex: none;
+  }
+
+  .leftPanel {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .chatPanel {
+    height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .workflowHeader {
+    padding: 1.5rem;
+  }
+
+  .workflowTitle {
+    font-size: 1.5rem;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    padding: 1.5rem;
+  }
+
+  .actionGroup {
+    flex-direction: column;
+  }
+
+  .stepCard {
+    padding: 1rem;
+  }
+
+  .chatInput {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chatSendButton {
+    align-self: flex-end;
+    width: auto;
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Styles */
+.actionButton:focus,
+.chatSendButton:focus,
+.dialogCancel:focus,
+.dialogConfirm:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.stepCardClickable:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .workflowContainer {
+    background: #000;
+    color: #fff;
+  }
+
+  .workflowHeader {
+    background: #fff;
+    color: #000;
+  }
+
+  .leftPanel,
+  .rightPanel,
+  .chatPanel {
+    background: #fff;
+    color: #000;
+  }
+}

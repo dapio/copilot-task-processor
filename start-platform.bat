@@ -7,10 +7,15 @@ echo                     THINKCODE AI PLATFORM LAUNCHER
 echo ================================================================================
 echo.
 
-REM Pre-start cleanup to ensure optimal performance
-echo [CLEANUP] Czyszczenie systemu przed uruchomieniem...
-call npx tsx scripts/cleanup-system.ts
-echo.
+REM Pre-start cleanup to ensure optimal performance (set SKIP_CLEANUP=1 to disable)
+if NOT "%SKIP_CLEANUP%"=="1" (
+    echo [CLEANUP] Czyszczenie systemu przed uruchomieniem...
+    call npx tsx scripts/cleanup-system.ts
+    echo.
+) else (
+    echo [CLEANUP] Pomijanie cleanup (SKIP_CLEANUP=1)
+    echo.
+)
 
 REM Check if we're in the correct directory
 if not exist "package.json" (

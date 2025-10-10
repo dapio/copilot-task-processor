@@ -61,37 +61,62 @@ class SystemCleanup {
     console.log('📊 Cleaning up database...');
 
     try {
-      // Clean old workflow executions (older than 30 days)
+      // Clean ONLY FAILED workflow executions (older than 7 days) - keep successful ones longer
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const deletedFailedWorkflows =
+        await this.prisma.workflowExecution.deleteMany({
+          where: {
+            status: 'failed',
+            startedAt: {
+              lt: sevenDaysAgo,
+            },
+          },
+        });
+
+      console.log(
+        `  ✓ Deleted ${deletedFailedWorkflows.count} failed workflow executions`
+      );
+
+      // Clean ONLY very old COMPLETED executions (older than 90 days) - keep recent ones
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+      const deletedOldCompletedWorkflows =
+        await this.prisma.workflowExecution.deleteMany({
+          where: {
+            status: 'completed',
+            completedAt: {
+              lt: ninetyDaysAgo,
+              not: null,
+            },
+          },
+        });
+
+      console.log(
+        `  ✓ Deleted ${deletedOldCompletedWorkflows.count} old completed workflow executions`
+      );
+
+      // DON'T DELETE DOCUMENTS - they might be referenced by projects
+      // Only clean documents with status 'failed' or 'deleted' older than 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const deletedWorkflows = await this.prisma.workflowExecution.deleteMany({
+      const deletedFailedDocuments = await this.prisma.document.deleteMany({
         where: {
-          startedAt: {
+          OR: [{ status: 'failed' }, { status: 'deleted' }],
+          createdAt: {
             lt: thirtyDaysAgo,
           },
         },
       });
 
       console.log(
-        `  ✓ Deleted ${deletedWorkflows.count} old workflow executions`
+        `  ✓ Deleted ${deletedFailedDocuments.count} failed/deleted documents`
       );
 
-      // Clean old documents (older than 90 days and not linked to active workflows)
-      const ninetyDaysAgo = new Date();
-      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
-      const deletedDocuments = await this.prisma.document.deleteMany({
-        where: {
-          createdAt: {
-            lt: ninetyDaysAgo,
-          },
-        },
-      });
-
-      console.log(`  ✓ Deleted ${deletedDocuments.count} old documents`);
-
-      // Clean old knowledge entries (older than 90 days and archived)
+      // Clean old knowledge entries (older than 90 days and archived) - KEEP AS IS
       const deletedKnowledge = await this.prisma.knowledgeEntry.deleteMany({
         where: {
           status: 'archived',
@@ -102,7 +127,21 @@ class SystemCleanup {
       });
 
       console.log(
-        `  ✓ Deleted ${deletedKnowledge.count} orphaned knowledge entries`
+        `  ✓ Deleted ${deletedKnowledge.count} archived knowledge entries`
+      );
+
+      // Clean very old failed task executions (older than 30 days)
+      const deletedTaskExecutions = await this.prisma.taskExecution.deleteMany({
+        where: {
+          status: 'failed',
+          startedAt: {
+            lt: thirtyDaysAgo,
+          },
+        },
+      });
+
+      console.log(
+        `  ✓ Deleted ${deletedTaskExecutions.count} failed task executions`
       );
     } catch (error) {
       console.error('  ❌ Database cleanup error:', error);
@@ -146,26 +185,43 @@ class SystemCleanup {
 
     try {
       const uploadsDir = path.join(process.cwd(), 'uploads');
+      const tempDir = path.join(process.cwd(), 'temp');
 
+      let deletedCount = 0;
+
+      // Clean old files from uploads directory (but preserve directory structure)
       if (await this.directoryExists(uploadsDir)) {
         const uploadFiles = await fs.readdir(uploadsDir);
         const oneDayAgo = new Date();
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-        let deletedCount = 0;
-
         for (const file of uploadFiles) {
           const filePath = path.join(uploadsDir, file);
           const stats = await fs.stat(filePath);
 
-          if (stats.mtime < oneDayAgo) {
+          // Only cleanup FILES (not directories like 'projects'), and only old ones
+          if (stats.isFile() && stats.mtime < oneDayAgo) {
             await fs.unlink(filePath);
             deletedCount++;
           }
         }
-
-        console.log(`  ✓ Deleted ${deletedCount} temporary upload files`);
       }
+
+      // Clean temp directory if it exists
+      if (await this.directoryExists(tempDir)) {
+        const tempFiles = await fs.readdir(tempDir, { withFileTypes: true });
+
+        for (const dirent of tempFiles) {
+          const fullPath = path.join(tempDir, dirent.name);
+
+          if (dirent.isFile()) {
+            await fs.unlink(fullPath);
+            deletedCount++;
+          }
+        }
+      }
+
+      console.log(`  ✓ Deleted ${deletedCount} temporary files`);
     } catch (error) {
       console.error('  ❌ Temporary files cleanup error:', error);
       throw error;

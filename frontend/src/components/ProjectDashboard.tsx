@@ -4,12 +4,18 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Lightbulb } from 'lucide-react';
 import { Project } from '../types/project';
 import { useProject } from '../contexts/ProjectContext';
-import ProjectProgress from './ProjectProgress';
 import EnhancedAssistant from './EnhancedAssistant';
-import SmartHelpSystem from './SmartHelpSystem';
+import RestructuredWorkflow from './RestructuredWorkflow';
+import EnhancedFileUpload, { UploadedFile } from './EnhancedFileUpload';
+import {
+  MICROSOFT_SDL_WORKFLOW,
+  WorkflowHelpers,
+} from '../constants/microsoftWorkflow';
 import { agentApiService } from '../services/agentApiService';
+import { apiService } from '../services/apiService';
 import {
   useWebSocket,
   WorkflowUpdate,
@@ -17,14 +23,62 @@ import {
 } from '../hooks/useWebSocket';
 import styles from '../styles/project-dashboard.module.css';
 
+// Mapowanie ID agentów na ładne nazwy
+const AGENT_NAMES: Record<string, string> = {
+  'business-analyst': 'Business Analyst',
+  'system-architect': 'System Architect',
+  'backend-developer': 'Backend Developer',
+  'frontend-developer': 'Frontend Developer',
+  'qa-engineer': 'QA Engineer',
+  'devops-engineer': 'DevOps Engineer',
+  'ui-ux-designer': 'UI/UX Designer',
+  'technical-writer': 'Technical Writer',
+  'project-manager': 'Project Manager',
+};
+
+// Funkcja do mapowania nazwy agenta
+const getAgentDisplayName = (agentId: string, agentName?: string): string => {
+  // Jeśli agent ma już ładną nazwę z API, użyj jej
+  if (agentName && !agentName.includes('-')) {
+    return agentName;
+  }
+
+  // Spróbuj zmapować z ID
+  const mappedName = AGENT_NAMES[agentId];
+  if (mappedName) {
+    return mappedName;
+  }
+
+  // Fallback - sformatuj ID
+  return agentId
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+interface ProjectContext {
+  projectId: string;
+  project: Project;
+  hasFiles: boolean;
+  inputFileCount: number;
+  state: string;
+  routing: {
+    canProceedToDashboard: boolean;
+    nextStep: { action: string; message: string };
+    recommendedRoute: 'dashboard' | 'upload';
+  };
+}
+
 interface ProjectDashboardProps {
   project: Project;
   onBackToProjects: () => void;
+  projectContext?: ProjectContext;
 }
 
 export default function ProjectDashboard({
   project,
   onBackToProjects,
+  projectContext,
 }: ProjectDashboardProps) {
   const { setCurrentProject } = useProject();
   const [projectStarted, setProjectStarted] = useState(false);
@@ -44,7 +98,18 @@ export default function ProjectDashboard({
   // State for real-time updates
   const [workflowStatus, setWorkflowStatus] = useState<any>(null);
   const [liveMessages, setLiveMessages] = useState<AgentMessage[]>([]);
-  const [isHelpVisible, setIsHelpVisible] = useState(false);
+  const [isAssistantVisible, setIsAssistantVisible] = useState(false);
+
+  // Workflow state
+  const [currentStepId, setCurrentStepId] = useState('requirements-gathering');
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [agentStatuses, setAgentStatuses] = useState({
+    'business-analyst': { status: 'available' as const },
+    'system-architect': { status: 'available' as const },
+    'backend-developer': { status: 'available' as const },
+    'frontend-developer': { status: 'available' as const },
+    'qa-engineer': { status: 'available' as const },
+  });
 
   // Handle real-time updates
   useEffect(() => {
@@ -87,6 +152,16 @@ export default function ProjectDashboard({
     );
   }, [isConnected]);
 
+  // Auto-start project if it already has files
+  useEffect(() => {
+    if (project.hasFiles && !projectStarted) {
+      console.log('🚀 Auto-starting project with existing files');
+      setProjectStarted(true);
+      // Optional: Auto-start workflow for projects with files
+      // handleStartProject();
+    }
+  }, [project.hasFiles, projectStarted]);
+
   const handleSwitchProject = () => {
     setCurrentProject(null);
     onBackToProjects();
@@ -98,10 +173,11 @@ export default function ProjectDashboard({
       description,
       files,
       filesLength: files?.length,
+      hasFiles: project.hasFiles,
     });
 
     try {
-      // Upload files if provided
+      // Upload files if provided and project doesn't have files yet
       if (files && files.length > 0) {
         console.log('📤 Uploading files...');
         const uploadResponse = await agentApiService.uploadFiles(
@@ -114,6 +190,9 @@ export default function ProjectDashboard({
           alert(`Błąd uploadu plików: ${uploadResponse.error}`);
           return;
         }
+      } else if (!project.hasFiles) {
+        console.log('⚠️  No files provided and project has no existing files');
+        // Możemy tutaj pokazać komunikat albo pozwolić na kontynuację bez plików
       }
 
       // Start REAL project workflow with analysis
@@ -186,37 +265,133 @@ export default function ProjectDashboard({
     }
   };
 
+  // ============ WORKFLOW API HANDLERS ============
+
+  const handleStepApprove = async (stepId: string) => {
+    try {
+      console.log('✅ Approving step:', stepId);
+      const response = await apiService.approveWorkflowStep(project.id, stepId);
+
+      if (response.data) {
+        console.log('✅ Step approved successfully:', response.data);
+        setCompletedSteps(prev => [...prev, stepId]);
+        // TODO: Move to next step if needed
+      }
+    } catch (error) {
+      console.error('💥 Error approving step:', error);
+      alert(
+        `Błąd zatwierdzania kroku: ${
+          error instanceof Error ? error.message : 'Nieznany błąd'
+        }`
+      );
+    }
+  };
+
+  const handleStepRevoke = async (stepId: string) => {
+    try {
+      console.log('❌ Revoking step approval:', stepId);
+      const response = await apiService.revokeWorkflowStep(project.id, stepId);
+
+      if (response.data) {
+        console.log('❌ Step approval revoked successfully:', response.data);
+        setCompletedSteps(prev => prev.filter(id => id !== stepId));
+      }
+    } catch (error) {
+      console.error('💥 Error revoking step:', error);
+      alert(
+        `Błąd cofania zatwierdzenia: ${
+          error instanceof Error ? error.message : 'Nieznany błąd'
+        }`
+      );
+    }
+  };
+
+  const handleStepReject = async (stepId: string, reason: string) => {
+    try {
+      console.log('🚫 Rejecting step:', stepId, 'Reason:', reason);
+      // TODO: Implement step rejection API
+      console.log('Step rejection not implemented yet');
+    } catch (error) {
+      console.error('💥 Error rejecting step:', error);
+      alert(
+        `Błąd odrzucania kroku: ${
+          error instanceof Error ? error.message : 'Nieznany błąd'
+        }`
+      );
+    }
+  };
+
+  const handleAgentAction = async (agentId: string, action: string) => {
+    try {
+      console.log('🤖 Agent action:', agentId, action);
+      // TODO: Implement agent actions (start, pause, resume, stop, chat)
+      console.log('Agent actions not implemented yet');
+    } catch (error) {
+      console.error('💥 Error handling agent action:', error);
+      alert(
+        `Błąd akcji agenta: ${
+          error instanceof Error ? error.message : 'Nieznany błąd'
+        }`
+      );
+    }
+  };
+
+  const handleStepSelect = (stepId: string) => {
+    console.log('🎯 Selecting step:', stepId);
+    setCurrentStepId(stepId);
+  };
+
+  // Smart routing based on project context
+  const shouldShowUploadPrompt =
+    projectContext && !projectContext.routing.canProceedToDashboard;
+  const projectState = projectContext?.state || 'unknown';
+
   return (
     <div className={styles.container}>
       <ProjectHeader project={project} onSwitchProject={handleSwitchProject} />
 
-      {/* AI Assistant - zawsze widoczny */}
-      <EnhancedAssistant
-        projectStarted={projectStarted}
-        workflowStatus={workflowStatus}
-        liveMessages={liveMessages}
-        isConnected={isConnected}
-        onStartProject={handleStartProject}
-      />
+      {/* Project State Banner - show routing guidance */}
+      {shouldShowUploadPrompt && (
+        <div className="bg-yellow-50 border border-yellow-200 p-4 m-4 rounded-lg">
+          <div className="flex items-center">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">
+                Project Setup Required
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>{projectContext?.routing.nextStep.message}</p>
+                <p className="mt-1">
+                  <strong>Project State:</strong> {projectState} |
+                  <strong> Files:</strong> {projectContext?.inputFileCount || 0}{' '}
+                  uploaded
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Smart Help System */}
-      <SmartHelpSystem
-        context={{
-          currentPage: 'dashboard',
-          userRole: 'beginner',
-          projectPhase: projectStarted
-            ? workflowStatus?.status === 'running'
-              ? 'analysis'
-              : workflowStatus?.status === 'completed'
-              ? 'development'
-              : 'setup'
-            : 'setup',
-          lastActivity: liveMessages.length > 0 ? 'task-created' : undefined,
-          strugglingWith: !isConnected ? ['connection'] : undefined,
-        }}
-        isVisible={isHelpVisible}
-        onToggle={() => setIsHelpVisible(!isHelpVisible)}
-      />
+      {/* AI Assistant - warunkowo widoczny */}
+      {isAssistantVisible && (
+        <EnhancedAssistant
+          workflowStep={workflowStatus}
+          conversations={liveMessages}
+          onAssistRequest={message => {
+            // Handle assistant request
+            console.log('Assistant request:', message);
+          }}
+          isLoading={!isConnected}
+        />
+      )}
+
+      {/* Ikona żarówki w prawym dolnym rogu */}
+      <button
+        className={styles.assistantToggle}
+        onClick={() => setIsAssistantVisible(!isAssistantVisible)}
+        title={isAssistantVisible ? 'Ukryj asystenta' : 'Pokaż asystenta AI'}
+      >
+        <Lightbulb size={24} color="white" />
+      </button>
 
       <div className={styles.content}>
         {!projectStarted ? (
@@ -228,21 +403,30 @@ export default function ProjectDashboard({
             />
           </div>
         ) : (
-          /* Projekt w toku - pokaż workflow */
+          /* Projekt w toku - pokaż nowy Microsoft Workflow */
           <>
             <div className={styles.mainContent}>
-              <ProjectWorkflowMain
-                projectId={project.id}
-                isConnected={isConnected}
-                workflowStatus={workflowStatus}
-                liveMessages={liveMessages}
-                workflowUpdates={workflowUpdates}
+              <RestructuredWorkflow
+                currentStepId={currentStepId}
+                completedSteps={completedSteps}
+                agentStatuses={agentStatuses}
+                onStepApprove={handleStepApprove}
+                onStepRevoke={handleStepRevoke}
+                onStepReject={handleStepReject}
+                onStepSelect={handleStepSelect}
+                onAgentAction={handleAgentAction}
               />
             </div>
 
-            {/* Sidebar z Progress i Chat */}
+            {/* Sidebar z krokami workflow */}
             <div className={styles.sidebar}>
-              <ProjectProgress projectId={project.id} />
+              <WorkflowStepsList
+                currentStepId={currentStepId}
+                completedSteps={completedSteps}
+                onStepSelect={handleStepSelect}
+                onStepApprove={handleStepApprove}
+                onStepRevoke={handleStepRevoke}
+              />
             </div>
           </>
         )}
@@ -371,19 +555,35 @@ function ProjectGuide({
               projektu
             </p>
             <div className={styles.stepActions}>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.txt"
-                className={styles.fileInput}
-                title="Wybierz plik ze specyfikacją"
-                aria-label="Wybierz plik ze specyfikacją"
-                onChange={e => setSelectedFiles(e.target.files)}
+              <EnhancedFileUpload
+                projectId={project.id}
+                acceptedFiles="image/*,.pdf,.doc,.docx,.txt,.md,.zip,.png,.jpg,.jpeg,.gif,.svg"
+                maxFiles={20}
+                maxFileSize={50}
+                multiple={true}
+                uploadUrl={`${
+                  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006'
+                }/api/projects/${project.id}/files`}
+                onFilesUploaded={files => {
+                  console.log('Files uploaded:', files);
+                  setSelectedFiles(files as any);
+                }}
+                onError={error => {
+                  console.error('Upload error:', error);
+                  alert(`Błąd uploadu: ${error}`);
+                }}
+                title="Prześlij pliki projektu"
+                description="Przeciągnij dokumenty, zdjęcia, mockupy lub kliknij aby wybrać"
+                showPreview={true}
+                className={styles.enhancedUpload}
               />
-              <span>lub</span>
+              <div className={styles.uploadDivider}>
+                <span>lub</span>
+              </div>
               <textarea
-                placeholder="Opisz swój projekt..."
+                placeholder="Opisz swój projekt w detalach..."
                 className={styles.descriptionInput}
-                rows={4}
+                rows={6}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
               />
@@ -532,7 +732,9 @@ function ProjectWorkflowMain({
               <div key={agent.id} className={styles.agentCard}>
                 <div className={styles.agentAvatar}>🤖</div>
                 <div className={styles.agentInfo}>
-                  <div className={styles.agentName}>{agent.name}</div>
+                  <div className={styles.agentName}>
+                    {getAgentDisplayName(agent.id, agent.name)}
+                  </div>
                   <div className={styles.agentTask}>
                     {agent.currentTask || 'Oczekuje na zadanie...'}
                   </div>
@@ -658,6 +860,109 @@ function ProjectWorkflowMain({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// Komponent listy kroków workflow dla sidebar
+interface WorkflowStepsListProps {
+  currentStepId?: string;
+  completedSteps?: string[];
+  onStepSelect?: (stepId: string) => void;
+  onStepApprove?: (stepId: string) => void;
+  onStepRevoke?: (stepId: string) => void;
+}
+
+function WorkflowStepsList({
+  currentStepId,
+  completedSteps = [],
+  onStepSelect,
+  onStepApprove,
+  onStepRevoke,
+}: WorkflowStepsListProps) {
+  const getStepStatus = (stepId: string) => {
+    if (completedSteps.includes(stepId)) return 'completed';
+    if (stepId === currentStepId) return 'current';
+    return 'pending';
+  };
+
+  const canNavigateToStep = (stepId: string) => {
+    const stepIndex = MICROSOFT_SDL_WORKFLOW.findIndex(s => s.id === stepId);
+    const currentIndex = MICROSOFT_SDL_WORKFLOW.findIndex(
+      s => s.id === currentStepId
+    );
+    return stepIndex <= currentIndex + 1;
+  };
+
+  const handleStepClick = (stepId: string) => {
+    if (canNavigateToStep(stepId)) {
+      onStepSelect?.(stepId);
+    }
+  };
+
+  const handleRevokeApproval = (stepId: string) => {
+    onStepRevoke?.(stepId);
+  };
+
+  return (
+    <div className={styles.workflowSteps}>
+      <h4 className={styles.stepsTitle}>Kroki Workflow</h4>
+      <div className={styles.stepsList}>
+        {MICROSOFT_SDL_WORKFLOW.map((step, index) => {
+          const status = getStepStatus(step.id);
+          const isAccessible = canNavigateToStep(step.id);
+          const isCurrent = step.id === currentStepId;
+
+          return (
+            <div key={step.id} className={styles.stepItem}>
+              <button
+                className={`${styles.stepButton} ${styles[status]} ${
+                  isCurrent ? styles.active : ''
+                }`}
+                onClick={() => handleStepClick(step.id)}
+                disabled={!isAccessible}
+              >
+                <div className={styles.stepNumber}>{index + 1}</div>
+                <div className={styles.stepDetails}>
+                  <span className={styles.stepName}>{step.name}</span>
+                  <span className={styles.stepPhase}>
+                    {step.phase.toUpperCase()}
+                  </span>
+                </div>
+                <div className={styles.stepStatus}>
+                  {status === 'completed' ? (
+                    <div className={styles.stepStatusText}>Completed</div>
+                  ) : status === 'current' ? (
+                    <div className={styles.stepStatusText}>In_progress</div>
+                  ) : (
+                    <div className={styles.stepStatusText}>Pending</div>
+                  )}
+                </div>
+              </button>
+
+              {/* Wymaga zatwierdzenia badge */}
+              {(status === 'current' ||
+                (status === 'pending' && step.requiredApproval)) && (
+                <div className={styles.approvalBadge}>Wymaga zatwierdzenia</div>
+              )}
+
+              {/* Przycisk wycofania zatwierdzenia */}
+              {status === 'completed' && (
+                <button
+                  className={styles.revokeBtn}
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleRevokeApproval(step.id);
+                  }}
+                  title="Wycofaj zatwierdzenie tego kroku"
+                >
+                  Wycofaj
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

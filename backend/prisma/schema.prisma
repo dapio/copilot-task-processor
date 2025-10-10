@@ -60,6 +60,9 @@ model Agent {
   agentFeeds        AgentFeed[]
   chatMessages      ProjectChatMessage[]
   researchQueries   ResearchQuery[]
+  profile           AgentProfile?
+  stepConversations WorkflowStepConversation[]
+  stepTasks         WorkflowStepTask[]
 
   @@map("agents")
 }
@@ -84,6 +87,8 @@ model Project {
   chatSessions    ProjectChatSession[]
   mockups         MockupApproval[]
   chatChannels    ChatChannel[]
+  stepApprovals   WorkflowStepApproval[]
+  files           ProjectFile[]
 
   @@map("projects")
 }
@@ -414,6 +419,7 @@ model WorkflowRun {
   project         Project?                   @relation(fields: [projectId], references: [id])
   steps           WorkflowStepExecution[]
   events          WorkflowExecutionEvent[]
+  stepApprovals   WorkflowStepApproval[]
   
   createdAt       DateTime                   @default(now())
   updatedAt       DateTime                   @updatedAt
@@ -881,4 +887,158 @@ model JiraSyncLog {
   createdAt DateTime @default(now())
 
   @@map("jira_sync_logs")
+}
+
+// ================================
+// WORKFLOW STEP APPROVALS SYSTEM
+// ================================
+
+model WorkflowStepApproval {
+  id              String    @id @default(cuid())
+  projectId       String
+  workflowRunId   String
+  stepId          String    // Workflow step identifier
+  stepName        String
+  status          String    @default("pending") // pending, approved, rejected, needs_revision
+  approvedBy      String?   // User who approved/rejected
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  comments        String?   // Approval/rejection comments
+  revisionCount   Int       @default(0)
+  metadata        Json?     // Additional approval data
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workflowRun     WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  conversations   WorkflowStepConversation[]
+  tasks           WorkflowStepTask[]
+
+  @@unique([workflowRunId, stepId])
+  @@map("workflow_step_approvals")
+}
+
+// ================================
+// CONVERSATION HISTORY PER STEP
+// ================================
+
+model WorkflowStepConversation {
+  id              String                  @id @default(cuid())
+  approvalId      String
+  agentId         String?
+  role            String                  // user, agent, system
+  agentType       String?                 // business_analyst, architect, etc.
+  content         String
+  messageType     String                  @default("text") // text, task, question, analysis, file
+  attachments     Json?                   // File attachments, screenshots, etc.
+  parentId        String?                 // For threaded conversations
+  isImportant     Boolean                 @default(false)
+  metadata        Json?                   // Additional message context
+  timestamp       DateTime                @default(now())
+
+  // Relations
+  approval        WorkflowStepApproval    @relation(fields: [approvalId], references: [id], onDelete: Cascade)
+  agent           Agent?                  @relation(fields: [agentId], references: [id])
+  parent          WorkflowStepConversation? @relation("ConversationReplies", fields: [parentId], references: [id])
+  replies         WorkflowStepConversation[] @relation("ConversationReplies")
+
+  @@index([approvalId, timestamp])
+  @@map("workflow_step_conversations")
+}
+
+// ================================
+// PROJECT FILE MANAGEMENT SYSTEM
+// ================================
+
+model ProjectFile {
+  id              String    @id @default(cuid())
+  projectId       String
+  filename        String
+  originalName    String
+  path            String    // Relative path within project directory
+  fullPath        String    // Absolute system path
+  size            Int
+  mimeType        String
+  category        String    // input, output, mockup, document, analysis
+  subcategory     String?   // For mockups: wireframe, prototype, etc.
+  hash            String?   // For deduplication
+  uploadedBy      String?   // User who uploaded
+  processedBy     String?   // Agent who processed
+  status          String    @default("uploaded") // uploaded, processing, processed, analyzed, archived
+  analysis        Json?     // File analysis results
+  extractedText   String?   // Extracted text content for search
+  tags            Json?     // Array of tags
+  metadata        Json?     // File-specific metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, category])
+  @@index([projectId, status])
+  @@map("project_files")
+}
+
+// ================================
+// AGENT VISUAL IDENTITY SYSTEM
+// ================================
+
+model AgentProfile {
+  id              String    @id @default(cuid())
+  agentId         String    @unique
+  displayName     String    // Human-friendly name (e.g., "Sarah - Business Analyst")
+  firstName       String?   // Individual name
+  lastName        String?
+  avatar          String?   // Avatar URL or identifier
+  color           String    // Hex color code for UI (e.g., "#3B82F6")
+  icon            String?   // Icon identifier (e.g., "user-tie", "chart-line")
+  bio             String?   // Agent description/bio
+  specialties     Json?     // Array of specialties
+  personality     Json?     // Personality traits for consistent communication
+  settings        Json?     // Agent-specific UI settings
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  agent           Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@map("agent_profiles")
+}
+
+// ================================
+// WORKFLOW STEP TASKS SYSTEM
+// ================================
+
+model WorkflowStepTask {
+  id              String                   @id @default(cuid())
+  approvalId      String
+  agentId         String?
+  title           String
+  description     String?
+  type            String                   @default("analysis") // analysis, review, question, approval, generation
+  priority        String                   @default("medium") // low, medium, high, critical
+  status          String                   @default("pending") // pending, in_progress, completed, blocked, cancelled
+  assignedTo      String?                  // Agent or user assigned
+  questions       Json?                    // Array of questions for user
+  requirements    Json?                    // Task requirements
+  deliverables    Json?                    // Expected deliverables
+  progress        Int                      @default(0) // 0-100 completion percentage
+  estimatedTime   Int?                     // Estimated time in minutes
+  actualTime      Int?                     // Actual time spent in minutes
+  startedAt       DateTime?
+  completedAt     DateTime?
+  blockedReason   String?                  // Reason if blocked
+  metadata        Json?                    // Additional task data
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  // Relations
+  approval        WorkflowStepApproval     @relation(fields: [approvalId], references: [id], onDelete: Cascade)
+  agent           Agent?                   @relation(fields: [agentId], references: [id])
+
+  @@index([approvalId, status])
+  @@index([assignedTo, status])
+  @@map("workflow_step_tasks")
 }

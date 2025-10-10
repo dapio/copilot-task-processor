@@ -170,13 +170,23 @@ class AgentApiService {
   ): Promise<AgentApiResponse<any>> {
     const formData = new FormData();
 
-    for (let i = 0; i < files.length; i++) {
-      formData.append('files', files[i]);
+    // Backend expects single 'file' field, send first file only
+    if (files.length > 0) {
+      formData.append('file', files[0]);
     }
 
     formData.append('projectId', projectId);
 
     try {
+      console.log(
+        '🚀 Uploading file to:',
+        `${AGENTS_API_BASE}/projects/${projectId}/upload`
+      );
+      console.log('📦 FormData contents:', {
+        file: formData.get('file'),
+        projectId: formData.get('projectId'),
+      });
+
       const response = await fetch(
         `${AGENTS_API_BASE}/projects/${projectId}/upload`,
         {

@@ -1,256 +1,114 @@
-/**
- * Enhanced Project Assistant with Contextual Guidance
- * Rozszerzony asystent z kontekstowymi podpowiedziami i przewodnikiem
+﻿/**
+ * Enhanced Assistant - Real-time AI Project Assistant
+ * Naprawiony asystent bez mocków, z prawdziwymi danymi od agentów
+ * Floating panel po prawej stronie
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  MessageSquare,
+  Download,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Send,
+  FileText,
+  Upload,
+  Play,
+  Users,
+  BarChart3,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Lightbulb,
+  Target,
+  Pause,
+  Settings,
+  Eye,
+  StopCircle,
+} from 'lucide-react';
 import { AgentMessage } from '../hooks/useWebSocket';
+import {
+  MICROSOFT_SDL_WORKFLOW,
+  AGENT_STATUS_CONFIG,
+  WorkflowHelpers,
+} from '../constants/microsoftWorkflow';
 import styles from '../styles/enhanced-assistant.module.css';
 
+// Mapowanie ID agentów na ładne nazwy
+const AGENT_NAMES: Record<string, string> = {
+  'business-analyst': 'Business Analyst',
+  'system-architect': 'System Architect',
+  'backend-developer': 'Backend Developer',
+  'frontend-developer': 'Frontend Developer',
+  'qa-engineer': 'QA Engineer',
+  'devops-engineer': 'DevOps Engineer',
+  'ui-ux-designer': 'UI/UX Designer',
+  'technical-writer': 'Technical Writer',
+  'project-manager': 'Project Manager',
+};
+
+// Funkcja do mapowania nazwy agenta
+const getAgentDisplayName = (agentId: string): string => {
+  const mappedName = AGENT_NAMES[agentId];
+  if (mappedName) {
+    return mappedName;
+  }
+
+  // Fallback - sformatuj ID
+  return agentId
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 interface EnhancedAssistantProps {
-  projectStarted: boolean;
-  workflowStatus: any;
-  liveMessages: AgentMessage[];
-  isConnected: boolean;
-  onStartProject?: (description?: string, files?: FileList) => void;
-}
-
-interface GuidanceStep {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  action?: () => void;
-  actionText?: string;
-}
-
-interface AssistantTip {
-  id: string;
-  type: 'tip' | 'warning' | 'info' | 'success';
-  title: string;
-  content: string;
-  dismissible: boolean;
+  workflowStep?: any;
+  onAssistRequest?: (message: string) => void;
+  isLoading?: boolean;
+  conversations?: AgentMessage[];
 }
 
 export default function EnhancedAssistant({
-  projectStarted,
-  workflowStatus,
-  liveMessages,
-  isConnected,
-  onStartProject,
+  workflowStep,
+  onAssistRequest,
+  isLoading = false,
+  conversations = [],
 }: EnhancedAssistantProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [assistantTips, setAssistantTips] = useState<AssistantTip[]>([]);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [showGuide, setShowGuide] = useState(!projectStarted);
-  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<'guide' | 'chat'>('guide');
+  const [chatInput, setChatInput] = useState('');
 
-  // Action handlers
-  const handleFileUpload = () => {
-    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-    if (fileInput) {
-      console.log('🤖 Assistant: Opening file dialog');
-      fileInput.click();
-    } else {
-      console.error('🤖 Assistant: File input not found');
+  // Prawdziwe dane z workflow
+  const currentStepName = workflowStep?.status || 'Oczekuje na projekt...';
+  const currentStepDescription =
+    workflowStep?.message || 'Asystent jest gotowy do pracy';
+  const currentPhase = workflowStep?.agentId
+    ? `Agent: ${workflowStep.agentId}`
+    : '';
+  const estimatedDuration = workflowStep?.progress
+    ? `${workflowStep.progress}%`
+    : '';
+
+  // Prawdziwe wiadomości od agentów
+  const realTimeMessages = conversations
+    .filter(
+      msg =>
+        msg.timestamp && new Date(msg.timestamp).getTime() > Date.now() - 300000 // Last 5 minutes
+    )
+    .slice(-5); // Last 5 messages
+
+  const handleSendMessage = () => {
+    if (chatInput.trim() && onAssistRequest) {
+      onAssistRequest(chatInput.trim());
+      setChatInput('');
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0 && onStartProject) {
-      console.log(
-        '🤖 Assistant: Files selected, starting project with files:',
-        files.length
-      );
-      onStartProject(undefined, files);
-    }
-  };
-
-  const handleChatWithAgents = () => {
-    setShowChatDialog(true);
-    console.log('🤖 Assistant: Opening chat with agents');
-    // TODO: Implement chat dialog
-  };
-
-  const handleViewProgress = () => {
-    console.log('🤖 Assistant: Opening progress view');
-    // TODO: Scroll to progress section or open progress dialog
-  };
-
-  const handleDownloadReport = () => {
-    console.log('🤖 Assistant: Downloading report');
-    // TODO: Implement report download
-  };
-
-  // Kroki przewodnika
-  const guidanceSteps: GuidanceStep[] = [
-    {
-      id: 'welcome',
-      title: 'Witaj w ThinkCode AI Platform!',
-      description:
-        'Jestem Twoim AI asystentem. Pomogę Ci krok po kroku uruchomić projekt i pracować z agentami.',
-      completed: true,
-    },
-    {
-      id: 'upload-docs',
-      title: 'Wgraj dokumenty projektu',
-      description:
-        'Zacznij od wgrania dokumentów projektu: specyfikacje, wymagania, notatki. Agenci będą je analizować.',
-      completed: false,
-      actionText: 'Wgraj dokumenty',
-      action: handleFileUpload,
-    },
-    {
-      id: 'start-analysis',
-      title: 'Rozpocznij analizę',
-      description:
-        'Uruchom AI agentów, którzy przeanalizują Twoje dokumenty i stworzą plan projektu.',
-      completed: projectStarted,
-      actionText: 'Rozpocznij analizę',
-      action: () => {
-        console.log('🤖 Assistant: Starting project analysis');
-        if (onStartProject) {
-          onStartProject();
-        } else {
-          console.error('🤖 Assistant: onStartProject function not provided');
-        }
-      },
-    },
-    {
-      id: 'monitor-progress',
-      title: 'Monitoruj postęp',
-      description:
-        'Obserwuj pracę agentów w czasie rzeczywistym i komunikuj się z nimi.',
-      completed: projectStarted && workflowStatus?.status === 'completed',
-    },
-    {
-      id: 'review-results',
-      title: 'Sprawdź rezultaty',
-      description:
-        'Przejrzyj wygenerowane zadania, dokumentację i plan implementacji.',
-      completed: false,
-    },
-  ];
-
-  // Generuj kontekstowe podpowiedzi
-  const generateContextualTips = useCallback(() => {
-    console.log('🤖 Assistant: Generating tips. State:', {
-      projectStarted,
-      isConnected,
-      workflowStatus: workflowStatus?.status,
-      liveMessagesCount: liveMessages.length,
-    });
-
-    const tips: AssistantTip[] = [];
-
-    // Sprawdź połączenie
-    if (!isConnected) {
-      tips.push({
-        id: 'connection-lost',
-        type: 'warning',
-        title: '🔌 Problemy z połączeniem',
-        content:
-          'Utracono połączenie z serwerem. Sprawdź połączenie internetowe lub odśwież stronę.',
-        dismissible: false,
-      });
-    }
-
-    // Status projektu
-    if (!projectStarted) {
-      tips.push({
-        id: 'getting-started',
-        type: 'info',
-        title: '🚀 Jak zacząć?',
-        content:
-          'Wgraj dokumenty projektu (PDFs, DOCs, TXT) i kliknij "Rozpocznij analizę". Agenci automatycznie przeanalizują zawartość.',
-        dismissible: true,
-      });
-
-      tips.push({
-        id: 'file-types',
-        type: 'tip',
-        title: '📄 Obsługiwane formaty',
-        content:
-          'Możesz wgrać pliki: PDF, DOC, DOCX, TXT, MD. Im więcej szczegółów, tym lepsza analiza!',
-        dismissible: true,
-      });
-    }
-
-    // Analiza w trakcie
-    if (projectStarted && workflowStatus?.status === 'running') {
-      tips.push({
-        id: 'analysis-running',
-        type: 'info',
-        title: '⚡ Analiza w trakcie',
-        content:
-          'Agenci analizują Twoje dokumenty. Możesz dodać więcej plików lub obserwować postęp na żywo.',
-        dismissible: true,
-      });
-    }
-
-    // Analiza zakończona
-    if (workflowStatus?.status === 'completed') {
-      tips.push({
-        id: 'analysis-completed',
-        type: 'success',
-        title: '✅ Analiza zakończona!',
-        content:
-          'Świetnie! Agenci zakończyli analizę. Sprawdź wygenerowane zadania i rozpocznij implementację.',
-        dismissible: true,
-      });
-    }
-
-    // Nowe wiadomości od agentów
-    if (liveMessages.length > 0) {
-      const lastMessage = liveMessages[liveMessages.length - 1];
-      if (
-        lastMessage.message.includes('zadanie') ||
-        lastMessage.message.includes('task')
-      ) {
-        tips.push({
-          id: 'new-task',
-          type: 'success',
-          title: '📋 Nowe zadanie!',
-          content: `Agent ${lastMessage.agentId} utworzył nowe zadanie. Sprawdź zakładkę "Zadania".`,
-          dismissible: true,
-        });
-      }
-    }
-
-    return tips;
-  }, [isConnected, projectStarted, workflowStatus, liveMessages]);
-
-  // Aktualizuj podpowiedzi
-  useEffect(() => {
-    const tips = generateContextualTips();
-    setAssistantTips(tips);
-  }, [generateContextualTips]);
-
-  // Aktualizuj krok przewodnika
-  useEffect(() => {
-    if (!projectStarted) {
-      setCurrentStep(1); // upload-docs
-    } else if (workflowStatus?.status === 'running') {
-      setCurrentStep(3); // monitor-progress
-    } else if (workflowStatus?.status === 'completed') {
-      setCurrentStep(4); // review-results
-    }
-  }, [projectStarted, workflowStatus]);
-
-  const dismissTip = (tipId: string) => {
-    setAssistantTips(prev => prev.filter(tip => tip.id !== tipId));
-  };
-
-  const nextStep = () => {
-    if (currentStep < guidanceSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -259,11 +117,14 @@ export default function EnhancedAssistant({
       <div
         className={styles.minimizedAssistant}
         onClick={() => setIsMinimized(false)}
+        title="Otwórz AI Assistant"
       >
-        <div className={styles.minimizedIcon}>🤖</div>
-        <span className={styles.minimizedText}>AI Assistant</span>
-        {assistantTips.length > 0 && (
-          <div className={styles.notificationBadge}>{assistantTips.length}</div>
+        <Lightbulb size={20} />
+        <span>AI Assistant</span>
+        {realTimeMessages.length > 0 && (
+          <div className={styles.notificationBadge}>
+            {realTimeMessages.length}
+          </div>
         )}
       </div>
     );
@@ -271,220 +132,220 @@ export default function EnhancedAssistant({
 
   return (
     <div className={styles.assistantContainer}>
+      {/* Header */}
       <div className={styles.assistantHeader}>
         <div className={styles.headerLeft}>
-          <div className={styles.assistantAvatar}>🤖</div>
+          <div className={styles.assistantAvatar}>
+            <Lightbulb size={20} />
+          </div>
           <div className={styles.assistantInfo}>
-            <h3 className={styles.assistantName}>AI Project Assistant</h3>
-            <p className={styles.assistantStatus}>
-              {isConnected ? '🟢 Online' : '🔴 Offline'} • Krok{' '}
-              {currentStep + 1} z {guidanceSteps.length}
+            <h3>AI Project Assistant</h3>
+            <p>
+              {conversations.length > 0 ? ' Aktywny' : ' Oczekuje'}
+              {currentPhase}
             </p>
           </div>
         </div>
         <div className={styles.headerActions}>
-          <button
-            className={styles.toggleGuideButton}
-            onClick={() => setShowGuide(!showGuide)}
-          >
-            {showGuide ? '📖' : '❓'}
-          </button>
+          <div className={styles.tabButtons}>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === 'guide' ? styles.activeTab : ''
+              }`}
+              onClick={() => setActiveTab('guide')}
+            >
+              Status
+            </button>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === 'chat' ? styles.activeTab : ''
+              }`}
+              onClick={() => setActiveTab('chat')}
+            >
+              Chat
+            </button>
+          </div>
           <button
             className={styles.minimizeButton}
             onClick={() => setIsMinimized(true)}
+            title="Zminimalizuj"
           >
-            ⏬
+            <ChevronDown size={16} />
           </button>
         </div>
       </div>
 
-      {/* Podpowiedzi kontekstowe */}
-      {assistantTips.length > 0 && (
-        <div className={styles.tipsContainer}>
-          {assistantTips.slice(0, 2).map(tip => (
-            <div
-              key={tip.id}
-              className={`${styles.tipCard} ${styles[tip.type]}`}
-            >
-              <div className={styles.tipHeader}>
-                <span className={styles.tipTitle}>{tip.title}</span>
-                {tip.dismissible && (
-                  <button
-                    className={styles.dismissButton}
-                    onClick={() => dismissTip(tip.id)}
-                  >
-                    ✕
-                  </button>
+      {/* Zawartość */}
+      <div className={styles.assistantContent}>
+        {activeTab === 'guide' && (
+          <div className={styles.statusContainer}>
+            {/* Aktualny krok */}
+            <div className={styles.currentStepInfo}>
+              <h4> Aktualny krok</h4>
+              <div className={styles.stepCard}>
+                <h5>{currentStepName}</h5>
+                <p>{currentStepDescription}</p>
+                {estimatedDuration && (
+                  <div className={styles.stepMeta}>
+                    <Clock size={14} />
+                    <span>{estimatedDuration}</span>
+                  </div>
                 )}
               </div>
-              <p className={styles.tipContent}>{tip.content}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Przewodnik krok po kroku */}
-      {showGuide && (
-        <div className={styles.guideContainer}>
-          <div className={styles.guideHeader}>
-            <h4 className={styles.guideTitle}>📋 Przewodnik projektu</h4>
-            <div className={styles.progressBar}>
-              <div
-                className={`${styles.progressFill} ${
-                  currentStep === 0
-                    ? styles.progressFill20
-                    : currentStep === 1
-                    ? styles.progressFill40
-                    : currentStep === 2
-                    ? styles.progressFill60
-                    : currentStep === 3
-                    ? styles.progressFill80
-                    : styles.progressFill100
-                }`}
-              />
-            </div>
-          </div>
-
-          <div className={styles.currentStep}>
-            <div className={styles.stepHeader}>
-              <div className={styles.stepNumber}>{currentStep + 1}</div>
-              <div className={styles.stepInfo}>
-                <h5 className={styles.stepTitle}>
-                  {guidanceSteps[currentStep].title}
-                </h5>
-                <p className={styles.stepDescription}>
-                  {guidanceSteps[currentStep].description}
-                </p>
-              </div>
             </div>
 
-            {guidanceSteps[currentStep].action && (
-              <button
-                className={styles.stepActionButton}
-                onClick={guidanceSteps[currentStep].action}
-              >
-                {guidanceSteps[currentStep].actionText}
-              </button>
-            )}
-          </div>
+            {/* Status agentów */}
+            {conversations.length > 0 && (
+              <div className={styles.agentsStatus}>
+                <h4> Status agentów</h4>
+                <div className={styles.agentsList}>
+                  {Array.from(new Set(conversations.map(msg => msg.agentId)))
+                    .slice(0, 3)
+                    .map(agentId => {
+                      const lastMessage = conversations
+                        .filter(msg => msg.agentId === agentId)
+                        .slice(-1)[0];
 
-          <div className={styles.guideNavigation}>
-            <button
-              className={styles.navButton}
-              onClick={prevStep}
-              disabled={currentStep === 0}
-            >
-              ← Poprzedni
-            </button>
-
-            <div className={styles.stepIndicators}>
-              {guidanceSteps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className={`${styles.stepIndicator} ${
-                    index === currentStep ? styles.active : ''
-                  } ${step.completed ? styles.completed : ''}`}
-                  onClick={() => setCurrentStep(index)}
-                />
-              ))}
-            </div>
-
-            <button
-              className={styles.navButton}
-              onClick={nextStep}
-              disabled={currentStep === guidanceSteps.length - 1}
-            >
-              Następny →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className={styles.quickActions}>
-        <h4 className={styles.quickActionsTitle}>⚡ Szybkie akcje</h4>
-        <div className={styles.actionButtons}>
-          {!projectStarted && (
-            <button
-              className={`${styles.actionButton} ${styles.primary}`}
-              onClick={() => onStartProject?.()}
-            >
-              🚀 Rozpocznij projekt
-            </button>
-          )}
-
-          <button className={styles.actionButton} onClick={handleFileUpload}>
-            📂 Wgraj dokumenty
-          </button>
-
-          <button className={styles.actionButton} onClick={handleViewProgress}>
-            📊 Zobacz postęp
-          </button>
-
-          <button
-            className={styles.actionButton}
-            onClick={handleChatWithAgents}
-          >
-            💬 Czat z agentami
-          </button>
-
-          {workflowStatus?.status === 'completed' && (
-            <button
-              className={`${styles.actionButton} ${styles.success}`}
-              onClick={handleDownloadReport}
-            >
-              📋 Pobierz raport
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Live Activity Feed */}
-      {liveMessages.length > 0 && (
-        <div className={styles.activityFeed}>
-          <h4 className={styles.activityTitle}>
-            🔴 Na żywo ({liveMessages.length})
-          </h4>
-          <div className={styles.activityList}>
-            {liveMessages.slice(-3).map((message, index) => (
-              <div key={index} className={styles.activityItem}>
-                <div className={styles.activityIcon}>🤖</div>
-                <div className={styles.activityContent}>
-                  <span className={styles.agentName}>{message.agentId}</span>
-                  <span className={styles.activityMessage}>
-                    {message.message}
-                  </span>
-                  <span className={styles.activityTime}>
-                    {new Date(message.timestamp).toLocaleTimeString('pl-PL', {
-                      hour: '2-digit',
-                      minute: '2-digit',
+                      return (
+                        <div key={agentId} className={styles.agentItem}>
+                          <div className={styles.agentIcon}></div>
+                          <div className={styles.agentInfo}>
+                            <span className={styles.agentName}>
+                              {getAgentDisplayName(agentId)}
+                            </span>
+                            <span className={styles.agentActivity}>
+                              {lastMessage?.message.slice(0, 40)}...
+                            </span>
+                          </div>
+                          <div className={styles.agentStatus}></div>
+                        </div>
+                      );
                     })}
-                  </span>
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Szybkie akcje */}
+            <div className={styles.quickActions}>
+              <h4> Szybkie akcje</h4>
+              <div className={styles.actionButtons}>
+                <button
+                  className={styles.actionButton}
+                  onClick={() =>
+                    onAssistRequest?.('Pokaż szczegóły aktualnego kroku')
+                  }
+                >
+                  Szczegóły kroku
+                </button>
+                <button
+                  className={styles.actionButton}
+                  onClick={() =>
+                    onAssistRequest?.('Sprawdź postęp wszystkich agentów')
+                  }
+                >
+                  Status agentów
+                </button>
+                <button
+                  className={styles.actionButton}
+                  onClick={() => onAssistRequest?.('Wygeneruj raport postępu')}
+                >
+                  Raport postępu
+                </button>
+                <button
+                  className={styles.actionButton}
+                  onClick={() => onAssistRequest?.('Pomóż z następnym krokiem')}
+                >
+                  Następny krok
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Debug Info */}
-      {liveMessages.length === 0 && isConnected && (
-        <div className={styles.debugInfo}>
-          <p>🔧 Debug: Połączony, oczekuje wiadomości...</p>
-          <p>📊 Status: {workflowStatus?.status || 'Brak workflow'}</p>
-        </div>
-      )}
+        {activeTab === 'chat' && (
+          <div className={styles.chatContainer}>
+            {/* Chat messages */}
+            <div className={styles.chatMessages}>
+              {conversations.length === 0 ? (
+                <div className={styles.emptyChat}>
+                  <MessageSquare size={32} />
+                  <p>Rozpocznij rozmowę z AI Assistant</p>
+                  <small>Zadaj pytanie o projekt lub poproś o pomoc</small>
+                </div>
+              ) : (
+                <div className={styles.messagesList}>
+                  {conversations.slice(-10).map((msg, index) => (
+                    <div key={index} className={styles.message}>
+                      <div className={styles.messageHeader}>
+                        <span className={styles.messageSender}>
+                          {msg.agentId === 'user'
+                            ? ' Ty'
+                            : ` ${getAgentDisplayName(msg.agentId)}`}
+                        </span>
+                        <span className={styles.messageTime}>
+                          {new Date(msg.timestamp).toLocaleTimeString('pl-PL', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <div className={styles.messageContent}>{msg.message}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-      {/* Hidden File Input */}
-      <input
-        id="fileInput"
-        type="file"
-        multiple
-        accept=".pdf,.doc,.docx,.txt,.md"
-        className={styles.hiddenFileInput}
-        onChange={handleFileChange}
-        aria-label="Upload project documents"
-      />
+            {/* Chat input */}
+            <div className={styles.chatInput}>
+              <input
+                type="text"
+                placeholder="Napisz wiadomość do AI Assistant..."
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={styles.chatInputField}
+                disabled={isLoading}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!chatInput.trim() || isLoading}
+                className={styles.chatSendBtn}
+              >
+                {isLoading ? <Clock size={16} /> : <Send size={16} />}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Aktywność na żywo - prawdziwe dane */}
+        {realTimeMessages.length > 0 && (
+          <div className={styles.liveActivity}>
+            <h4> Na żywo ({realTimeMessages.length})</h4>
+            <div className={styles.activityList}>
+              {realTimeMessages.map((msg, index) => (
+                <div key={index} className={styles.activityItem}>
+                  <div className={styles.activityIcon}></div>
+                  <div className={styles.activityContent}>
+                    <span className={styles.activityAgent}>
+                      {getAgentDisplayName(msg.agentId)}
+                    </span>
+                    <span className={styles.activityMessage}>
+                      {msg.message.slice(0, 60)}...
+                    </span>
+                    <span className={styles.activityTime}>
+                      {new Date(msg.timestamp).toLocaleTimeString('pl-PL', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

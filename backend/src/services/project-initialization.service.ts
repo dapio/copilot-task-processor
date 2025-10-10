@@ -525,4 +525,250 @@ Napisz do mnie, jeśli masz pytania lub chcesz rozpocząć pracę nad konkretnym
     };
     return typeMap[type] || type;
   }
+
+  // ================================
+  // NEW WORKFLOW STEP MANAGEMENT
+  // ================================
+
+  /**
+   * Get project with full context including files and workflow status
+   */
+  async getProjectWithContext(
+    projectId: string
+  ): Promise<Result<any, ServiceError>> {
+    try {
+      const project = await this.prisma.project.findUnique({
+        where: { id: projectId },
+        include: {
+          files: {
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          },
+          workflows: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: {
+              steps: {
+                orderBy: { stepNumber: 'asc' },
+              },
+            },
+          },
+          workflowRuns: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: {
+              stepApprovals: {
+                orderBy: { createdAt: 'asc' },
+                include: {
+                  _count: {
+                    select: {
+                      conversations: true,
+                      tasks: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!project) {
+        return {
+          success: false,
+          error: createServiceError('Project not found', 'NOT_FOUND'),
+        };
+      }
+
+      // Check if project has input files
+      const inputFileCount =
+        (await this.prisma.projectFile?.count({
+          where: {
+            projectId,
+            category: 'input',
+          },
+        })) || 0;
+
+      const hasFiles = inputFileCount > 0;
+
+      // Get file summary
+      const fileSummary = await this.getProjectFileSummary(projectId);
+
+      // Determine project state
+      const state = this.determineProjectState(project, hasFiles);
+
+      return {
+        success: true,
+        data: {
+          project,
+          hasFiles,
+          inputFileCount,
+          fileSummary: fileSummary.success ? fileSummary.data : null,
+          state,
+          currentWorkflow: project.workflowRuns[0] || null,
+          recentFiles: project.files,
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching project with context:', error);
+      return {
+        success: false,
+        error: createServiceError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch project context',
+          'INTERNAL_ERROR'
+        ),
+      };
+    }
+  }
+
+  /**
+   * Get project file summary
+   */
+  private async getProjectFileSummary(projectId: string) {
+    try {
+      const summary =
+        (await this.prisma.projectFile?.groupBy({
+          by: ['category', 'status'],
+          where: { projectId },
+          _count: true,
+          _sum: { size: true },
+        })) || [];
+
+      const totalFiles =
+        (await this.prisma.projectFile?.count({
+          where: { projectId },
+        })) || 0;
+
+      const totalSize = await this.prisma.projectFile?.aggregate({
+        where: { projectId },
+        _sum: { size: true },
+      });
+
+      return {
+        success: true,
+        data: {
+          summary,
+          totalFiles,
+          totalSize: totalSize?._sum.size || 0,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: createServiceError(
+          'Failed to get file summary',
+          'INTERNAL_ERROR'
+        ),
+      };
+    }
+  }
+
+  /**
+   * Determine project state for UI routing
+   */
+  private determineProjectState(project: any, hasFiles: boolean): string {
+    if (!hasFiles) {
+      return 'upload_required'; // Show file upload screen
+    }
+
+    if (!project.workflowRuns || project.workflowRuns.length === 0) {
+      return 'workflow_setup'; // Show workflow selection
+    }
+
+    const currentWorkflow = project.workflowRuns[0];
+
+    if (currentWorkflow.status === 'pending') {
+      return 'workflow_ready'; // Ready to start workflow
+    }
+
+    if (currentWorkflow.status === 'running') {
+      return 'workflow_active'; // Show active workflow dashboard
+    }
+
+    if (currentWorkflow.status === 'completed') {
+      return 'workflow_completed'; // Show results
+    }
+
+    return 'dashboard'; // Default dashboard view
+  }
+
+  /**
+   * Check if project can proceed to dashboard (skip upload screen)
+   */
+  async canProceedToDashboard(projectId: string): Promise<
+    Result<
+      {
+        canProceed: boolean;
+        state: string;
+        hasFiles: boolean;
+        nextStep: { action: string; message: string };
+      },
+      ServiceError
+    >
+  > {
+    try {
+      const contextResult = await this.getProjectWithContext(projectId);
+
+      if (!contextResult.success) {
+        return contextResult as any;
+      }
+
+      const { hasFiles, state } = contextResult.data;
+
+      return {
+        success: true,
+        data: {
+          canProceed: hasFiles && state !== 'upload_required',
+          state,
+          hasFiles,
+          nextStep: this.getNextStep(state),
+        },
+      };
+    } catch (error) {
+      console.error('Error checking dashboard eligibility:', error);
+      return {
+        success: false,
+        error: createServiceError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to check dashboard eligibility',
+          'INTERNAL_ERROR'
+        ),
+      };
+    }
+  }
+
+  /**
+   * Get next step recommendation based on project state
+   */
+  private getNextStep(state: string): { action: string; message: string } {
+    switch (state) {
+      case 'upload_required':
+        return {
+          action: 'upload_files',
+          message: 'Upload project files to continue',
+        };
+      case 'workflow_setup':
+        return {
+          action: 'setup_workflow',
+          message: 'Set up workflow to begin processing',
+        };
+      case 'workflow_ready':
+        return {
+          action: 'start_workflow',
+          message: 'Start workflow processing',
+        };
+      case 'workflow_active':
+        return {
+          action: 'continue_workflow',
+          message: 'Continue with active workflow',
+        };
+      case 'workflow_completed':
+        return { action: 'view_results', message: 'Review workflow results' };
+      default:
+        return { action: 'dashboard', message: 'Proceed to project dashboard' };
+    }
+  }
 }

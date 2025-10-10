@@ -7,10 +7,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   agentsApiService,
   Agent,
-  Project,
   KnowledgeFeed,
   ResearchResult,
 } from '../services/agentsApiService';
+import { Project } from '../types/project';
 import { ApiError } from '../services/apiService';
 
 // State interfaces
@@ -114,17 +114,13 @@ export function useAgentsApi() {
     setProjectsState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      const response = await agentsApiService.getProjects();
+      const projects = await agentsApiService.getProjects();
 
-      if (response.success && response.data) {
-        setProjectsState(prev => ({
-          ...prev,
-          projects: response.data!,
-          loading: false,
-        }));
-      } else {
-        throw new Error(response.error || 'Failed to load projects');
-      }
+      setProjectsState(prev => ({
+        ...prev,
+        projects: projects,
+        loading: false,
+      }));
     } catch (error) {
       const errorMessage =
         error instanceof ApiError ? error.message : 'Failed to load projects';

@@ -327,6 +327,69 @@ export class ApiService {
       resetTime: this.rateLimiter.getResetTime('global'),
     };
   }
+
+  // ============ WORKFLOW MANAGEMENT ============
+
+  /**
+   * Approve a workflow step
+   */
+  async approveWorkflowStep(
+    projectId: string,
+    stepId: string
+  ): Promise<ApiResponse> {
+    return this.request(
+      `/api/workflow/projects/${projectId}/steps/${stepId}/approve`,
+      {
+        method: 'POST',
+      }
+    );
+  }
+
+  /**
+   * Revoke approval for a workflow step
+   */
+  async revokeWorkflowStep(
+    projectId: string,
+    stepId: string
+  ): Promise<ApiResponse> {
+    return this.request(
+      `/api/workflow/projects/${projectId}/steps/${stepId}/revoke`,
+      {
+        method: 'POST',
+      }
+    );
+  }
+
+  /**
+   * Get workflow status for a project
+   */
+  async getWorkflowStatus(projectId: string): Promise<
+    ApiResponse<{
+      currentStep: string;
+      completedSteps: string[];
+      agentStatuses: Record<string, any>;
+    }>
+  > {
+    return this.request(`/api/workflow/projects/${projectId}/status`);
+  }
+
+  /**
+   * Update workflow step
+   */
+  async updateWorkflowStep(
+    projectId: string,
+    stepId: string,
+    data: {
+      status?: string;
+      agentAssignment?: string[];
+      notes?: string;
+    }
+  ): Promise<ApiResponse> {
+    return this.request(`/api/workflow/projects/${projectId}/steps/${stepId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Singleton instance

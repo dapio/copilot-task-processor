@@ -8,6 +8,7 @@ import { AgentChatCoordinator } from '../services/agent-chat-coordinator.service
 import { ChatIntegrationService } from '../services/chat-integration.service';
 import ContextManager from '../services/context-manager';
 import { mockRoutes } from '../services/mock-project-initialization.service';
+import { ProjectInitializationService } from '../services/project-initialization.service';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -16,6 +17,11 @@ const prisma = new PrismaClient();
 const contextManager = new ContextManager(prisma);
 const chatService = new ChatIntegrationService(prisma, contextManager);
 const agentChatCoordinator = new AgentChatCoordinator(prisma, chatService);
+const projectInitializationService = new ProjectInitializationService(
+  prisma,
+  chatService,
+  {} as any // DocumentProcessor placeholder
+);
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
@@ -46,7 +52,37 @@ router.get('/', async (req: Request, res: Response) => {
         workflows: true,
       },
     });
-    return res.status(200).json(projects);
+
+    // Check if each project has files
+    const projectsWithFileStatus = await Promise.all(
+      projects.map(async project => {
+        const projectUploadPath = path.join(
+          __dirname,
+          '../../uploads/projects',
+          project.id
+        );
+        let hasFiles = false;
+
+        try {
+          if (fs.existsSync(projectUploadPath)) {
+            const files = fs.readdirSync(projectUploadPath);
+            hasFiles = files.length > 0;
+          }
+        } catch (error) {
+          console.error(
+            `Error checking files for project ${project.id}:`,
+            error
+          );
+        }
+
+        return {
+          ...project,
+          hasFiles,
+        };
+      })
+    );
+
+    return res.status(200).json(projectsWithFileStatus);
   } catch (error) {
     console.error('Error fetching projects:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -79,14 +115,14 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(500).json({ error: result.error });
     }
 
-    return res.status(201).json({
-      projectId: project.id,
-      name: project.name,
-      description: project.description,
-      type: project.type,
-      status: project.status,
+    // Return full project with hasFiles field
+    const projectWithFiles = {
+      ...project,
+      hasFiles: false, // New project has no files
       chatSessionId: result.data.sessionId,
-    });
+    };
+
+    return res.status(201).json(projectWithFiles);
   } catch (error) {
     console.error('Error creating project:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -192,6 +228,58 @@ router.post('/:id/chat/message', async (req: Request, res: Response) => {
     return res.status(200).json(result.data);
   } catch (error) {
     console.error('Error sending chat message:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/projects/:id/context - Get project context and state for routing decisions
+router.get('/:id/context', async (req: Request, res: Response) => {
+  try {
+    const { id: projectId } = req.params;
+
+    // Get project context using ProjectInitializationService
+    const contextResult =
+      await projectInitializationService.getProjectWithContext(projectId);
+
+    if (!contextResult.success) {
+      return res.status(404).json({
+        error: contextResult.error.message || 'Project not found',
+      });
+    }
+
+    // Check if project can proceed to dashboard
+    const dashboardResult =
+      await projectInitializationService.canProceedToDashboard(projectId);
+
+    if (!dashboardResult.success) {
+      return res.status(500).json({
+        error:
+          dashboardResult.error.message ||
+          'Failed to check dashboard eligibility',
+      });
+    }
+
+    const response = {
+      projectId,
+      project: contextResult.data.project,
+      hasFiles: contextResult.data.hasFiles,
+      inputFileCount: contextResult.data.inputFileCount,
+      fileSummary: contextResult.data.fileSummary,
+      state: contextResult.data.state,
+      currentWorkflow: contextResult.data.currentWorkflow,
+      recentFiles: contextResult.data.recentFiles,
+      routing: {
+        canProceedToDashboard: dashboardResult.data.canProceed,
+        nextStep: dashboardResult.data.nextStep,
+        recommendedRoute: dashboardResult.data.canProceed
+          ? 'dashboard'
+          : 'upload',
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error('Error fetching project context:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

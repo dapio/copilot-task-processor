@@ -1,0 +1,469 @@
+{
+  "config": {
+    "configFile": "C:\\Work\\WeSub\\copilot-task-processor\\playwright.config.ts",
+    "rootDir": "C:/Work/WeSub/copilot-task-processor/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "test-results/html-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Work/WeSub/copilot-task-processor/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "integration",
+        "name": "integration",
+        "testDir": "C:/Work/WeSub/copilot-task-processor/tests/integration",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Work/WeSub/copilot-task-processor/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "e2e",
+        "name": "e2e",
+        "testDir": "C:/Work/WeSub/copilot-task-processor/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "integration\\smoke-test.spec.ts",
+      "file": "integration/smoke-test.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Platform Smoke Tests",
+          "file": "integration/smoke-test.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Homepage loads and is accessible",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "integration",
+                  "projectName": "integration",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2076,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts:22:24",
+                        "location": {
+                          "file": "C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts",
+                          "column": 24,
+                          "line": 22
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 20 |\u001b[39m     \u001b[90m// Check for main navigation or content\u001b[39m\n \u001b[90m 21 |\u001b[39m     \u001b[36mconst\u001b[39m hasContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'main, .main, .container, .content'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39misVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     expect(hasContent)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Main content visible'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts",
+                            "column": 24,
+                            "line": 22
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 20 |\u001b[39m     \u001b[90m// Check for main navigation or content\u001b[39m\n \u001b[90m 21 |\u001b[39m     \u001b[36mconst\u001b[39m hasContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'main, .main, .container, .content'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39misVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     expect(hasContent)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Main content visible'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts:22:24\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-10T04:05:17.330Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts",
+                        "column": 24,
+                        "line": 22
+                      }
+                    },
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1802,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts:22:24",
+                        "location": {
+                          "file": "C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts",
+                          "column": 24,
+                          "line": 22
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 20 |\u001b[39m     \u001b[90m// Check for main navigation or content\u001b[39m\n \u001b[90m 21 |\u001b[39m     \u001b[36mconst\u001b[39m hasContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'main, .main, .container, .content'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39misVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     expect(hasContent)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Main content visible'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts",
+                            "column": 24,
+                            "line": 22
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 20 |\u001b[39m     \u001b[90m// Check for main navigation or content\u001b[39m\n \u001b[90m 21 |\u001b[39m     \u001b[36mconst\u001b[39m hasContent \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'main, .main, .container, .content'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39misVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     expect(hasContent)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Main content visible'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts:22:24\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-10-10T04:05:23.263Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Work\\WeSub\\copilot-task-processor\\test-results\\smoke-test-Platform-Smoke--b7bb2-age-loads-and-is-accessible-integration-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Work\\WeSub\\copilot-task-processor\\tests\\integration\\smoke-test.spec.ts",
+                        "column": 24,
+                        "line": 22
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3f58d441499060f9c0b2-3dcc4b48908f1b1f1e39",
+              "file": "integration/smoke-test.spec.ts",
+              "line": 10,
+              "column": 7
+            },
+            {
+              "title": "Backend API health check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "integration",
+                  "projectName": "integration",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 564,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing backend API...\n"
+                        },
+                        {
+                          "text": "✅ Backend API responding: {\n  success: \u001b[33mtrue\u001b[39m,\n  status: \u001b[32m'OK'\u001b[39m,\n  message: \u001b[32m'ThinkCode AI Backend is running'\u001b[39m,\n  timestamp: \u001b[32m'2025-10-10T04:05:30.682Z'\u001b[39m,\n  version: \u001b[32m'1.0.0'\u001b[39m,\n  endpoints: [\n    \u001b[32m'GET /api/health'\u001b[39m,\n    \u001b[32m'POST /api/analyze-documents'\u001b[39m,\n    \u001b[32m'POST /api/generate-tasks'\u001b[39m,\n    \u001b[32m'POST /api/process-task'\u001b[39m,\n    \u001b[32m'GET /api/test-integrations'\u001b[39m\n  ]\n}\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-10T04:05:28.400Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3f58d441499060f9c0b2-dc288f82f943e55849f5",
+              "file": "integration/smoke-test.spec.ts",
+              "line": 26,
+              "column": 7
+            },
+            {
+              "title": "Agents API health check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 10000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "integration",
+                  "projectName": "integration",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 293,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing agents API...\n"
+                        },
+                        {
+                          "text": "✅ Agents API responding: {\n  success: \u001b[33mtrue\u001b[39m,\n  message: \u001b[32m'Agents API Server is running'\u001b[39m,\n  timestamp: \u001b[32m'2025-10-10T04:05:31.119Z'\u001b[39m,\n  uptime: \u001b[33m254.1901526\u001b[39m,\n  environment: \u001b[32m'development'\u001b[39m,\n  port: \u001b[33m3006\u001b[39m\n}\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-10T04:05:30.949Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3f58d441499060f9c0b2-50fce510caa5f70f91b4",
+              "file": "integration/smoke-test.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "WebSocket connection test",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 15000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "integration",
+                  "projectName": "integration",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4564,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing WebSocket connection...\n"
+                        },
+                        {
+                          "text": "⚠️ WebSocket indicator not found (may be expected)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-10T04:05:31.262Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3f58d441499060f9c0b2-5fbb57b6acca9fea45d1",
+              "file": "integration/smoke-test.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "Basic workflow component loading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 20000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "integration",
+                  "projectName": "integration",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4595,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing workflow component...\n"
+                        },
+                        {
+                          "text": "Found 0 workflow-related elements\n"
+                        },
+                        {
+                          "text": "Found 0 workflow navigation links\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-10T04:05:35.842Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3f58d441499060f9c0b2-28136ec56001335cf894",
+              "file": "integration/smoke-test.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "Platform service integration",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 20000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "integration",
+                  "projectName": "integration",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 292,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Testing platform service integration...\n"
+                        },
+                        {
+                          "text": "✅ Service responding: http://localhost:3002/api/health\n"
+                        },
+                        {
+                          "text": "✅ Service responding: http://localhost:3006/api/health\n"
+                        },
+                        {
+                          "text": "✅ 2/2 services operational\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-10T04:05:40.457Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3f58d441499060f9c0b2-7f1effea30fbaeb40fd7",
+              "file": "integration/smoke-test.spec.ts",
+              "line": 97,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-10-10T04:05:16.044Z",
+    "duration": 25149.623,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -182,7 +182,7 @@
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   padding: 2rem;
   height: calc(100vh - 120px);
   align-items: flex-start;
@@ -243,7 +243,7 @@
 
 /* Overview Styles */
 .overview {
-  padding: 0;
+  padding: 1rem 0;
 }
 
 .overviewGrid {
@@ -686,26 +686,26 @@
 
 /* Main Content - Left Side - maksymalna szerokość */
 .mainContent {
-  flex: 2;
+  flex: 3;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   overflow-y: auto;
   max-height: 100%;
+  padding-left: 1rem;
 }
 
-/* Sidebar - Right Side - Workflow & Chat obok siebie */
+/* Sidebar - Right Side - Workflow Steps List */
 .sidebar {
-  flex: 1;
-  min-width: 600px;
-  max-width: 800px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  flex: 0 0 400px;
+  min-width: 400px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  max-height: 100%;
-  padding: 1.5rem;
+  height: 100%;
+  padding: 24px;
   background: #f8fafc;
 }
 
@@ -715,6 +715,10 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebarTitle {
@@ -948,7 +952,7 @@
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 2rem;
   margin-bottom: 2rem;
 }
 
@@ -956,14 +960,18 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.5rem 0;
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .agentCard {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
   background: #f8fafc;
   border-radius: 8px;
 }
@@ -1217,4 +1225,178 @@
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.3;
+}
+
+/* Workflow Steps List w sidebar */
+.workflowSteps {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.stepsTitle {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepItem {
+  position: relative;
+}
+
+.stepButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.stepButton:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.stepButton.current {
+  background: #dbeafe;
+  border-color: #3b82f6;
+}
+
+.stepButton.completed {
+  background: #dcfce7;
+  border-color: #22c55e;
+  opacity: 0.8;
+}
+
+.stepButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stepNumber {
+  width: 24px;
+  height: 24px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.stepButton.current .stepNumber {
+  background: #3b82f6;
+  color: white;
+}
+
+.stepButton.completed .stepNumber {
+  background: #22c55e;
+  color: white;
+}
+
+.stepDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepName {
+  display: block;
+  font-weight: 500;
+  color: #1e293b;
+  font-size: 13px;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.stepPhase {
+  display: block;
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stepStatus {
+  text-align: right;
+}
+
+.stepStatusText {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.approvalBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #fbbf24;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.revokeBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.revokeBtn:hover {
+  background: #dc2626;
+}
+
+/* Ikona żarówki asystenta */
+.assistantToggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.assistantToggle:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.assistantToggle:active {
+  transform: scale(0.95);
 }

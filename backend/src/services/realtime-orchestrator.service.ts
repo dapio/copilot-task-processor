@@ -8,6 +8,10 @@ import {
   WorkflowUpdate,
   AgentMessage,
 } from './websocket.service';
+import {
+  MasterTaskManagementService,
+  WorkflowStepContext,
+} from './master-task-management.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -34,6 +38,7 @@ export interface WorkflowStep {
 
 class RealTimeWorkflowOrchestrator {
   private workflows = new Map<string, ProjectWorkflow>();
+  private masterTaskManager = new MasterTaskManagementService();
   private agentTypes = [
     {
       id: 'business-analyst',
@@ -157,15 +162,19 @@ class RealTimeWorkflowOrchestrator {
     workflow: ProjectWorkflow,
     step: WorkflowStep
   ): Promise<void> {
-    console.log(`🎬 [ORCHESTRATOR] Starting step: ${step.name} for project ${workflow.projectId}`);
-    
+    console.log(
+      `🎬 [ORCHESTRATOR] Starting step: ${step.name} for project ${workflow.projectId}`
+    );
+
     step.status = 'running';
     step.progress = 0;
 
     console.log(`📤 [ORCHESTRATOR] Sending step update for: ${step.name}`);
     this.sendStepUpdate(workflow, step, 'Starting step execution');
-    
-    console.log(`📤 [ORCHESTRATOR] Sending agent message for: ${step.agentType}`);
+
+    console.log(
+      `📤 [ORCHESTRATOR] Sending agent message for: ${step.agentType}`
+    );
     this.sendAgentMessage(
       workflow.projectId,
       step.agentType,
@@ -277,8 +286,12 @@ class RealTimeWorkflowOrchestrator {
       await new Promise(resolve => setTimeout(resolve, processingTime));
     }
 
-    // Create actual tasks based on step type and files
-    await this.createTasksForStep(workflow.projectId, step, uploadedFiles);
+    // Initialize comprehensive task management for this step
+    await this.initializeStepTaskManagement(
+      workflow.projectId,
+      step,
+      uploadedFiles
+    );
   }
 
   /**
@@ -333,6 +346,160 @@ class RealTimeWorkflowOrchestrator {
         createdAt: new Date().toISOString(),
       });
     }
+  }
+
+  /**
+   * Initialize comprehensive task management for workflow step
+   */
+  private async initializeStepTaskManagement(
+    projectId: string,
+    step: WorkflowStep,
+    uploadedFiles: string[] = []
+  ): Promise<void> {
+    try {
+      // Get or create approval record for this step
+      const approvalId = await this.getOrCreateStepApproval(projectId, step);
+
+      // Create task management context
+      const context: WorkflowStepContext = {
+        projectId,
+        stepId: step.id,
+        stepName: step.name,
+        agentType: step.agentType,
+        approvalId,
+        uploadedFiles,
+        stepConfiguration: {},
+        projectFiles: await this.getProjectFiles(projectId),
+        requirements: await this.getStepRequirements(step),
+        complexity: this.determineStepComplexity(step, uploadedFiles),
+      };
+
+      // Initialize task management
+      const result = await this.masterTaskManager.initializeStepTasks(context);
+
+      // Send task management update
+      this.sendAgentMessage(
+        projectId,
+        step.agentType,
+        'task-management-initialized',
+        `🎯 Initialized ${
+          result.tasksCreated + result.tasksUpdated
+        } tasks, assigned ${result.tasksAssigned} to agents`
+      );
+
+      console.log(
+        `🎯 Task management initialized for step ${step.name}:`,
+        result
+      );
+    } catch (error) {
+      console.error('❌ Error initializing task management:', error);
+      this.sendAgentMessage(
+        projectId,
+        step.agentType,
+        'task-management-error',
+        `⚠️ Error initializing task management: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    }
+  }
+
+  /**
+   * Get or create step approval record
+   */
+  private async getOrCreateStepApproval(
+    projectId: string,
+    step: WorkflowStep
+  ): Promise<string> {
+    // This should integrate with WorkflowStepApprovalService
+    // For now, return a mock ID - in real implementation this would:
+    // 1. Check if approval exists for this step
+    // 2. Create one if it doesn't exist
+    // 3. Return the approval ID
+    return `approval-${step.id}-${Date.now()}`;
+  }
+
+  /**
+   * Get project files for context
+   */
+  private async getProjectFiles(projectId: string): Promise<string[]> {
+    try {
+      const projectPath = path.join(process.cwd(), 'projects', projectId);
+      if (fs.existsSync(projectPath)) {
+        return this.getAllFilesInDirectory(projectPath);
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting project files:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all files in directory recursively
+   */
+  private getAllFilesInDirectory(dir: string): string[] {
+    let files: string[] = [];
+    try {
+      const items = fs.readdirSync(dir);
+      for (const item of items) {
+        const fullPath = path.join(dir, item);
+        if (fs.statSync(fullPath).isDirectory()) {
+          files = files.concat(this.getAllFilesInDirectory(fullPath));
+        } else {
+          files.push(item);
+        }
+      }
+    } catch (error) {
+      console.error('Error reading directory:', error);
+    }
+    return files;
+  }
+
+  /**
+   * Get step requirements based on step type
+   */
+  private async getStepRequirements(step: WorkflowStep): Promise<string[]> {
+    const requirementMap = {
+      'business-analyst': [
+        'Analiza wymagań biznesowych',
+        'Identyfikacja stakeholderów',
+        'Mapowanie procesów biznesowych',
+      ],
+      'system-architect': [
+        'Projekt architektury systemu',
+        'Wybór technologii',
+        'Analiza wydajności i skalowalności',
+      ],
+      'backend-developer': [
+        'Implementacja API',
+        'Projekt bazy danych',
+        'Testy jednostkowe',
+      ],
+      'frontend-developer': [
+        'Projekt interfejsu użytkownika',
+        'Implementacja responsywności',
+        'Integracja z API',
+      ],
+    };
+
+    return requirementMap[step.agentType as keyof typeof requirementMap] || [];
+  }
+
+  /**
+   * Determine step complexity based on context
+   */
+  private determineStepComplexity(
+    step: WorkflowStep,
+    uploadedFiles: string[]
+  ): 'simple' | 'medium' | 'complex' {
+    // Simple heuristic - can be enhanced
+    if (uploadedFiles.length > 5 || step.agentType === 'system-architect') {
+      return 'complex';
+    } else if (uploadedFiles.length > 2) {
+      return 'medium';
+    }
+    return 'simple';
   }
 
   /**

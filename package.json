@@ -43,6 +43,10 @@
     "test": "npm run test:dashboard && npm run test:admin",
     "test:dashboard": "cd frontend && npm run test",
     "test:admin": "cd admin-panel && npm run test",
+    "test:integration": "npx playwright test --project=integration",
+    "test:e2e": "npx playwright test --project=e2e",
+    "test:smoke": "npx playwright test smoke-test",
+    "test:all-integration": "npx playwright test",
     "lint": "npm run lint:dashboard && npm run lint:admin",
     "lint:dashboard": "cd frontend && npm run lint",
     "lint:admin": "cd admin-panel && npm run lint",
@@ -50,6 +54,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
+    "@playwright/test": "^1.56.0",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",

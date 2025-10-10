@@ -9,6 +9,9 @@ import { RealTaskService } from './services/real-task-service';
 import { RealIntegrationService } from './services/real-integration-service';
 import { RealWorkflowService } from './services/real-workflow-service';
 
+// Import WebSocket service
+import { webSocketService } from './services/websocket.service';
+
 // Import API routes
 import { apiRoutes } from './routes/index';
 
@@ -43,7 +46,12 @@ const upload = multer({
 // Middleware
 app.use(
   cors({
-    origin: ['http://localhost:3001', 'http://127.0.0.1:3001'],
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
@@ -677,7 +685,10 @@ async function startServer() {
       console.log(`📡 Server running on: http://localhost:${PORT}`);
       console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
       console.log(`📁 Upload limit: 50MB per file, 10 files max`);
-      console.log(`🔗 CORS enabled for: http://localhost:3001`);
+      console.log(
+        `🔗 CORS enabled for: http://localhost:3000, http://localhost:3001`
+      );
+      console.log('🔌 WebSocket service initialized on server');
       console.log('='.repeat(80));
       console.log('📋 Available endpoints:');
       console.log('   GET  /api/health                     - Health check');
@@ -700,6 +711,9 @@ async function startServer() {
       console.log('   GET  /api/communications/agents      - Get agent status');
       console.log('='.repeat(80));
     });
+
+    // Initialize WebSocket service
+    webSocketService.initialize(server);
 
     // Graceful shutdown
     process.on('SIGTERM', () => {

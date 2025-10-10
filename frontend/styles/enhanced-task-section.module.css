@@ -1,0 +1,665 @@
+/* Enhanced Task Section Styles */
+
+.taskSection {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.loadingContainer,
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.retryButton {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background: #2563eb;
+}
+
+/* Task Overview */
+.taskOverview {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.taskStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: white;
+}
+
+.iconCompleted {
+  color: #10b981;
+}
+
+.iconInProgress {
+  color: #3b82f6;
+}
+
+.iconPending {
+  color: #f59e0b;
+}
+
+.iconCollaborative {
+  color: #8b5cf6;
+}
+
+.statInfo {
+  flex: 1;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Task List */
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taskCard {
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.taskCard:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.taskTitleSection {
+  flex: 1;
+}
+
+.taskTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.taskMeta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.taskPriority {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.taskType {
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding: 0.25rem 0.5rem;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.collaborativeTag {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b5cf6;
+  padding: 0.25rem 0.5rem;
+  background: #ede9fe;
+  border-radius: 4px;
+}
+
+.taskStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusCompleted {
+  color: #10b981;
+}
+
+.statusInProgress {
+  color: #3b82f6;
+}
+
+.statusBlocked {
+  color: #ef4444;
+}
+
+.statusPending {
+  color: #f59e0b;
+}
+
+.taskStatusText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.taskBody {
+  padding: 0.5rem 1rem 1rem;
+}
+
+.taskDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+/* Progress Bar */
+.taskProgress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressFill[data-progress] {
+  width: calc(var(--progress, 0) * 1%);
+}
+
+.progressFill[data-progress='0'] {
+  width: 0%;
+}
+.progressFill[data-progress='5'] {
+  width: 5%;
+}
+.progressFill[data-progress='10'] {
+  width: 10%;
+}
+.progressFill[data-progress='15'] {
+  width: 15%;
+}
+.progressFill[data-progress='20'] {
+  width: 20%;
+}
+.progressFill[data-progress='25'] {
+  width: 25%;
+}
+.progressFill[data-progress='30'] {
+  width: 30%;
+}
+.progressFill[data-progress='35'] {
+  width: 35%;
+}
+.progressFill[data-progress='40'] {
+  width: 40%;
+}
+.progressFill[data-progress='45'] {
+  width: 45%;
+}
+.progressFill[data-progress='50'] {
+  width: 50%;
+}
+.progressFill[data-progress='55'] {
+  width: 55%;
+}
+.progressFill[data-progress='60'] {
+  width: 60%;
+}
+.progressFill[data-progress='65'] {
+  width: 65%;
+}
+.progressFill[data-progress='70'] {
+  width: 70%;
+}
+.progressFill[data-progress='75'] {
+  width: 75%;
+}
+.progressFill[data-progress='80'] {
+  width: 80%;
+}
+.progressFill[data-progress='85'] {
+  width: 85%;
+}
+.progressFill[data-progress='90'] {
+  width: 90%;
+}
+.progressFill[data-progress='95'] {
+  width: 95%;
+}
+.progressFill[data-progress='100'] {
+  width: 100%;
+}
+
+.progressText {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Agent Assignment */
+.taskAgent {
+  margin-bottom: 1rem;
+}
+
+.agentInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.agentAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background-color: #6b7280;
+}
+
+.agentAvatar[data-agent-color='#EF4444'] {
+  background-color: #ef4444;
+}
+.agentAvatar[data-agent-color='#F59E0B'] {
+  background-color: #f59e0b;
+}
+.agentAvatar[data-agent-color='#3B82F6'] {
+  background-color: #3b82f6;
+}
+.agentAvatar[data-agent-color='#10B981'] {
+  background-color: #10b981;
+}
+.agentAvatar[data-agent-color='#8B5CF6'] {
+  background-color: #8b5cf6;
+}
+.agentAvatar[data-agent-color='#F97316'] {
+  background-color: #f97316;
+}
+.agentAvatar[data-agent-color='#EC4899'] {
+  background-color: #ec4899;
+}
+
+.agentDetails {
+  flex: 1;
+}
+
+.agentName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.agentRole {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Task Timing */
+.taskTiming {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.timeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.timeLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.timeValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Task Actions */
+.taskActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* Collaborative Tasks */
+.collaborativeSection {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.collaborativeTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.collaborativeTask {
+  background: #fefefe;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.collaborativeHeader {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 2rem;
+}
+
+.collaborativeProgress {
+  flex: 1;
+}
+
+.progressLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.collaborativeStatus {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: capitalize;
+}
+
+/* Agent Chain */
+.agentChain {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.chainLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chainStep {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  min-width: 200px;
+}
+
+.chainStep.completed {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.chainStep.in-progress,
+.chainStep.assigned {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.chainStep.pending {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.chainStep.blocked {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.stepNumber {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #374151;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.stepInfo {
+  flex: 1;
+}
+
+.stepRole {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.stepType {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.stepTime {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.stepStatus {
+  display: flex;
+  align-items: center;
+}
+
+.chainArrow {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.currentAgentInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #eff6ff;
+  border-radius: 6px;
+  border: 1px solid #dbeafe;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e40af;
+}
+
+/* Priority Colors Classes */
+.priorityCritical {
+  background-color: #ef4444;
+}
+
+.priorityHigh {
+  background-color: #f59e0b;
+}
+
+.priorityMedium {
+  background-color: #3b82f6;
+}
+
+.priorityLow {
+  background-color: #10b981;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .taskSection {
+    padding: 1rem;
+  }
+
+  .taskStats {
+    grid-template-columns: 1fr;
+  }
+
+  .taskHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .taskStatus {
+    align-self: flex-start;
+  }
+
+  .collaborativeHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .agentChain {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chainLink {
+    flex-direction: column;
+  }
+
+  .chainArrow {
+    transform: rotate(90deg);
+    margin: 0.5rem 0;
+  }
+}

@@ -4,6 +4,7 @@
  */
 
 import { ApiError } from './apiService';
+import { Project } from '../types/project';
 
 export interface Agent {
   id: string;
@@ -15,16 +16,6 @@ export interface Agent {
   capabilities: string[];
   createdAt: string;
   updatedAt: string;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  type: string;
-  status: string;
-  createdAt: string;
-  workflows: Workflow[];
 }
 
 export interface Workflow {
@@ -81,7 +72,7 @@ export interface ResearchResult {
 export class AgentsApiService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'http://localhost:3002/api') {
+  constructor(baseUrl: string = '/api') {
     this.baseUrl = baseUrl;
   }
 
@@ -158,18 +149,41 @@ export class AgentsApiService {
   /**
    * Get all projects
    */
-  async getProjects(): Promise<ApiResponse<Project[]>> {
+  async getProjects(): Promise<Project[]> {
     try {
+      console.log(`🌐 Fetching projects from: ${this.baseUrl}/projects`);
       const response = await fetch(`${this.baseUrl}/projects`);
 
+      console.log(
+        `📡 Response status: ${response.status} ${response.statusText}`
+      );
+
       if (!response.ok) {
-        throw new ApiError(response.status, 'Failed to fetch projects');
+        const errorText = await response.text();
+        console.error(`❌ API Error: ${response.status} - ${errorText}`);
+        throw new ApiError(
+          response.status,
+          `Failed to fetch projects: ${errorText}`
+        );
       }
 
-      return await response.json();
+      // Backend returns array directly, not wrapped in ApiResponse
+      const data = await response.json();
+      console.log(
+        `✅ Successfully fetched ${
+          Array.isArray(data) ? data.length : 'unknown'
+        } projects`
+      );
+      return data;
     } catch (error) {
+      console.error('🔥 Network error in getProjects:', error);
       if (error instanceof ApiError) throw error;
-      throw new ApiError(500, 'Failed to connect to agents API');
+      throw new ApiError(
+        500,
+        `Failed to connect to agents API: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -181,7 +195,7 @@ export class AgentsApiService {
     description?: string;
     type: string;
     metadata?: any;
-  }): Promise<ApiResponse<Project>> {
+  }): Promise<any> {
     try {
       const response = await fetch(`${this.baseUrl}/projects`, {
         method: 'POST',
@@ -193,6 +207,7 @@ export class AgentsApiService {
         throw new ApiError(response.status, 'Failed to create project');
       }
 
+      // Backend returns project directly, not wrapped in ApiResponse
       return await response.json();
     } catch (error) {
       if (error instanceof ApiError) throw error;

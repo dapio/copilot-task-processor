@@ -144,7 +144,7 @@ export class BackendApiService {
 
   constructor(baseUrl?: string) {
     this.baseUrl =
-      baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+      baseUrl || process.env.NEXT_PUBLIC_API_URL || '/api';
   }
 
   /**
