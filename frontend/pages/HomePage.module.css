@@ -16,6 +16,17 @@
   font-size: 1.1rem;
 }
 
+.selectorToggle {
+  padding: 1rem;
+  text-align: center;
+  background: #f0f0f0;
+  margin-bottom: 1rem;
+}
+
+.toggleLabel {
+  margin-left: 0.5rem;
+}
+
 .loadingContainer {
   display: flex;
   justify-content: center;

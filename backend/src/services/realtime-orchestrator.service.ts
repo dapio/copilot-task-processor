@@ -157,10 +157,15 @@ class RealTimeWorkflowOrchestrator {
     workflow: ProjectWorkflow,
     step: WorkflowStep
   ): Promise<void> {
+    console.log(`🎬 [ORCHESTRATOR] Starting step: ${step.name} for project ${workflow.projectId}`);
+    
     step.status = 'running';
     step.progress = 0;
 
+    console.log(`📤 [ORCHESTRATOR] Sending step update for: ${step.name}`);
     this.sendStepUpdate(workflow, step, 'Starting step execution');
+    
+    console.log(`📤 [ORCHESTRATOR] Sending agent message for: ${step.agentType}`);
     this.sendAgentMessage(
       workflow.projectId,
       step.agentType,

@@ -1,0 +1,573 @@
+/* Enhanced Project Selector Styles */
+/* ThinkCode AI Platform - Rozszerzona inicjalizacja projektów */
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  margin: 0 0 1rem 0;
+  color: #1a202c;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.stepIndicator {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.step.completed {
+  background: #10b981;
+  color: white;
+}
+
+.error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.content {
+  min-height: 400px;
+  padding: 1rem 0;
+}
+
+.stepContainer h2 {
+  margin: 0 0 0.5rem 0;
+  color: #1a202c;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.stepContainer p {
+  margin: 0 0 2rem 0;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+/* Path Selection */
+.pathOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.pathOption {
+  padding: 2rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pathOption:hover {
+  border-color: #3b82f6;
+  background: #f8faff;
+}
+
+.pathOption.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.pathIcon {
+  width: 48px;
+  height: 48px;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.pathOption h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1a202c;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.pathOption p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Form Elements */
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Project Type Grid */
+.projectTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.projectTypeCard {
+  padding: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.projectTypeCard:hover {
+  border-color: #3b82f6;
+  background: #f8faff;
+}
+
+.projectTypeCard.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.projectTypeCard h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1a202c;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.projectTypeCard p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Provider Configuration */
+.providersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.providerCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.providerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.providerHeader h4 {
+  margin: 0;
+  color: #1a202c;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: #3b82f6;
+}
+
+.switch input:focus + .slider {
+  box-shadow: 0 0 1px #3b82f6;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.providerConfig {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Agent Assignments */
+.agentAssignments {
+  margin-top: 2rem;
+}
+
+.agentAssignments h3 {
+  margin: 0 0 1rem 0;
+  color: #1a202c;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.assignmentsGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.assignmentRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.agentType {
+  flex: 1;
+  font-weight: 500;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.assignmentRow select {
+  flex: 1;
+  margin: 0;
+}
+
+/* File Upload */
+.fileUploadArea {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #fafafa;
+  transition: border-color 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.fileUploadArea:hover {
+  border-color: #3b82f6;
+  background: #f8faff;
+}
+
+.uploadIcon {
+  width: 48px;
+  height: 48px;
+  color: #64748b;
+  margin: 0 auto 1rem;
+}
+
+.fileUploadArea h3 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.fileUploadArea p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.uploadedFiles {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+
+.uploadedFiles h4 {
+  margin: 0 0 0.75rem 0;
+  color: #166534;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.uploadedFiles ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.uploadedFiles li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #dcfce7;
+}
+
+.uploadedFiles li:last-child {
+  border-bottom: none;
+}
+
+.fileSize {
+  color: #16a34a;
+  font-size: 0.85rem;
+}
+
+/* Settings */
+.settingsSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.settingsSection h4 {
+  margin: 0 0 1rem 0;
+  color: #1a202c;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.checkboxGroup input[type='checkbox'] {
+  width: auto;
+  margin: 0;
+}
+
+.checkboxGroup span {
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+/* Review Section */
+.reviewSection {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.reviewSection h4 {
+  margin: 0 0 0.75rem 0;
+  color: #1a202c;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.reviewSection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reviewSection li {
+  padding: 0.25rem 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0 0 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 2rem;
+}
+
+.buttonPrimary,
+.buttonSecondary {
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.buttonPrimary {
+  background: #3b82f6;
+  color: white;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.buttonSecondary {
+  background: #f8fafc;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #9ca3af;
+}
+
+.buttonPrimary:disabled,
+.buttonSecondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .pathOptions {
+    grid-template-columns: 1fr;
+  }
+
+  .providersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .assignmentRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .buttonPrimary,
+  .buttonSecondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .stepIndicator {
+    gap: 0.5rem;
+  }
+
+  .step {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .fileUploadArea {
+    padding: 2rem 1rem;
+  }
+
+  .uploadIcon {
+    width: 32px;
+    height: 32px;
+  }
+}

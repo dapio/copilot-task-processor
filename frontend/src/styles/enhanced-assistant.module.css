@@ -23,6 +23,24 @@
     opacity: 0;
   }
   to {
+    .activityFeed::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Debug Info */
+    .debugInfo {
+      padding: 12px 16px;
+      background: rgba(255, 165, 0, 0.1);
+      border: 1px solid rgba(255, 165, 0, 0.2);
+      border-radius: 8px;
+      margin: 12px 16px;
+    }
+
+    .debugInfo p {
+      margin: 4px 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
     transform: translateX(0);
     opacity: 1;
   }
@@ -632,4 +650,9 @@
 .tipsContainer::-webkit-scrollbar-thumb:hover,
 .activityFeed::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
+}
+
+/* Hidden File Input */
+.hiddenFileInput {
+  display: none !important;
 }

@@ -9,7 +9,7 @@ import agentsRoutes from './agents.routes';
 import jiraRoutes from './jira.routes';
 import cleanupRoutes from './cleanup.routes';
 import chatRoutes from './chat.routes';
-import projectsRoutes from './projects.routes';
+import { projectsRouter as projectsRoutes } from './projects.routes';
 import tasksRoutes from './tasks';
 import dashboardRoutes from './dashboard.routes';
 

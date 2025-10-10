@@ -43,6 +43,45 @@ export default function EnhancedAssistant({
   const [assistantTips, setAssistantTips] = useState<AssistantTip[]>([]);
   const [isMinimized, setIsMinimized] = useState(false);
   const [showGuide, setShowGuide] = useState(!projectStarted);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+
+  // Action handlers
+  const handleFileUpload = () => {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if (fileInput) {
+      console.log('🤖 Assistant: Opening file dialog');
+      fileInput.click();
+    } else {
+      console.error('🤖 Assistant: File input not found');
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0 && onStartProject) {
+      console.log(
+        '🤖 Assistant: Files selected, starting project with files:',
+        files.length
+      );
+      onStartProject(undefined, files);
+    }
+  };
+
+  const handleChatWithAgents = () => {
+    setShowChatDialog(true);
+    console.log('🤖 Assistant: Opening chat with agents');
+    // TODO: Implement chat dialog
+  };
+
+  const handleViewProgress = () => {
+    console.log('🤖 Assistant: Opening progress view');
+    // TODO: Scroll to progress section or open progress dialog
+  };
+
+  const handleDownloadReport = () => {
+    console.log('🤖 Assistant: Downloading report');
+    // TODO: Implement report download
+  };
 
   // Kroki przewodnika
   const guidanceSteps: GuidanceStep[] = [
@@ -60,17 +99,7 @@ export default function EnhancedAssistant({
         'Zacznij od wgrania dokumentów projektu: specyfikacje, wymagania, notatki. Agenci będą je analizować.',
       completed: false,
       actionText: 'Wgraj dokumenty',
-      action: () => {
-        const fileInput = document.querySelector(
-          'input[type="file"]'
-        ) as HTMLInputElement;
-        if (fileInput) {
-          fileInput.click();
-          console.log('🤖 Assistant: Opening file dialog');
-        } else {
-          console.error('🤖 Assistant: File input not found');
-        }
-      },
+      action: handleFileUpload,
     },
     {
       id: 'start-analysis',
@@ -384,12 +413,26 @@ export default function EnhancedAssistant({
             </button>
           )}
 
-          <button className={styles.actionButton}>📊 Zobacz postęp</button>
+          <button className={styles.actionButton} onClick={handleFileUpload}>
+            📂 Wgraj dokumenty
+          </button>
 
-          <button className={styles.actionButton}>💬 Czat z agentami</button>
+          <button className={styles.actionButton} onClick={handleViewProgress}>
+            📊 Zobacz postęp
+          </button>
+
+          <button
+            className={styles.actionButton}
+            onClick={handleChatWithAgents}
+          >
+            💬 Czat z agentami
+          </button>
 
           {workflowStatus?.status === 'completed' && (
-            <button className={`${styles.actionButton} ${styles.success}`}>
+            <button
+              className={`${styles.actionButton} ${styles.success}`}
+              onClick={handleDownloadReport}
+            >
               📋 Pobierz raport
             </button>
           )}
@@ -399,11 +442,13 @@ export default function EnhancedAssistant({
       {/* Live Activity Feed */}
       {liveMessages.length > 0 && (
         <div className={styles.activityFeed}>
-          <h4 className={styles.activityTitle}>🔴 Na żywo</h4>
+          <h4 className={styles.activityTitle}>
+            🔴 Na żywo ({liveMessages.length})
+          </h4>
           <div className={styles.activityList}>
             {liveMessages.slice(-3).map((message, index) => (
               <div key={index} className={styles.activityItem}>
-                <div className={styles.activityIcon}>👤</div>
+                <div className={styles.activityIcon}>🤖</div>
                 <div className={styles.activityContent}>
                   <span className={styles.agentName}>{message.agentId}</span>
                   <span className={styles.activityMessage}>
@@ -421,6 +466,25 @@ export default function EnhancedAssistant({
           </div>
         </div>
       )}
+
+      {/* Debug Info */}
+      {liveMessages.length === 0 && isConnected && (
+        <div className={styles.debugInfo}>
+          <p>🔧 Debug: Połączony, oczekuje wiadomości...</p>
+          <p>📊 Status: {workflowStatus?.status || 'Brak workflow'}</p>
+        </div>
+      )}
+
+      {/* Hidden File Input */}
+      <input
+        id="fileInput"
+        type="file"
+        multiple
+        accept=".pdf,.doc,.docx,.txt,.md"
+        className={styles.hiddenFileInput}
+        onChange={handleFileChange}
+        aria-label="Upload project documents"
+      />
     </div>
   );
 }

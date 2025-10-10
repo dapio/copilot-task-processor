@@ -103,14 +103,24 @@ export const useWebSocket = (
     // Workflow updates
     socket.on('workflow-update', (update: WorkflowUpdate) => {
       console.log('📊 Received workflow update:', update);
-      setWorkflowUpdates(prev => [...prev, update]);
+      setWorkflowUpdates(prev => {
+        console.log('📊 Previous workflow updates count:', prev.length);
+        const newUpdates = [...prev, update];
+        console.log('📊 New workflow updates count:', newUpdates.length);
+        return newUpdates;
+      });
       setLastWorkflowUpdate(update);
     });
 
     // Agent messages
     socket.on('agent-message', (message: AgentMessage) => {
       console.log('🤖 Received agent message:', message);
-      setAgentMessages(prev => [...prev, message]);
+      setAgentMessages(prev => {
+        console.log('🤖 Previous agent messages count:', prev.length);
+        const newMessages = [...prev, message];
+        console.log('🤖 New agent messages count:', newMessages.length);
+        return newMessages;
+      });
       setLastAgentMessage(message);
     });
 

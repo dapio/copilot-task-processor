@@ -23,7 +23,7 @@ import { webSocketService } from '../services/websocket.service';
 import enhancedRoutes from '../routes/enhanced-api.routes';
 import assistantRoutes from '../routes/assistant.routes';
 import workflowAdminRoutes from '../routes/workflow-admin.routes';
-import projectsRoutes from '../routes/projects.routes';
+import { projectsRouter as projectsRoutes } from '../routes/projects.routes';
 
 export class AgentsServer implements IAgentServer {
   private app: Express;
