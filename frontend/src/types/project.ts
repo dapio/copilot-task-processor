@@ -7,16 +7,26 @@ export interface Project {
   id: string;
   name: string;
   description?: string;
-  status: 'active' | 'paused' | 'completed' | 'archived';
+  status:
+    | 'active'
+    | 'paused'
+    | 'completed'
+    | 'archived'
+    | 'in-progress'
+    | 'pending'
+    | 'draft';
   createdAt: Date;
   updatedAt: Date;
   settings: ProjectSettings;
   stats: ProjectStats;
   color?: string;
+  icon?: string;
   tags: string[];
   repository?: RepositoryConfig;
   fileStructure: ProjectFileStructure;
   hasFiles?: boolean;
+  progress?: number;
+  tasks?: Task[];
 }
 
 export interface ProjectSettings {

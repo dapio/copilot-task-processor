@@ -33,16 +33,10 @@ export class SystemArchitectAgent {
   }
 
   private async sendPrompt(): Promise<string> {
-    // Mock implementation - in real scenario, this would call ML provider
-    return JSON.stringify({
-      architecture: {
-        name: 'Sample Architecture',
-        type: 'microservices',
-        description: 'AI-generated architecture',
-        layers: [],
-        components: [],
-      },
-    });
+    // REAL IMPLEMENTATION REQUIRED - NO MOCK ARCHITECTURE
+    throw new Error(
+      'Architecture generation not implemented. Real ML provider integration required.'
+    );
   }
 
   /**

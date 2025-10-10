@@ -4,6 +4,7 @@
  */
 
 import { Express, Request, Response } from 'express';
+import { unifiedAIChatService } from '../../services/unified-ai-chat.service';
 import {
   IAgentRoutes,
   AgentServerDependencies,
@@ -243,6 +244,7 @@ export class AgentRoutesManager implements IAgentRoutes {
       const { default: WorkflowAssistantAgent } = await import(
         '../workflow-assistant.agent'
       );
+      const { ProjectManagerAgent } = await import('../project-manager.agent');
 
       // Create instances and get their info
       const backendAgent = new BackendDeveloperAgent(
@@ -269,8 +271,13 @@ export class AgentRoutesManager implements IAgentRoutes {
         this.deps.prisma,
         this.deps.researchService as any
       );
+      const projectManagerAgent = new ProjectManagerAgent(
+        this.deps.prisma,
+        this.deps.researchService as any
+      );
 
       const agents = [
+        projectManagerAgent.getAgentInfo(), // Project Manager at the top - manages all others
         backendAgent.getAgentInfo(),
         frontendAgent.getAgentInfo(),
         businessAgent.getAgentInfo(),
@@ -671,37 +678,23 @@ export class AgentRoutesManager implements IAgentRoutes {
     try {
       const { projectId } = req.params;
 
-      // TODO: Use projectId to get project-specific chat history
-      // Mock chat history
-      const mockMessages = [
-        {
-          id: 'msg-1',
-          role: 'assistant',
-          content:
-            'Witaj! Rozpocząłem workflow dla Twojego nowego projektu. Pierwsze wymagania zostały pomyślnie zwalidowane przez Business Analyst. Czy chciałbyś przejrzeć wyniki?',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          stepContext: 'step-1',
-        },
-        {
-          id: 'msg-2',
-          role: 'user',
-          content: 'Tak, chciałbym zobaczyć wyniki walidacji wymagań.',
-          timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-        },
-        {
-          id: 'msg-3',
-          role: 'assistant',
-          content:
-            'Świetnie! Frontend Developer rozpoczął już pracę nad mockupami. Aktualnie trwa tworzenie prototypów głównych widoków aplikacji. Czy masz jakieś preferencje dotyczące designu?',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-          stepContext: 'step-2',
-        },
-      ];
+      // TODO: Use projectId to get project-specific chat history from database
+      // For now, return empty array - frontend will manage conversation state
+      const chatHistory: any[] = [];
+      const { limit = 50, offset = 0 } = req.query;
 
       const response: ApiResponse = {
         success: true,
-        data: mockMessages,
-        count: mockMessages.length,
+        data: {
+          messages: chatHistory,
+          pagination: {
+            total: 0,
+            limit: parseInt(limit as string),
+            offset: parseInt(offset as string),
+            hasMore: false,
+          },
+          projectId,
+        },
         timestamp: new Date().toISOString(),
       };
 
@@ -719,24 +712,56 @@ export class AgentRoutesManager implements IAgentRoutes {
   private async handleSendMessage(req: Request, res: Response): Promise<void> {
     try {
       const { projectId } = req.params;
-      const { message } = req.body;
+      const { message, agentType = 'project-manager' } = req.body;
 
-      // TODO: Use projectId for project-specific AI context and integrate with GitHub Copilot
-      const aiResponse = {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        content: `Rozumiem Twoje pytanie: "${message}". W kontekście projektu ${projectId}, mogę pomóc Ci z analizą workflow i następnych kroków...`,
-        timestamp: new Date().toISOString(),
-        stepContext: 'step-2',
-      };
+      if (!message?.trim()) {
+        res.status(400).json({
+          success: false,
+          error: 'Message content is required',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
 
-      const response: ApiResponse = {
-        success: true,
-        data: aiResponse,
-        timestamp: new Date().toISOString(),
-      };
+      // Send message using unified AI chat service with intelligent provider selection
+      const chatResult = await unifiedAIChatService.chatForAgent(
+        agentType,
+        [{ role: 'user', content: message }],
+        {
+          taskType: 'general',
+          temperature: 0.7,
+          maxTokens: 2000,
+        }
+      );
 
-      res.json(response);
+      if (chatResult.success) {
+        const aiResponse = {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          content: chatResult.data.content,
+          provider: chatResult.data.provider,
+          model: chatResult.data.model,
+          timestamp: new Date().toISOString(),
+          projectId,
+          agentType,
+          usage: chatResult.data.usage,
+        };
+
+        const response: ApiResponse = {
+          success: true,
+          data: aiResponse,
+          timestamp: new Date().toISOString(),
+        };
+
+        res.json(response);
+      } else {
+        console.error('Chat service error:', chatResult.error);
+        res.status(500).json({
+          success: false,
+          error: `AI service unavailable: ${chatResult.error.message}`,
+          timestamp: new Date().toISOString(),
+        });
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       res.status(500).json({

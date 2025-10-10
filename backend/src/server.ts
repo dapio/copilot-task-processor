@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import cors from 'cors';
 import { DocumentProcessor } from './document-processor';
+import { PrismaClient } from '@prisma/client';
 
 import fs from 'fs/promises';
 
@@ -14,6 +15,9 @@ import { webSocketService } from './services/websocket.service';
 
 // Import API routes
 import { apiRoutes } from './routes/index';
+
+// Import unified AI chat service for initialization
+import { unifiedAIChatService } from './services/unified-ai-chat.service';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -677,6 +681,29 @@ async function ensureUploadsDir() {
 async function startServer() {
   try {
     await ensureUploadsDir();
+
+    // Initialize Provider Configuration Service
+    console.log('⚙️ Initializing Provider Configuration...');
+    const prisma = new PrismaClient();
+    const { ProviderConfigService } = await import(
+      './services/provider-config.service'
+    );
+    const providerConfigService = new ProviderConfigService(prisma);
+    await providerConfigService.initializeDefaultConfigs();
+    console.log('✅ Provider Configuration initialized with defaults');
+
+    // Initialize AI chat service
+    console.log('🤖 Initializing AI Chat Service...');
+    const initResult = await unifiedAIChatService.initialize();
+    if (!initResult.success) {
+      console.error(
+        '❌ Failed to initialize AI Chat Service:',
+        initResult.error
+      );
+      console.log('⚠️  Server will continue but AI features may be limited');
+    } else {
+      console.log('✅ AI Chat Service initialized successfully');
+    }
 
     const server = app.listen(PORT, () => {
       console.log('='.repeat(80));

@@ -194,13 +194,26 @@ export default function EnhancedFileUpload({
         dropzoneInstance.destroy();
       }
     };
-  }, [dropzoneInstance]);
+  }, [
+    dropzoneInstance,
+    uploadUrl,
+    maxFileSize,
+    maxFiles,
+    multiple,
+    acceptedFiles,
+    title,
+    description,
+    projectId,
+    stepId,
+    onFilesUploaded,
+    onError,
+  ]);
 
   const getPreviewTemplate = () => {
     return `
       <div class="dz-preview dz-file-preview">
         <div class="dz-image">
-          <img data-dz-thumbnail />
+          <img data-dz-thumbnail alt="Podgląd pliku" />
         </div>
         <div class="dz-details">
           <div class="dz-size"><span data-dz-size></span></div>
@@ -228,6 +241,7 @@ export default function EnhancedFileUpload({
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image/')) {
+      // eslint-disable-next-line jsx-a11y/alt-text
       return <Image size={20} className={styles.fileIcon} />;
     }
     return <FileText size={20} className={styles.fileIcon} />;
@@ -248,7 +262,16 @@ export default function EnhancedFileUpload({
           <Upload size={48} />
           <p>{title}</p>
           <p>{description}</p>
-          <input type="file" multiple={multiple} accept={acceptedFiles} />
+          <label htmlFor="file-upload-input" className="sr-only">
+            {title}
+          </label>
+          <input
+            id="file-upload-input"
+            type="file"
+            multiple={multiple}
+            accept={acceptedFiles}
+            aria-label={title}
+          />
         </div>
       </form>
 

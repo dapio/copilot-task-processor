@@ -3,8 +3,7 @@
  * Tests intelligent routing based on project file state
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import request from 'supertest';
+// @ts-ignore - Jest globals are available during test runtime
 import { PrismaClient } from '@prisma/client';
 import { createTestServer } from '../helpers/test-server';
 import { Application } from 'express';

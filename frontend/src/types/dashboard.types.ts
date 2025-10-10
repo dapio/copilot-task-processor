@@ -31,6 +31,7 @@ export interface ProjectData {
   client?: string;
   budget?: number;
   technologies?: string[];
+  uploadedFiles?: any[];
 }
 
 export interface TaskData {

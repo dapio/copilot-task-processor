@@ -514,9 +514,15 @@ Format odpowiedzi jako JSON:
     messages: CopilotChatMessage[],
     options: CopilotChatOptions
   ): Promise<Result<GenerationResult, MLError>> {
-    // W przypadku braku API key, użyj mock response
+    // W przypadku braku API key, FAIL IMMEDIATELY - NO MOCKS!
     if (!this.apiKey) {
-      return this.getMockResponse(messages);
+      return {
+        success: false,
+        error: {
+          code: 'NO_API_KEY',
+          message: 'GitHub Copilot API key is required - NO MOCK RESPONSES!',
+        },
+      };
     }
 
     try {
@@ -587,75 +593,7 @@ Format odpowiedzi jako JSON:
     }
   }
 
-  private getMockResponse(
-    messages: CopilotChatMessage[]
-  ): Result<GenerationResult, MLError> {
-    const lastMessage = messages[messages.length - 1];
-    const prompt = lastMessage?.content || '';
-
-    // Inteligentne mock responses based on prompt
-    let mockText = '';
-
-    if (prompt.toLowerCase().includes('test')) {
-      mockText =
-        '✅ GitHub Copilot mock provider is working correctly. This is a test response.';
-    } else if (
-      prompt.toLowerCase().includes('code') ||
-      prompt.toLowerCase().includes('implement')
-    ) {
-      mockText = `// GitHub Copilot mock implementation
-function solution() {
-  // This is a mock response from GitHub Copilot Provider
-  console.log("Implementation would be generated here");
-  return "Mock result for: ${prompt.substring(0, 50)}...";
-}`;
-    } else if (
-      prompt.toLowerCase().includes('analiz') ||
-      prompt.toLowerCase().includes('review')
-    ) {
-      mockText = `📊 **Analiza (Mock Response)**
-
-**Podsumowanie:** ${prompt.substring(0, 100)}...
-
-**Kluczowe punkty:**
-- Mock analysis point 1
-- Mock analysis point 2  
-- Mock analysis point 3
-
-**Rekomendacje:**
-- Consider implementing proper GitHub Copilot API integration
-- Review the current mock implementation
-- Test with real API when available`;
-    } else {
-      mockText = `🤖 **GitHub Copilot Response (Mock)**
-
-Dla zapytania: "${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}"
-
-To jest mock response z GitHub Copilot Provider. W wersji produkcyjnej ta odpowiedź byłaby generowana przez rzeczywisty GitHub Copilot API.
-
-**Kontekst:** ${messages.length} wiadomości w historii konwersacji.
-**Provider:** GitHub Copilot (Mock Mode)
-**Timestamp:** ${new Date().toISOString()}`;
-    }
-
-    return {
-      success: true,
-      data: {
-        text: mockText,
-        usage: {
-          promptTokens: Math.floor(prompt.length / 4),
-          completionTokens: Math.floor(mockText.length / 4),
-          totalTokens: Math.floor((prompt.length + mockText.length) / 4),
-        },
-        metadata: {
-          provider: 'github-copilot',
-          mode: 'mock',
-          model: 'gpt-4-mock',
-          messagesInContext: messages.length,
-        },
-      },
-    };
-  }
+  // NO MORE MOCK RESPONSES - REMOVED COMPLETELY!
 
   private formatWorkspaceInfo(workspace: CopilotContext['workspace']): string {
     if (!workspace) return 'No workspace context available';

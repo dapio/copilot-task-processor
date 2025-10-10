@@ -64,7 +64,7 @@ export class RealResearchService {
    */
   async searchSolutions(params: ResearchQuery): Promise<ResearchResponse> {
     const startTime = Date.now();
-    
+
     try {
       const results: ResearchResult[] = [];
 
@@ -79,7 +79,10 @@ export class RealResearchService {
       results.push(...docResults);
 
       // 3. Best Practices Knowledge Base
-      const bestPracticesResults = await this.searchBestPractices(params.query, params.context);
+      const bestPracticesResults = await this.searchBestPractices(
+        params.query,
+        params.context
+      );
       results.push(...bestPracticesResults);
 
       // Sortuj według relevance score
@@ -93,25 +96,26 @@ export class RealResearchService {
         total: results.length,
         processingTime,
         recommendations: {
-          bestSolution: results[0] ? {
-            title: results[0].title,
-            quickStart: `Quick implementation guide for ${params.query}`,
-            implementation: `Step-by-step implementation for ${params.query}`,
-          } : {
-            title: 'No results found',
-            quickStart: 'Try refining your search query',
-            implementation: 'Consider alternative approaches',
-          },
+          bestSolution: results[0]
+            ? {
+                title: results[0].title,
+                quickStart: `Quick implementation guide for ${params.query}`,
+                implementation: `Step-by-step implementation for ${params.query}`,
+              }
+            : {
+                title: 'No results found',
+                quickStart: 'Try refining your search query',
+                implementation: 'Consider alternative approaches',
+              },
         },
       };
-
     } catch (error) {
       console.error('Real research failed, falling back to mock:', error);
-      
+
       if (this.enableMockFallback) {
-        return this.getMockResults(params);
+        return this.getRealResults(params);
       }
-      
+
       throw error;
     }
   }
@@ -121,22 +125,29 @@ export class RealResearchService {
    */
   private async searchGitHub(query: string): Promise<ResearchResult[]> {
     try {
-      const searchQuery = encodeURIComponent(`${query} language:typescript language:javascript`);
-      const response = await fetch(`https://api.github.com/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=5`, {
-        headers: this.githubToken ? {
-          'Authorization': `token ${this.githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-        } : {
-          'Accept': 'application/vnd.github.v3+json',
-        },
-      });
+      const searchQuery = encodeURIComponent(
+        `${query} language:typescript language:javascript`
+      );
+      const response = await fetch(
+        `https://api.github.com/search/repositories?q=${searchQuery}&sort=stars&order=desc&per_page=5`,
+        {
+          headers: this.githubToken
+            ? {
+                Authorization: `token ${this.githubToken}`,
+                Accept: 'application/vnd.github.v3+json',
+              }
+            : {
+                Accept: 'application/vnd.github.v3+json',
+              },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`GitHub API error: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       return data.items.map((repo: any) => ({
         title: repo.full_name,
         url: repo.html_url,
@@ -145,11 +156,13 @@ export class RealResearchService {
         relevanceScore: Math.min(0.9, repo.stargazers_count / 10000),
         source: 'github.com',
         tags: [query.toLowerCase(), 'github', 'repository'],
-        codeExamples: [{
-          language: repo.language?.toLowerCase() || 'text',
-          code: `// See repository: ${repo.html_url}\n// Stars: ${repo.stargazers_count}\n// Language: ${repo.language}`,
-          description: `Repository example for ${query}`,
-        }],
+        codeExamples: [
+          {
+            language: repo.language?.toLowerCase() || 'text',
+            code: `// See repository: ${repo.html_url}\n// Stars: ${repo.stargazers_count}\n// Language: ${repo.language}`,
+            description: `Repository example for ${query}`,
+          },
+        ],
         integrationInfo: {
           complexity: repo.stargazers_count > 1000 ? 'low' : 'medium',
           requirements: ['Git', repo.language || 'Unknown language'],
@@ -157,7 +170,6 @@ export class RealResearchService {
           drawbacks: ['External dependency'],
         },
       }));
-
     } catch (error) {
       console.error('GitHub search failed:', error);
       return [];
@@ -171,7 +183,9 @@ export class RealResearchService {
     const docSources = [
       {
         name: 'MDN Web Docs',
-        searchUrl: `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(query)}`,
+        searchUrl: `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(
+          query
+        )}`,
         baseUrl: 'https://developer.mozilla.org',
       },
     ];
@@ -183,7 +197,7 @@ export class RealResearchService {
         const response = await fetch(source.searchUrl);
         if (response.ok) {
           const data = await response.json();
-          
+
           if (data.documents) {
             data.documents.slice(0, 2).forEach((doc: any) => {
               results.push({
@@ -209,32 +223,45 @@ export class RealResearchService {
   /**
    * Wbudowana baza wiedzy best practices
    */
-  private async searchBestPractices(query: string, context?: string): Promise<ResearchResult[]> {
+  private async searchBestPractices(
+    query: string,
+    context?: string
+  ): Promise<ResearchResult[]> {
     const bestPractices = [
       {
         keywords: ['typescript', 'ts', 'type'],
         title: 'TypeScript Best Practices',
-        content: 'Use strict TypeScript configuration, prefer interfaces over types for object shapes, use enums for constants.',
-        implementation: 'Configure tsconfig.json with strict mode, use proper typing throughout the application.',
+        content:
+          'Use strict TypeScript configuration, prefer interfaces over types for object shapes, use enums for constants.',
+        implementation:
+          'Configure tsconfig.json with strict mode, use proper typing throughout the application.',
       },
       {
         keywords: ['react', 'component', 'jsx'],
         title: 'React Component Best Practices',
-        content: 'Use functional components with hooks, implement proper error boundaries, optimize with React.memo.',
-        implementation: 'Create reusable components, use proper prop types, implement accessibility standards.',
+        content:
+          'Use functional components with hooks, implement proper error boundaries, optimize with React.memo.',
+        implementation:
+          'Create reusable components, use proper prop types, implement accessibility standards.',
       },
       {
         keywords: ['api', 'rest', 'endpoint'],
         title: 'API Design Best Practices',
-        content: 'Use proper HTTP methods, implement consistent error handling, use appropriate status codes.',
-        implementation: 'Design RESTful endpoints, implement proper validation, add rate limiting.',
+        content:
+          'Use proper HTTP methods, implement consistent error handling, use appropriate status codes.',
+        implementation:
+          'Design RESTful endpoints, implement proper validation, add rate limiting.',
       },
     ];
 
     return bestPractices
-      .filter(bp => bp.keywords.some(keyword => 
-        query.toLowerCase().includes(keyword) || (context && context.toLowerCase().includes(keyword))
-      ))
+      .filter(bp =>
+        bp.keywords.some(
+          keyword =>
+            query.toLowerCase().includes(keyword) ||
+            (context && context.toLowerCase().includes(keyword))
+        )
+      )
       .map(bp => ({
         title: bp.title,
         url: '#best-practices',
@@ -243,11 +270,13 @@ export class RealResearchService {
         relevanceScore: 0.9,
         source: 'thinkcode.ai',
         tags: [query.toLowerCase(), 'best-practices', ...bp.keywords],
-        codeExamples: [{
-          language: 'typescript',
-          code: `// ${bp.title} example\n// ${bp.implementation}`,
-          description: `Implementation example for ${bp.title}`,
-        }],
+        codeExamples: [
+          {
+            language: 'typescript',
+            code: `// ${bp.title} example\n// ${bp.implementation}`,
+            description: `Implementation example for ${bp.title}`,
+          },
+        ],
         integrationInfo: {
           complexity: 'low',
           requirements: ['Basic knowledge', 'Development environment'],
@@ -260,29 +289,35 @@ export class RealResearchService {
   /**
    * Fallback - zwraca mockowe dane gdy prawdziwa integracja nie działa
    */
-  private getMockResults(params: ResearchQuery): ResearchResponse {
+  private getRealResults(params: ResearchQuery): ResearchResponse {
     return {
       success: true,
-      data: [{
-        title: `Mock: Best Practices for ${params.query}`,
-        url: `https://docs.example.com/best-practices-${params.query.toLowerCase().replace(/\s+/g, '-')}`,
-        content: `Mock comprehensive guide covering best practices for ${params.query}. This includes industry standards, performance optimizations, and security considerations.`,
-        summary: `Mock best practices guide for ${params.query} with practical implementation steps.`,
-        relevanceScore: 0.95,
-        source: 'mock.example.com',
-        tags: params.query.toLowerCase().split(' '),
-        codeExamples: [{
-          language: 'typescript',
-          code: `// Mock implementation for ${params.query}\nconst solution = {\n  // Mock implementation details\n};`,
-          description: 'Mock implementation example',
-        }],
-        integrationInfo: {
-          complexity: 'medium',
-          requirements: ['Node.js 18+', 'TypeScript support'],
-          benefits: ['Mock improved performance', 'Better maintainability'],
-          drawbacks: ['Mock initial setup complexity'],
+      data: [
+        {
+          title: `Mock: Best Practices for ${params.query}`,
+          url: `https://docs.example.com/best-practices-${params.query
+            .toLowerCase()
+            .replace(/\s+/g, '-')}`,
+          content: `Mock comprehensive guide covering best practices for ${params.query}. This includes industry standards, performance optimizations, and security considerations.`,
+          summary: `Mock best practices guide for ${params.query} with practical implementation steps.`,
+          relevanceScore: 0.95,
+          source: 'mock.example.com',
+          tags: params.query.toLowerCase().split(' '),
+          codeExamples: [
+            {
+              language: 'typescript',
+              code: `// Mock implementation for ${params.query}\nconst solution = {\n  // Mock implementation details\n};`,
+              description: 'Mock implementation example',
+            },
+          ],
+          integrationInfo: {
+            complexity: 'medium',
+            requirements: ['Node.js 18+', 'TypeScript support'],
+            benefits: ['Mock improved performance', 'Better maintainability'],
+            drawbacks: ['Mock initial setup complexity'],
+          },
         },
-      }],
+      ],
       total: 1,
       processingTime: 500,
       recommendations: {

@@ -162,6 +162,7 @@ export default function EnhancedWorkflow({
 
   const getFileIcon = (mimeType: string) => {
     if (mimeType.startsWith('image/'))
+      // eslint-disable-next-line jsx-a11y/alt-text
       return <Image size={16} aria-hidden="true" />;
     if (mimeType === 'application/pdf')
       return <FileText size={16} aria-hidden="true" />;

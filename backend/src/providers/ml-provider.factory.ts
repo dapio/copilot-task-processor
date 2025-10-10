@@ -12,72 +12,7 @@ import {
 } from './ml-provider.interface';
 import { OpenAIProvider } from './openai.provider';
 
-/**
- * Mock Provider for testing and fallback scenarios
- */
-class MockProvider implements IMLProvider {
-  public readonly name = 'mock';
-  public readonly version = '1.0.0';
-
-  constructor() {
-    // Constructor without parameters
-  }
-
-  async isAvailable(): Promise<boolean> {
-    return true;
-  }
-
-  async generateText(prompt: string): Promise<Result<any, MLError>> {
-    return {
-      success: true,
-      data: {
-        text: `Mock response for: "${prompt.substring(0, 50)}..."`,
-        usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-        metadata: { model: 'mock-gpt', provider: 'mock' },
-      },
-    };
-  }
-
-  async generateEmbedding(): Promise<Result<any, MLError>> {
-    return {
-      success: true,
-      data: {
-        embedding: Array(1536)
-          .fill(0)
-          .map(() => Math.random() - 0.5),
-        usage: { tokens: 5 },
-        metadata: { model: 'mock-embedding' },
-      },
-    };
-  }
-
-  async analyzeDocument(): Promise<Result<any, MLError>> {
-    return {
-      success: true,
-      data: {
-        summary: 'Mock document analysis',
-        complexity: 5,
-        suggestions: ['Mock suggestion 1', 'Mock suggestion 2'],
-        confidence: 0.8,
-        metadata: { provider: 'mock' },
-      },
-    };
-  }
-
-  async healthCheck(): Promise<Result<any, MLError>> {
-    return {
-      success: true,
-      data: { status: 'healthy', details: 'Mock provider always healthy' },
-    };
-  }
-
-  async getSupportedModels(): Promise<Result<string[], MLError>> {
-    return {
-      success: true,
-      data: ['mock-gpt-4', 'mock-gpt-3.5-turbo', 'mock-text-embedding'],
-    };
-  }
-}
+// NO MORE MOCK PROVIDERS - REMOVED COMPLETELY!
 
 /**
  * Main ML Provider Factory Implementation
@@ -122,8 +57,9 @@ export class MLProviderFactory implements IMLProviderFactory {
           break;
 
         case 'mock':
-          provider = new MockProvider();
-          break;
+          throw new Error(
+            'MOCK PROVIDERS NOT ALLOWED - USE REAL PROVIDERS ONLY!'
+          );
 
         // Future providers can be added here
         case 'anthropic':
@@ -212,19 +148,19 @@ export class MLProviderFactory implements IMLProviderFactory {
       return primaryResult;
     }
 
-    // Fallback to mock provider
-    console.warn(
-      `Primary provider ${config.type} failed, falling back to mock provider`
+    // NO MORE MOCK FALLBACKS - FAIL INSTEAD!
+    console.error(
+      `Provider ${config.type} failed and MOCK FALLBACKS ARE DISABLED!`
     );
 
-    const mockConfig: MLProviderConfig = {
-      ...config,
-      type: 'mock',
-      name: `mock-fallback-${config.name}`,
-      enabled: true,
+    return {
+      success: false,
+      error: {
+        code: 'NO_MOCK_FALLBACK',
+        message: `Provider ${config.type} failed and MOCK FALLBACKS ARE DISABLED!`,
+        retryable: false,
+      } as any,
     };
-
-    return this.createProvider(mockConfig);
   }
 }
 
@@ -272,13 +208,6 @@ export const getDefaultProviderConfigs = (): MLProviderConfig[] => {
       retryAttempts: 2,
       timeoutMs: 20000,
     },
-    {
-      name: 'mock-ultimate-fallback',
-      type: 'mock',
-      enabled: true,
-      priority: 99,
-      retryAttempts: 1,
-      timeoutMs: 1000,
-    },
+    // NO MORE MOCK FALLBACKS - REMOVED!
   ];
 };

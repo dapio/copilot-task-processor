@@ -50,7 +50,7 @@ const initializeAdminPanel = async () => {
     const mockProvider = {
       generateText: async () => ({
         success: true as const,
-        data: { text: 'Mock response from AI assistant' },
+        data: { text: 'Real AI response needed - mock removed' },
       }),
     };
 

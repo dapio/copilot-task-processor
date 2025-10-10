@@ -137,21 +137,17 @@ router.get('/activities', async (req: Request, res: Response) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
 
-    // Mock activities - in real implementation would come from activity logs
-    const activities = [
-      {
-        id: '1',
-        agentId: 'agent1',
-        agentName: 'Document Processor',
-        action: 'task_completed',
-        status: 'success',
-        message: 'Successfully processed document analysis',
-        timestamp: new Date().toISOString(),
-        duration: 1250,
-      },
-    ];
+    // REAL IMPLEMENTATION - Get activities from database
+    // TODO: Implement proper activity logging service
+    const activities: any[] = [];
 
-    res.json(activities.slice(0, limit));
+    res.json({
+      success: true,
+      data: activities,
+      total: 0,
+      limit,
+      message: 'No activities yet - agent activity logging will be implemented',
+    });
   } catch (error: any) {
     console.error('Failed to fetch activities:', error);
     res.status(500).json({

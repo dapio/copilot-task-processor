@@ -1,0 +1,331 @@
+/**
+ * GitHub Copilot Provider Adapter
+ * Adapts existing RealGitHubCopilotProvider to AIProvider interface
+ */
+
+import { 
+  AIProvider, 
+  ProviderType, 
+  ModelInfo, 
+  ChatRequest, 
+  ChatResponse, 
+  HealthStatus, 
+  ProviderConfig,
+  Result
+} from '../types/ai-provider.types';
+import { RealGitHubCopilotProvider as BaseGitHubProvider } from './real-github-copilot.provider';
+
+export class GitHubCopilotProvider implements AIProvider {
+  readonly id = 'github-copilot';
+  readonly name = 'GitHub Copilot';
+  readonly type: ProviderType = 'github-copilot';
+  
+  private baseProvider: BaseGitHubProvider;
+  private initialized = false;
+
+  readonly supportedModels: ModelInfo[] = [
+    {
+      id: 'gpt-4',
+      name: 'GPT-4 (GitHub Copilot)',
+      provider: 'github-copilot',
+      capabilities: ['chat', 'code-completion', 'code-review', 'analysis'],
+      contextWindow: 8192,
+      maxTokens: 4096,
+      costPer1kTokens: {
+        input: 0, // Included in GitHub Copilot subscription
+        output: 0
+      },
+      specializations: [
+        'frontend-development',
+        'backend-development',
+        'code-review',
+        'general-purpose'
+      ]
+    },
+    {
+      id: 'gpt-3.5-turbo',
+      name: 'GPT-3.5 Turbo (GitHub Copilot)',
+      provider: 'github-copilot',
+      capabilities: ['chat', 'code-completion', 'analysis'],
+      contextWindow: 4096,
+      maxTokens: 2048,
+      costPer1kTokens: {
+        input: 0, // Included in GitHub Copilot subscription
+        output: 0
+      },
+      specializations: [
+        'frontend-development',
+        'backend-development',
+        'general-purpose'
+      ]
+    }
+  ];
+
+  constructor(githubToken?: string) {
+    this.baseProvider = new BaseGitHubProvider(githubToken);
+  }
+
+  async initialize(config: ProviderConfig): Promise<Result<boolean>> {
+    try {
+      // Initialize base provider with GitHub token
+      const initResult = await this.baseProvider.initialize(config.apiKey);
+      
+      if (!initResult.success) {
+        return {
+          success: false,
+          error: {
+            code: 'GITHUB_COPILOT_INIT_FAILED',
+            message: 'Failed to initialize GitHub Copilot provider',
+            provider: this.id,
+            details: initResult.error
+          }
+        };
+      }
+
+      this.initialized = true;
+      return { success: true, data: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'GITHUB_COPILOT_INIT_ERROR',
+          message: 'Error initializing GitHub Copilot provider',
+          provider: this.id,
+          details: error
+        }
+      };
+    }
+  }
+
+  async chat(request: ChatRequest): Promise<Result<ChatResponse>> {
+    try {
+      if (!this.initialized) {
+        const initResult = await this.initialize({} as any);
+        if (!initResult.success) {
+          return initResult as any;
+        }
+      }
+
+      // Convert request format
+      const copilotRequest = {
+        messages: request.messages,
+        model: request.model || 'gpt-4',
+        temperature: request.temperature,
+        max_tokens: request.maxTokens,
+        stream: request.stream || false
+      };
+
+      // Execute chat request
+      const chatResult = await this.baseProvider.chat(copilotRequest);
+      
+      if (!chatResult.success) {
+        return {
+          success: false,
+          error: {
+            code: 'GITHUB_COPILOT_CHAT_FAILED',
+            message: 'GitHub Copilot chat request failed',
+            provider: this.id,
+            model: request.model,
+            details: chatResult.error
+          }
+        };
+      }
+
+      // Convert response format
+      return {
+        success: true,
+        data: {
+          content: chatResult.data.content,
+          model: request.model || 'gpt-4',
+          provider: this.id,
+          usage: chatResult.data.usage ? {
+            promptTokens: chatResult.data.usage.promptTokens,
+            completionTokens: chatResult.data.usage.completionTokens,
+            totalTokens: chatResult.data.usage.totalTokens,
+            cost: 0 // Included in subscription
+          } : undefined,
+          metadata: {
+            copilotPlan: chatResult.data.metadata?.copilotPlan,
+            organization: chatResult.data.metadata?.organization
+          }
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'GITHUB_COPILOT_CHAT_ERROR',
+          message: 'Error making chat request to GitHub Copilot',
+          provider: this.id,
+          details: error
+        }
+      };
+    }
+  }
+
+  async checkHealth(): Promise<Result<HealthStatus>> {
+    try {
+      if (!this.initialized) {
+        return {
+          success: false,
+          error: {
+            code: 'NOT_INITIALIZED',
+            message: 'GitHub Copilot provider not initialized',
+            provider: this.id
+          }
+        };
+      }
+
+      // Use base provider's access check
+      const accessResult = await this.baseProvider.checkAccess();
+      
+      if (!accessResult.success) {
+        return {
+          success: true,
+          data: {
+            status: 'unhealthy',
+            provider: this.id,
+            details: {
+              lastError: accessResult.error?.message || 'Access check failed'
+            }
+          }
+        };
+      }
+
+      const accessInfo = accessResult.data;
+
+      return {
+        success: true,
+        data: {
+          status: accessInfo.hasAccess && accessInfo.chatEnabled ? 'healthy' : 'degraded',
+          provider: this.id,
+          details: {
+            latency: 100, // Estimated
+            tokensAvailable: accessInfo.hasAccess ? 100000 : 0,
+            rateLimitStatus: {
+              requestsRemaining: 1000,
+              resetTime: Date.now() + 3600000 // 1 hour
+            }
+          }
+        }
+      };
+    } catch (error) {
+      return {
+        success: true,
+        data: {
+          status: 'unhealthy',
+          provider: this.id,
+          details: {
+            lastError: error instanceof Error ? error.message : String(error)
+          }
+        }
+      };
+    }
+  }
+
+  async getAvailableModels(): Promise<Result<ModelInfo[]>> {
+    try {
+      if (!this.initialized) {
+        const initResult = await this.initialize({} as any);
+        if (!initResult.success) {
+          return initResult as any;
+        }
+      }
+
+      // Get models from base provider
+      const modelsResult = await this.baseProvider.getModels();
+      
+      if (!modelsResult.success) {
+        // Return static models as fallback
+        return { success: true, data: [...this.supportedModels] };
+      }
+
+      // Convert models to our format
+      const convertedModels: ModelInfo[] = modelsResult.data.map(model => ({
+        id: model.id,
+        name: model.name,
+        provider: this.id,
+        capabilities: model.capabilities,
+        contextWindow: 8192, // Default for GitHub Copilot
+        maxTokens: 4096,
+        costPer1kTokens: {
+          input: 0,
+          output: 0
+        },
+        specializations: [
+          'frontend-development',
+          'backend-development',
+          'code-review',
+          'general-purpose'
+        ]
+      }));
+
+      return { success: true, data: convertedModels };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'GITHUB_COPILOT_MODELS_ERROR',
+          message: 'Error retrieving GitHub Copilot models',
+          provider: this.id,
+          details: error
+        }
+      };
+    }
+  }
+
+  /**
+   * Get user information from GitHub Copilot
+   */
+  async getUserInfo(): Promise<Result<{
+    username: string;
+    plan: string;
+    chatEnabled: boolean;
+    organizations: string[];
+  }>> {
+    try {
+      if (!this.initialized) {
+        const initResult = await this.initialize({} as any);
+        if (!initResult.success) {
+          return initResult as any;
+        }
+      }
+
+      const userResult = await this.baseProvider.getUserInfo();
+      
+      if (!userResult.success) {
+        return {
+          success: false,
+          error: {
+            code: 'USER_INFO_ERROR',
+            message: 'Failed to get GitHub Copilot user info',
+            provider: this.id,
+            details: userResult.error
+          }
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          username: userResult.data.username,
+          plan: userResult.data.plan,
+          chatEnabled: userResult.data.chatEnabled,
+          organizations: userResult.data.organizations || []
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'USER_INFO_RETRIEVAL_ERROR',
+          message: 'Error retrieving GitHub Copilot user info',
+          provider: this.id,
+          details: error
+        }
+      };
+    }
+  }
+}
+
+export const gitHubCopilotProvider = new GitHubCopilotProvider();

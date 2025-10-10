@@ -37,7 +37,7 @@ interface WorkflowStep {
 export const WorkflowsView: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
@@ -57,7 +57,6 @@ export const WorkflowsView: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to load workflows:', error);
-      setError('Nie można załadować workflow z API');
     } finally {
       setLoading(false);
     }

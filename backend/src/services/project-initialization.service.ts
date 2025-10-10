@@ -6,7 +6,8 @@
 import { PrismaClient } from '@prisma/client';
 import { Result, ServiceError, createServiceError } from '../utils/result';
 import { ChatIntegrationService } from './chat-integration.service';
-import { DocumentProcessor } from '../document-processor';
+import { RealDocumentAnalysisService } from './real-document-analysis.service';
+import { RealGitHubCopilotIntegration } from './real-github-copilot.service';
 
 export interface ProjectType {
   id: string;
@@ -77,7 +78,7 @@ export class ProjectInitializationService {
   constructor(
     private prisma: PrismaClient,
     private chatService: ChatIntegrationService,
-    private documentProcessor: DocumentProcessor
+    private documentAnalysisService: RealDocumentAnalysisService
   ) {}
 
   /**
@@ -150,13 +151,8 @@ export class ProjectInitializationService {
     Result<ProviderConfig[], ServiceError>
   > {
     try {
-      const providers: ProviderConfig[] = [
-        {
-          id: 'github-copilot',
-          name: 'GitHub Copilot',
-          type: 'copilot',
-          enabled: !!process.env.GITHUB_COPILOT_API_KEY,
-        },
+      // Start with base providers
+      const baseProviders: ProviderConfig[] = [
         {
           id: 'openai-gpt4',
           name: 'OpenAI GPT-4',
@@ -182,7 +178,40 @@ export class ProjectInitializationService {
         },
       ];
 
-      return { success: true, data: providers };
+      // Try to integrate real GitHub Copilot provider
+      try {
+        const githubToken = process.env.GITHUB_TOKEN;
+        if (githubToken) {
+          const realCopilotIntegration = new RealGitHubCopilotIntegration(
+            githubToken
+          );
+          const enhancedResult = await realCopilotIntegration.enhanceProviders(
+            baseProviders
+          );
+
+          if (enhancedResult.success) {
+            console.info(
+              '✅ Real GitHub Copilot provider integrated successfully'
+            );
+            return { success: true, data: enhancedResult.data };
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to integrate GitHub Copilot provider:', error);
+      }
+
+      // Return providers with Groq as primary (REAL, NOT MOCK)
+      const providersWithGroq: ProviderConfig[] = [
+        {
+          id: 'groq',
+          name: 'Groq (Darmowy, Szybki)',
+          type: 'groq' as any,
+          enabled: true,
+        },
+        ...baseProviders,
+      ];
+
+      return { success: true, data: providersWithGroq };
     } catch (error) {
       return {
         success: false,
@@ -208,20 +237,41 @@ export class ProjectInitializationService {
       .filter(p => p.id !== primaryProvider?.id)
       .map(p => p.id);
 
-    const agentTypes = [
+    // Enhanced assignments with real GitHub Copilot integration
+    const baseAssignments = [
+      'project-manager',
       'business-analyst',
       'system-architect',
       'frontend-developer',
       'backend-developer',
       'qa-engineer',
       'document-processor',
-    ];
-
-    return agentTypes.map(agentType => ({
+    ].map(agentType => ({
       agentType,
       providerId: primaryProvider?.id || 'github-copilot',
       fallbackProviders: fallbacks,
     }));
+
+    // Try to enhance with real GitHub Copilot assignments
+    try {
+      const githubToken = process.env.GITHUB_TOKEN;
+      if (githubToken && primaryProvider?.id === 'real-github-copilot') {
+        const realCopilotIntegration = new RealGitHubCopilotIntegration(
+          githubToken
+        );
+        const enhancedAssignments =
+          realCopilotIntegration.enhanceAgentAssignments(baseAssignments);
+        console.info('✅ Enhanced agent assignments with real GitHub Copilot');
+        return enhancedAssignments;
+      }
+    } catch (error) {
+      console.warn(
+        '⚠️ Failed to enhance agent assignments with real GitHub Copilot:',
+        error
+      );
+    }
+
+    return baseAssignments;
   }
 
   /**
@@ -245,7 +295,7 @@ export class ProjectInitializationService {
 
       // 3. Utwórz sesję czatu i przetwórz pliki
       const { chatSessionId, workflowId, initialTasks } =
-        await this.setupProjectResources(project, request, configuredProviders);
+        await this.setupProjectResources(project, request);
 
       const result: ProjectInitializationResult = {
         projectId: project.id,
@@ -296,8 +346,7 @@ export class ProjectInitializationService {
    */
   private async setupProjectResources(
     project: any,
-    request: ProjectInitializationRequest,
-    configuredProviders: string[]
+    request: ProjectInitializationRequest
   ) {
     let chatSessionId = '';
     let workflowId: string | undefined;
@@ -537,42 +586,7 @@ Napisz do mnie, jeśli masz pytania lub chcesz rozpocząć pracę nad konkretnym
     projectId: string
   ): Promise<Result<any, ServiceError>> {
     try {
-      const project = await this.prisma.project.findUnique({
-        where: { id: projectId },
-        include: {
-          files: {
-            orderBy: { createdAt: 'desc' },
-            take: 10,
-          },
-          workflows: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-            include: {
-              steps: {
-                orderBy: { stepNumber: 'asc' },
-              },
-            },
-          },
-          workflowRuns: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-            include: {
-              stepApprovals: {
-                orderBy: { createdAt: 'asc' },
-                include: {
-                  _count: {
-                    select: {
-                      conversations: true,
-                      tasks: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
-
+      const project = await this.fetchProjectWithRelations(projectId);
       if (!project) {
         return {
           success: false,
@@ -580,29 +594,18 @@ Napisz do mnie, jeśli masz pytania lub chcesz rozpocząć pracę nad konkretnym
         };
       }
 
-      // Check if project has input files
-      const inputFileCount =
-        (await this.prisma.projectFile?.count({
-          where: {
-            projectId,
-            category: 'input',
-          },
-        })) || 0;
-
-      const hasFiles = inputFileCount > 0;
-
-      // Get file summary
+      const projectMetrics = await this.getProjectMetrics(projectId);
       const fileSummary = await this.getProjectFileSummary(projectId);
-
-      // Determine project state
-      const state = this.determineProjectState(project, hasFiles);
+      const state = this.determineProjectState(
+        project,
+        projectMetrics.hasFiles
+      );
 
       return {
         success: true,
         data: {
           project,
-          hasFiles,
-          inputFileCount,
+          ...projectMetrics,
           fileSummary: fileSummary.success ? fileSummary.data : null,
           state,
           currentWorkflow: project.workflowRuns[0] || null,
@@ -621,6 +624,59 @@ Napisz do mnie, jeśli masz pytania lub chcesz rozpocząć pracę nad konkretnym
         ),
       };
     }
+  }
+
+  private async fetchProjectWithRelations(projectId: string) {
+    return this.prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        files: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        workflows: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          include: {
+            steps: {
+              orderBy: { stepNumber: 'asc' },
+            },
+          },
+        },
+        workflowRuns: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          include: {
+            stepApprovals: {
+              orderBy: { createdAt: 'asc' },
+              include: {
+                _count: {
+                  select: {
+                    conversations: true,
+                    tasks: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  private async getProjectMetrics(projectId: string) {
+    const inputFileCount =
+      (await this.prisma.projectFile?.count({
+        where: {
+          projectId,
+          category: 'input',
+        },
+      })) || 0;
+
+    return {
+      hasFiles: inputFileCount > 0,
+      inputFileCount,
+    };
   }
 
   /**
@@ -655,6 +711,7 @@ Napisz do mnie, jeśli masz pytania lub chcesz rozpocząć pracę nad konkretnym
         },
       };
     } catch (error) {
+      console.error('Error getting project file summary:', error);
       return {
         success: false,
         error: createServiceError(

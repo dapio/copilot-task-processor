@@ -41,6 +41,12 @@ class RealTimeWorkflowOrchestrator {
   private masterTaskManager = new MasterTaskManagementService();
   private agentTypes = [
     {
+      id: 'project-manager',
+      name: 'Project Manager',
+      description:
+        'Team coordination and project oversight - manages all other agents',
+    },
+    {
       id: 'business-analyst',
       name: 'Business Analyst',
       description: 'Requirements and stakeholder analysis',
@@ -92,6 +98,13 @@ class RealTimeWorkflowOrchestrator {
       createdAt: new Date().toISOString(),
       metadata: { files },
       steps: [
+        {
+          id: 'project-coordination',
+          name: 'Project Coordination & Team Setup',
+          agentType: 'project-manager',
+          status: 'pending',
+          progress: 0,
+        },
         {
           id: 'business-analysis',
           name: 'Business Requirements Analysis',

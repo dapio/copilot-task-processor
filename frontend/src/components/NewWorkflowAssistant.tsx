@@ -3,7 +3,7 @@
  * Minimalistyczny design z focus na funkcjonalność
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MessageSquare,
   Lightbulb,
@@ -14,23 +14,13 @@ import {
   FileText,
   Upload,
   Download,
-  Play,
-  Pause,
-  Settings,
-  Eye,
   BarChart3,
-  Target,
   Send,
-  X,
   ChevronDown,
-  ChevronUp,
   Bot,
   Activity,
 } from 'lucide-react';
-import {
-  MICROSOFT_SDL_WORKFLOW,
-  WorkflowHelpers,
-} from '../constants/microsoftWorkflow';
+import { MICROSOFT_SDL_WORKFLOW } from '../constants/microsoftWorkflow';
 import styles from '../styles/new-workflow-assistant.module.css';
 
 interface NewWorkflowAssistantProps {

@@ -50,7 +50,7 @@ export default function ProjectProgress({ projectId }: ProjectProgressProps) {
       } else {
         setError(response.error || 'Błąd pobierania workflow');
       }
-    } catch (err) {
+    } catch {
       setError('Błąd połączenia z API workflow');
     } finally {
       setLoading(false);
@@ -205,9 +205,14 @@ export default function ProjectProgress({ projectId }: ProjectProgressProps) {
                   </div>
 
                   <div className={styles.stepInfo}>
-                    <span className={styles.stepName}>#{step.order} {step.name}</span>
+                    <span className={styles.stepName}>
+                      #{step.order} {step.name}
+                    </span>
                     {step.status === 'in_progress' && (
-                      <ArrowRight className={styles.activeIndicator} size={16} />
+                      <ArrowRight
+                        className={styles.activeIndicator}
+                        size={16}
+                      />
                     )}
                   </div>
 

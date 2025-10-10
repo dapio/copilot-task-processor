@@ -9,18 +9,11 @@ import { Project } from '../types/project';
 import { useProject } from '../contexts/ProjectContext';
 import EnhancedAssistant from './EnhancedAssistant';
 import RestructuredWorkflow from './RestructuredWorkflow';
-import EnhancedFileUpload, { UploadedFile } from './EnhancedFileUpload';
-import {
-  MICROSOFT_SDL_WORKFLOW,
-  WorkflowHelpers,
-} from '../constants/microsoftWorkflow';
+import EnhancedFileUpload from './EnhancedFileUpload';
+import { MICROSOFT_SDL_WORKFLOW } from '../constants/microsoftWorkflow';
 import { agentApiService } from '../services/agentApiService';
 import { apiService } from '../services/apiService';
-import {
-  useWebSocket,
-  WorkflowUpdate,
-  AgentMessage,
-} from '../hooks/useWebSocket';
+import { useWebSocket, AgentMessage } from '../hooks/useWebSocket';
 import styles from '../styles/project-dashboard.module.css';
 
 // Mapowanie ID agentów na ładne nazwy
@@ -84,16 +77,11 @@ export default function ProjectDashboard({
   const [projectStarted, setProjectStarted] = useState(false);
 
   // Real-time WebSocket connection
-  const {
-    isConnected,
-    workflowUpdates,
-    lastWorkflowUpdate,
-    lastAgentMessage,
-    clearMessages,
-  } = useWebSocket({
-    projectId: project.id,
-    autoConnect: true,
-  });
+  const { isConnected, lastWorkflowUpdate, lastAgentMessage, clearMessages } =
+    useWebSocket({
+      projectId: project.id,
+      autoConnect: true,
+    });
 
   // State for real-time updates
   const [workflowStatus, setWorkflowStatus] = useState<any>(null);
@@ -138,7 +126,10 @@ export default function ProjectDashboard({
 
       // Add agent message to live messages if it's for our project
       if (lastAgentMessage.projectId === project.id) {
-        setLiveMessages(prev => [...prev.slice(-19), lastAgentMessage]); // Keep last 20 messages
+        setLiveMessages((prev: AgentMessage[]) => [
+          ...prev.slice(-19),
+          lastAgentMessage,
+        ]); // Keep last 20 messages
       }
     }
   }, [lastAgentMessage, project.id]);
@@ -274,7 +265,7 @@ export default function ProjectDashboard({
 
       if (response.data) {
         console.log('✅ Step approved successfully:', response.data);
-        setCompletedSteps(prev => [...prev, stepId]);
+        setCompletedSteps((prev: string[]) => [...prev, stepId]);
         // TODO: Move to next step if needed
       }
     } catch (error) {
@@ -294,7 +285,7 @@ export default function ProjectDashboard({
 
       if (response.data) {
         console.log('❌ Step approval revoked successfully:', response.data);
-        setCompletedSteps(prev => prev.filter(id => id !== stepId));
+        setCompletedSteps((prev: string[]) => prev.filter(id => id !== stepId));
       }
     } catch (error) {
       console.error('💥 Error revoking step:', error);
@@ -309,8 +300,35 @@ export default function ProjectDashboard({
   const handleStepReject = async (stepId: string, reason: string) => {
     try {
       console.log('🚫 Rejecting step:', stepId, 'Reason:', reason);
-      // TODO: Implement step rejection API
-      console.log('Step rejection not implemented yet');
+
+      const response = await fetch(
+        `/api/projects/${project.id}/workflow/steps/${stepId}/reject`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reason }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Step rejected successfully:', result);
+
+      // Update workflow status to reflect rejection
+      setWorkflowStatus((prev: any) => ({
+        ...prev,
+        status: 'step_rejected',
+        message: `Krok ${stepId} został odrzucony: ${reason}`,
+        stepId,
+        timestamp: new Date().toISOString(),
+      }));
+
+      alert('Krok został pomyślnie odrzucony');
     } catch (error) {
       console.error('💥 Error rejecting step:', error);
       alert(
@@ -324,8 +342,56 @@ export default function ProjectDashboard({
   const handleAgentAction = async (agentId: string, action: string) => {
     try {
       console.log('🤖 Agent action:', agentId, action);
-      // TODO: Implement agent actions (start, pause, resume, stop, chat)
-      console.log('Agent actions not implemented yet');
+
+      const response = await fetch(
+        `/api/projects/${project.id}/agents/${agentId}/actions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Agent action executed successfully:', result);
+
+      // Update agent status based on action
+      setAgentStatuses((prev: any) => ({
+        ...prev,
+        [agentId]: {
+          ...prev[agentId as keyof typeof prev],
+          status:
+            action === 'start'
+              ? 'working'
+              : action === 'pause'
+              ? 'paused'
+              : action === 'stop'
+              ? 'available'
+              : action === 'resume'
+              ? 'working'
+              : 'available',
+        },
+      }));
+
+      // Show confirmation message
+      const actionMessages = {
+        start: 'uruchomiony',
+        pause: 'wstrzymany',
+        resume: 'wznowiony',
+        stop: 'zatrzymany',
+        chat: 'rozpoczął komunikację',
+      };
+
+      const message =
+        actionMessages[action as keyof typeof actionMessages] ||
+        'wykonał akcję';
+      alert(`Agent ${getAgentDisplayName(agentId)} został ${message}`);
     } catch (error) {
       console.error('💥 Error handling agent action:', error);
       alert(
@@ -424,7 +490,6 @@ export default function ProjectDashboard({
                 currentStepId={currentStepId}
                 completedSteps={completedSteps}
                 onStepSelect={handleStepSelect}
-                onStepApprove={handleStepApprove}
                 onStepRevoke={handleStepRevoke}
               />
             </div>
@@ -625,251 +690,11 @@ function ProjectGuide({
   );
 }
 
-// Main Workflow Component - Heart of the project
-function ProjectWorkflowMain({
-  projectId,
-  isConnected,
-  workflowStatus,
-  liveMessages,
-  workflowUpdates,
-}: {
-  projectId: string;
-  isConnected: boolean;
-  workflowStatus: any;
-  liveMessages: AgentMessage[];
-  workflowUpdates: WorkflowUpdate[];
-}) {
-  const [workflow, setWorkflow] = useState<any>(null);
-  const [agents, setAgents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadWorkflowData();
-  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadWorkflowData = async () => {
-    try {
-      setLoading(true);
-
-      // Load workflow data
-      const workflowResponse = await agentApiService.getProjectWorkflow(
-        projectId
-      );
-      if (workflowResponse.success) {
-        setWorkflow(workflowResponse.data);
-      }
-
-      // Load agents data
-      const agentsResponse = await agentApiService.getAgents();
-      if (agentsResponse.success) {
-        setAgents(agentsResponse.data || []);
-      }
-    } catch (error) {
-      console.error('Error loading workflow data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className={styles.workflowMain}>
-        <div className={styles.loadingSpinner}>Ładowanie workflow...</div>
-      </div>
-    );
-  }
-
-  const currentStep = workflow?.steps?.[workflow.currentStep - 1];
-  const activeAgents = agents.filter(agent => agent.status === 'active');
-
-  return (
-    <div className={styles.workflowMain} data-project-id={projectId}>
-      <div className={styles.workflowHeader}>
-        <h2 className={styles.workflowTitle}>
-          ⚡ {workflow?.name || 'Workflow Projektu'}
-        </h2>
-        <div className={styles.workflowControls}>
-          <button className={styles.pauseButton}>⏸️ Pauza</button>
-          <button className={styles.settingsButton}>⚙️ Ustawienia</button>
-        </div>
-      </div>
-
-      <div className={styles.currentPhase}>
-        <h3 className={styles.phaseTitle}>
-          Aktualny etap: {currentStep?.name || 'Oczekuje na rozpoczęcie'}
-        </h3>
-        <div className={styles.phaseProgress}>
-          <div className={styles.progressBar}>
-            <div
-              className={`${styles.progressFill} ${
-                !workflow?.progress || workflow.progress === 0
-                  ? styles.progress0
-                  : workflow.progress <= 10
-                  ? styles.progress10
-                  : workflow.progress <= 25
-                  ? styles.progress25
-                  : workflow.progress <= 50
-                  ? styles.progress50
-                  : workflow.progress <= 75
-                  ? styles.progress75
-                  : styles.progress100
-              }`}
-            />
-          </div>
-          <span className={styles.progressText}>
-            {workflow?.progress || 0}% ukończone
-          </span>
-        </div>
-      </div>
-
-      <div className={styles.activeAgents}>
-        <h4 className={styles.sectionTitle}>
-          🤖 Aktywni Agenci ({activeAgents.length})
-        </h4>
-        <div className={styles.agentsList}>
-          {activeAgents.length > 0 ? (
-            activeAgents.map(agent => (
-              <div key={agent.id} className={styles.agentCard}>
-                <div className={styles.agentAvatar}>🤖</div>
-                <div className={styles.agentInfo}>
-                  <div className={styles.agentName}>
-                    {getAgentDisplayName(agent.id, agent.name)}
-                  </div>
-                  <div className={styles.agentTask}>
-                    {agent.currentTask || 'Oczekuje na zadanie...'}
-                  </div>
-                </div>
-                <div className={styles.agentStatus}>
-                  {agent.status === 'active' ? '🔄 Pracuje' : '💤 Bezczynny'}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={styles.noAgents}>
-              <p>Brak aktywnych agentów</p>
-              <small>Agenci rozpoczną pracę po uruchomieniu workflow</small>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className={styles.recentActivity}>
-        <h4 className={styles.sectionTitle}>📝 Ostatnia aktywność</h4>
-        <div className={styles.activityFeed}>
-          {workflow?.steps?.slice(-3).map((step: any) => (
-            <div key={step.id} className={styles.activityItem}>
-              <div className={styles.activityTime}>
-                {step.completedAt
-                  ? new Date(step.completedAt).toLocaleTimeString('pl-PL', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
-                  : '--:--'}
-              </div>
-              <div className={styles.activityText}>
-                {step.status === 'completed'
-                  ? `✅ Ukończono: ${step.name}`
-                  : step.status === 'in_progress'
-                  ? `🔄 W trakcie: ${step.name}`
-                  : `⏳ Oczekuje: ${step.name}`}
-              </div>
-            </div>
-          )) || (
-            <div className={styles.activityItem}>
-              <div className={styles.activityTime}>--:--</div>
-              <div className={styles.activityText}>Brak aktywności</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Live Updates for Active Workflow */}
-      {(isConnected || workflowStatus || liveMessages.length > 0) && (
-        <div className={styles.realTimeSection}>
-          <h4 className={styles.sectionTitle}>
-            🔴 Live Updates {isConnected ? '(Connected)' : '(Connecting...)'}
-          </h4>
-
-          {workflowStatus && (
-            <div className={styles.workflowStatusCard}>
-              <div className={styles.statusHeader}>
-                <span className={styles.statusBadge}>
-                  {workflowStatus.status}
-                </span>
-                <span className={styles.statusTime}>
-                  {new Date(workflowStatus.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-              <p className={styles.statusMessage}>{workflowStatus.message}</p>
-              {workflowStatus.progress > 0 && (
-                <div className={styles.progressBar}>
-                  <div
-                    className={styles.progressFill}
-                    data-progress={workflowStatus.progress}
-                  />
-                  <span className={styles.progressText}>
-                    {workflowStatus.progress}%
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {liveMessages.length > 0 && (
-            <div className={styles.messagesContainer}>
-              <h5>Agent Messages:</h5>
-              <div className={styles.messagesList}>
-                {liveMessages.slice(-5).map((message, index) => (
-                  <div key={index} className={styles.messageCard}>
-                    <div className={styles.messageHeader}>
-                      <span className={styles.agentName}>
-                        {message.agentId}
-                      </span>
-                      <span className={styles.messageType}>{message.type}</span>
-                      <span className={styles.messageTime}>
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    <p className={styles.messageContent}>{message.message}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {workflowUpdates.length > 0 && (
-            <div className={styles.updatesContainer}>
-              <h5>Workflow Updates:</h5>
-              <div className={styles.updatesList}>
-                {workflowUpdates.slice(-3).map((update, index) => (
-                  <div key={index} className={styles.updateCard}>
-                    <div className={styles.updateHeader}>
-                      <span className={styles.updateStep}>{update.stepId}</span>
-                      <span className={styles.updateStatus}>
-                        {update.status}
-                      </span>
-                      <span className={styles.updateTime}>
-                        {new Date(update.timestamp).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    <p className={styles.updateMessage}>{update.message}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Komponent listy kroków workflow dla sidebar
 interface WorkflowStepsListProps {
   currentStepId?: string;
   completedSteps?: string[];
   onStepSelect?: (stepId: string) => void;
-  onStepApprove?: (stepId: string) => void;
   onStepRevoke?: (stepId: string) => void;
 }
 
@@ -877,7 +702,6 @@ function WorkflowStepsList({
   currentStepId,
   completedSteps = [],
   onStepSelect,
-  onStepApprove,
   onStepRevoke,
 }: WorkflowStepsListProps) {
   const getStepStatus = (stepId: string) => {

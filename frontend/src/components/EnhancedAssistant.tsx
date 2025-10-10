@@ -4,35 +4,15 @@
  * Floating panel po prawej stronie
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   MessageSquare,
-  Download,
   ChevronDown,
-  ChevronUp,
-  X,
   Send,
-  FileText,
-  Upload,
-  Play,
-  Users,
-  BarChart3,
-  CheckCircle,
   Clock,
-  AlertTriangle,
   Lightbulb,
-  Target,
-  Pause,
-  Settings,
-  Eye,
-  StopCircle,
 } from 'lucide-react';
 import { AgentMessage } from '../hooks/useWebSocket';
-import {
-  MICROSOFT_SDL_WORKFLOW,
-  AGENT_STATUS_CONFIG,
-  WorkflowHelpers,
-} from '../constants/microsoftWorkflow';
 import styles from '../styles/enhanced-assistant.module.css';
 
 // Mapowanie ID agentów na ładne nazwy

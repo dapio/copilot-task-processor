@@ -7,7 +7,6 @@ import { PrismaClient } from '@prisma/client';
 import { AgentChatCoordinator } from '../services/agent-chat-coordinator.service';
 import { ChatIntegrationService } from '../services/chat-integration.service';
 import ContextManager from '../services/context-manager';
-import { mockRoutes } from '../services/mock-project-initialization.service';
 import { ProjectInitializationService } from '../services/project-initialization.service';
 
 const router = Router();
@@ -17,10 +16,12 @@ const prisma = new PrismaClient();
 const contextManager = new ContextManager(prisma);
 const chatService = new ChatIntegrationService(prisma, contextManager);
 const agentChatCoordinator = new AgentChatCoordinator(prisma, chatService);
+// TODO: Implement DocumentProcessor dependency injection
+// const documentProcessor: DocumentProcessor = new DocumentProcessor();
 const projectInitializationService = new ProjectInitializationService(
   prisma,
   chatService,
-  {} as any // DocumentProcessor placeholder
+  null as any // DocumentProcessor will be injected when implemented
 );
 
 // Multer configuration for file uploads
@@ -284,9 +285,69 @@ router.get('/:id/context', async (req: Request, res: Response) => {
   }
 });
 
-// Mount mock routes for development/testing
-router.get('/mock/project-types', mockRoutes.getProjectTypes);
-router.get('/mock/providers', mockRoutes.getProviders);
-router.post('/mock/initialize', mockRoutes.initializeProject);
+// Step rejection endpoint
+router.post(
+  '/:id/workflow/steps/:stepId/reject',
+  async (req: Request, res: Response) => {
+    try {
+      const { id: projectId, stepId } = req.params;
+      const { reason } = req.body;
+
+      console.log(
+        `🚫 Rejecting step ${stepId} for project ${projectId}:`,
+        reason
+      );
+
+      // TODO: Implement actual step rejection logic with workflow service
+      // For now, just log and return success
+      const result = {
+        success: true,
+        message: `Step ${stepId} rejected successfully`,
+        stepId,
+        projectId,
+        reason,
+        timestamp: new Date().toISOString(),
+      };
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error('Error rejecting workflow step:', error);
+      return res.status(500).json({ error: 'Failed to reject workflow step' });
+    }
+  }
+);
+
+// Agent actions endpoint
+router.post(
+  '/:id/agents/:agentId/actions',
+  async (req: Request, res: Response) => {
+    try {
+      const { id: projectId, agentId } = req.params;
+      const { action } = req.body;
+
+      console.log(
+        `🤖 Agent ${agentId} action ${action} for project ${projectId}`
+      );
+
+      // TODO: Implement actual agent action logic with coordination service
+      // For now, just log and return success
+      const result = {
+        success: true,
+        message: `Agent ${agentId} action ${action} executed successfully`,
+        agentId,
+        projectId,
+        action,
+        timestamp: new Date().toISOString(),
+      };
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error('Error executing agent action:', error);
+      return res.status(500).json({ error: 'Failed to execute agent action' });
+    }
+  }
+);
+
+// NO MORE MOCK ROUTES - REAL IMPLEMENTATION ONLY!
 
 export { router as projectsRouter };

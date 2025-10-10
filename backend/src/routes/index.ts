@@ -16,6 +16,8 @@ import workflowRoutes from './workflow.routes';
 import workflowStepRoutes from './workflow-step.routes';
 import workflowStepControlRoutes from './workflow-step-control.routes';
 import advancedTaskManagementRoutes from './advanced-task-management';
+import aiConfigRoutes from './ai-config.routes';
+import providerConfigRoutes from './provider-config.routes';
 
 // Export all routes with their prefixes
 export const apiRoutes = [
@@ -30,6 +32,8 @@ export const apiRoutes = [
   { path: '/api/workflow-steps', router: workflowStepRoutes },
   { path: '/api/workflow-control', router: workflowStepControlRoutes },
   { path: '/api/task-management', router: advancedTaskManagementRoutes },
+  { path: '/api/ai', router: aiConfigRoutes },
+  { path: '/api/provider-config', router: providerConfigRoutes },
 ];
 
 // Individual exports for flexibility

@@ -16,8 +16,13 @@ import {
   Globe,
   Smartphone,
   Code,
+  Upload,
+  Brain,
+  Shield,
+  Zap,
 } from 'lucide-react';
 import type { ProjectData } from '../../types/dashboard.types';
+import EnhancedFileUpload, { UploadedFile } from '../EnhancedFileUpload';
 import styles from '../../styles/new-project-modal.module.css';
 
 interface NewProjectModalProps {
@@ -30,13 +35,18 @@ interface NewProjectModalProps {
 }
 
 type ProjectType = 'new' | 'existing';
-type WizardStep = 'type' | 'config';
+type WizardStep = 'type' | 'config' | 'files';
 
 export const NewProjectModal = memo<NewProjectModalProps>(
   ({ isOpen, onClose, onSubmit, isLoading }) => {
     // Wizard state
     const [currentStep, setCurrentStep] = useState<WizardStep>('type');
     const [projectType, setProjectType] = useState<ProjectType>('new');
+    const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+
+    const handleFilesUploaded = (files: UploadedFile[]) => {
+      setUploadedFiles(prev => [...prev, ...files]);
+    };
 
     const [formData, setFormData] = useState({
       name: '',
@@ -51,6 +61,28 @@ export const NewProjectModal = memo<NewProjectModalProps>(
       client: '',
       budget: 0,
       technologies: [] as string[],
+      icon: 'fas fa-rocket' as string,
+      // Nowe parametry konfiguracyjne
+      category: '',
+      aiModel: 'gpt-4',
+      maxTokens: 8000,
+      temperature: 0.7,
+      enabledFeatures: [] as string[],
+      defaultAgentType: 'general',
+      workflowTimeout: 300,
+      autoBackup: true,
+      notifications: {
+        email: true,
+        taskCompletion: true,
+        workflowErrors: true,
+        agentUpdates: false,
+      },
+      repository: {
+        url: '',
+        branch: 'main',
+        accessToken: '',
+        autoSync: false,
+      },
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -71,8 +103,8 @@ export const NewProjectModal = memo<NewProjectModalProps>(
       return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+      if (e) e.preventDefault();
       setSubmitError('');
 
       if (!validateForm()) {
@@ -86,6 +118,7 @@ export const NewProjectModal = memo<NewProjectModalProps>(
             formData.technologies.length > 0
               ? formData.technologies
               : undefined,
+          uploadedFiles: uploadedFiles,
         });
 
         if (result.success) {
@@ -123,18 +156,45 @@ export const NewProjectModal = memo<NewProjectModalProps>(
         client: '',
         budget: 0,
         technologies: [] as string[],
+        icon: 'fas fa-rocket' as string,
+        // Nowe parametry konfiguracyjne
+        category: '',
+        aiModel: 'gpt-4',
+        maxTokens: 8000,
+        temperature: 0.7,
+        enabledFeatures: [] as string[],
+        defaultAgentType: 'general',
+        workflowTimeout: 300,
+        autoBackup: true,
+        notifications: {
+          email: true,
+          taskCompletion: true,
+          workflowErrors: true,
+          agentUpdates: false,
+        },
+        repository: {
+          url: '',
+          branch: 'main',
+          accessToken: '',
+          autoSync: false,
+        },
       });
+      setUploadedFiles([]);
     };
 
     const handleNext = () => {
       if (currentStep === 'type') {
         setCurrentStep('config');
+      } else if (currentStep === 'config') {
+        setCurrentStep('files');
       }
     };
 
     const handleBack = () => {
       if (currentStep === 'config') {
         setCurrentStep('type');
+      } else if (currentStep === 'files') {
+        setCurrentStep('config');
       }
     };
 
@@ -163,7 +223,11 @@ export const NewProjectModal = memo<NewProjectModalProps>(
             <div
               className={`${styles.step} ${
                 currentStep === 'type' ? styles.active : ''
-              } ${currentStep === 'config' ? styles.completed : ''}`}
+              } ${
+                currentStep === 'config' || currentStep === 'files'
+                  ? styles.completed
+                  : ''
+              }`}
             >
               <div className={styles.stepNumber}>1</div>
               <span>Typ Projektu</span>
@@ -172,10 +236,19 @@ export const NewProjectModal = memo<NewProjectModalProps>(
             <div
               className={`${styles.step} ${
                 currentStep === 'config' ? styles.active : ''
-              }`}
+              } ${currentStep === 'files' ? styles.completed : ''}`}
             >
               <div className={styles.stepNumber}>2</div>
               <span>Konfiguracja</span>
+            </div>
+            <div className={styles.stepLine}></div>
+            <div
+              className={`${styles.step} ${
+                currentStep === 'files' ? styles.active : ''
+              }`}
+            >
+              <div className={styles.stepNumber}>3</div>
+              <span>Pliki</span>
             </div>
           </div>
 
@@ -411,6 +484,149 @@ export const NewProjectModal = memo<NewProjectModalProps>(
                 <div className={styles.errorMessage}>{submitError}</div>
               )}
 
+              {/* Nowe sekcje konfiguracyjne */}
+              <div className={styles.configSections}>
+                <div className={styles.configSection}>
+                  <h4>
+                    <Brain size={16} /> Konfiguracja AI
+                  </h4>
+                  <div className={styles.configGrid}>
+                    <div className={styles.formGroup}>
+                      <label>Model AI</label>
+                      <select
+                        value={formData.aiModel}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            aiModel: e.target.value,
+                          }))
+                        }
+                        title="Wybierz model AI"
+                      >
+                        <option value="gpt-4">GPT-4 (Zalecany)</option>
+                        <option value="gpt-3.5">GPT-3.5 Turbo</option>
+                        <option value="claude-3">Claude 3</option>
+                      </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Temperatura ({formData.temperature})</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={formData.temperature}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            temperature: parseFloat(e.target.value),
+                          }))
+                        }
+                        title="Ustaw temperaturę AI"
+                      />
+                      <small>
+                        Większa wartość = bardziej kreatywne odpowiedzi
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.configSection}>
+                  <h4>
+                    <Shield size={16} /> Bezpieczeństwo & Automatyzacja
+                  </h4>
+                  <div className={styles.checkboxGroup}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={formData.autoBackup}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            autoBackup: e.target.checked,
+                          }))
+                        }
+                      />
+                      Automatyczne backupy
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={formData.notifications.email}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            notifications: {
+                              ...prev.notifications,
+                              email: e.target.checked,
+                            },
+                          }))
+                        }
+                      />
+                      Powiadomienia email
+                    </label>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={formData.notifications.workflowErrors}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            notifications: {
+                              ...prev.notifications,
+                              workflowErrors: e.target.checked,
+                            },
+                          }))
+                        }
+                      />
+                      Alerty o błędach
+                    </label>
+                  </div>
+                </div>
+
+                <div className={styles.configSection}>
+                  <h4>
+                    <Zap size={16} /> Wydajność
+                  </h4>
+                  <div className={styles.configGrid}>
+                    <div className={styles.formGroup}>
+                      <label>Timeout workflow (sekundy)</label>
+                      <input
+                        type="number"
+                        min="60"
+                        max="3600"
+                        value={formData.workflowTimeout}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            workflowTimeout: parseInt(e.target.value),
+                          }))
+                        }
+                        title="Timeout workflow w sekundach"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Max tokenów</label>
+                      <select
+                        value={formData.maxTokens}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            maxTokens: parseInt(e.target.value),
+                          }))
+                        }
+                        title="Wybierz limit tokenów"
+                      >
+                        <option value="4000">4K (Szybko)</option>
+                        <option value="8000">8K (Zalecane)</option>
+                        <option value="16000">16K (Dokładnie)</option>
+                        <option value="32000">32K (Bardzo dokładnie)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className={styles.wizardActions}>
                 <button
                   type="button"
@@ -420,14 +636,94 @@ export const NewProjectModal = memo<NewProjectModalProps>(
                   <ArrowLeft size={16} /> Wstecz
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  className={styles.nextButton}
+                  onClick={handleNext}
+                >
+                  Dalej <ArrowRight size={16} />
+                </button>
+              </div>
+            </form>
+          )}
+
+          {currentStep === 'files' && (
+            <div className={styles.wizardStep}>
+              <h3>
+                <Upload size={20} />
+                📁 Ładowanie plików projektu
+              </h3>
+              <p className={styles.stepDescription}>
+                Przesyłaj pliki źródłowe, dokumentację, mockupy i inne materiały
+                potrzebne do realizacji projektu. System automatycznie analizuje
+                i kategoryzuje przesłane pliki.
+              </p>
+
+              <div className={styles.fileUploadSection}>
+                <EnhancedFileUpload
+                  projectId="temp-project-id"
+                  acceptedFiles="*"
+                  maxFiles={50}
+                  maxFileSize={50}
+                  multiple={true}
+                  uploadUrl="/api/upload"
+                  onFilesUploaded={handleFilesUploaded}
+                  title="Przeciągnij pliki tutaj lub kliknij aby wybrać"
+                  description="Obsługujemy wszystkie formaty plików - kod, dokumenty, obrazy, archiwea"
+                  showPreview={true}
+                  className={styles.dropzoneContainer}
+                />
+
+                {uploadedFiles.length > 0 && (
+                  <div className={styles.uploadedFilesPreview}>
+                    <h4>📂 Przesłane pliki ({uploadedFiles.length})</h4>
+                    <div className={styles.filesList}>
+                      {uploadedFiles.map(file => (
+                        <div key={file.id} className={styles.fileItem}>
+                          <div className={styles.fileIcon}>
+                            {file.type.startsWith('image/')
+                              ? '🖼️'
+                              : file.type.includes('pdf')
+                              ? '📄'
+                              : file.type.includes('text')
+                              ? '📝'
+                              : file.type.includes('zip')
+                              ? '📦'
+                              : '📄'}
+                          </div>
+                          <div className={styles.fileInfo}>
+                            <span className={styles.fileName}>{file.name}</span>
+                            <span className={styles.fileSize}>
+                              {(file.size / 1024 / 1024).toFixed(2)} MB
+                            </span>
+                          </div>
+                          <div className={styles.fileCategory}>
+                            {file.category}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.wizardActions}>
+                <button
+                  type="button"
+                  className={styles.backButton}
+                  onClick={handleBack}
+                >
+                  <ArrowLeft size={16} /> Wstecz
+                </button>
+                <button
+                  type="button"
                   className={styles.submitButton}
+                  onClick={handleSubmit}
                   disabled={isLoading}
                 >
                   {isLoading ? '⏳ Tworzenie...' : '🚀 Stwórz projekt'}
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </div>

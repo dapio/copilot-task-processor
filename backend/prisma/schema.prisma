@@ -1042,3 +1042,23 @@ model WorkflowStepTask {
   @@index([assignedTo, status])
   @@map("workflow_step_tasks")
 }
+
+// AI Provider Configuration Model
+model ProviderConfiguration {
+  id          String    @id @default(cuid())
+  providerId  String    @unique // "openai", "groq", "github-copilot", "anthropic", "google"
+  name        String    // "OpenAI GPT", "Groq", "GitHub Copilot", etc.
+  apiKey      String?   // Encrypted API key
+  apiUrl      String?   // Custom API URL if needed
+  modelName   String?   // Default model name
+  isEnabled   Boolean   @default(true)
+  priority    Int       @default(1) // 1 = highest priority
+  maxTokens   Int?      // Max tokens per request
+  temperature Float?    // Temperature setting
+  config      Json?     // Additional configuration
+  metadata    Json?     // Provider metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("provider_configurations")
+}

@@ -9,7 +9,6 @@ import {
   Clock,
   AlertCircle,
   Users,
-  Eye,
   Play,
   Pause,
   StopCircle,
@@ -55,7 +54,7 @@ export default function MicrosoftWorkflow({
   const [expandedStep, setExpandedStep] = useState<string | null>(
     currentStepId || null
   );
-  const [showAgentDetails, setShowAgentDetails] = useState<string | null>(null);
+  const [, setShowAgentDetails] = useState<string | null>(null);
 
   const getStepStatus = (stepId: string) => {
     if (completedSteps.includes(stepId)) return 'completed';

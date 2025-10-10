@@ -44,7 +44,6 @@ interface ProjectMockupsSectionProps {
     action: 'approve' | 'reject' | 'comment' | 'delete'
   ) => void;
   onMockupSelect?: (mockupId: string) => void;
-  loading?: boolean;
 }
 
 export const ProjectMockupsSection: React.FC<ProjectMockupsSectionProps> = ({
@@ -52,7 +51,6 @@ export const ProjectMockupsSection: React.FC<ProjectMockupsSectionProps> = ({
   onUploadMockup,
   onMockupAction,
   onMockupSelect,
-  loading = false,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterStatus, setFilterStatus] = useState<string>('all');

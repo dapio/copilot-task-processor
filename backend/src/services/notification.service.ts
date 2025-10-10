@@ -750,7 +750,7 @@ export class NotificationService {
     notificationData: any
   ): Promise<boolean> {
     try {
-      // Mock database storage - in production would use actual DB
+      // TODO: Implement real database storage instead of memory storage
       console.log(`💾 Storing in-app notification:`, {
         id: notificationData.id,
         userId: notificationData.userId,
@@ -803,8 +803,8 @@ export class NotificationService {
       // Production-ready database storage implementation
       console.log(`💾 Storing notification ${id} in database`);
 
-      // Mock database operation
-      await new Promise(resolve => setTimeout(resolve, 25));
+      // TODO: Implement real database operation
+      // await new Promise(resolve => setTimeout(resolve, 25));
 
       // In production, this would be:
       // await this.database.notifications.create({ id, ...notificationData });
@@ -823,8 +823,8 @@ export class NotificationService {
       // Production-ready status update implementation
       console.log(`📊 Updating notification ${id} status to ${status}`);
 
-      // Mock database operation
-      await new Promise(resolve => setTimeout(resolve, 15));
+      // TODO: Implement real database operation
+      // await new Promise(resolve => setTimeout(resolve, 15));
 
       // In production, this would be:
       // await this.database.notifications.update({ id }, { status, updatedAt: new Date() });

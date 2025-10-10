@@ -53,7 +53,6 @@ export default function RestructuredWorkflow({
   currentStepId = 'requirements-gathering',
   completedSteps = [],
   agentStatuses = {},
-  onStepSelect,
   onStepApprove,
   onStepReject,
   onStepRevoke,
@@ -63,47 +62,6 @@ export default function RestructuredWorkflow({
   const currentStepIndex = MICROSOFT_SDL_WORKFLOW.findIndex(
     s => s.id === currentStepId
   );
-
-  const getStepStatus = (stepId: string) => {
-    if (completedSteps.includes(stepId)) return 'completed';
-    if (stepId === currentStepId) return 'current';
-
-    const stepIndex = MICROSOFT_SDL_WORKFLOW.findIndex(s => s.id === stepId);
-    const currentIndex = MICROSOFT_SDL_WORKFLOW.findIndex(
-      s => s.id === currentStepId
-    );
-
-    // Można wrócić do kroków poprzednich (już ukończonych lub bieżącego)
-    if (stepIndex <= currentIndex) return 'accessible';
-
-    // Sprawdzamy czy wszystkie poprzednie kroki są ukończone
-    const previousStepsCompleted = MICROSOFT_SDL_WORKFLOW.slice(
-      0,
-      stepIndex
-    ).every(step => completedSteps.includes(step.id));
-
-    if (previousStepsCompleted) return 'accessible';
-    return 'locked';
-  };
-
-  const canNavigateToStep = (stepId: string) => {
-    const status = getStepStatus(stepId);
-    return (
-      status === 'completed' || status === 'current' || status === 'accessible'
-    );
-  };
-
-  const handleRevokeApproval = (stepId: string) => {
-    if (completedSteps.includes(stepId)) {
-      onStepRevoke?.(stepId);
-    }
-  };
-
-  const handleStepClick = (stepId: string) => {
-    if (canNavigateToStep(stepId)) {
-      onStepSelect?.(stepId);
-    }
-  };
 
   const renderAgentStatus = (agentType: string) => {
     const agent = agentStatuses[agentType];
@@ -330,11 +288,16 @@ export default function RestructuredWorkflow({
               <div className={styles.stepFileUpload}>
                 <h4 className={styles.sectionTitle}>📁 Dodaj Pliki</h4>
                 <div className={styles.uploadArea}>
+                  <label htmlFor="step-file-input" className="sr-only">
+                    Dodaj pliki dla bieżącego kroku
+                  </label>
                   <input
+                    id="step-file-input"
                     type="file"
                     multiple
                     accept="image/*,.pdf,.doc,.docx,.txt,.md,.zip,.png,.jpg,.jpeg,.gif,.svg"
                     className={styles.fileInput}
+                    aria-label="Dodaj pliki dla bieżącego kroku"
                     onChange={e => {
                       if (e.target.files && e.target.files.length > 0) {
                         console.log(

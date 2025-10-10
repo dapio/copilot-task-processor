@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import ContextManager from './context-manager';
 import { IMLProvider } from '../providers/ml-provider.interface';
 import CopilotFunctionCallingProvider from '../providers/copilot-function-calling.provider';
+import { unifiedAIChatService } from './unified-ai-chat.service';
 
 import {
   ChatSession,

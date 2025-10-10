@@ -587,73 +587,22 @@ export class MCPServer {
     input: any,
     context?: ToolExecutionContext
   ): Promise<ToolResult> {
-    // Mock implementation - in real version would use static analysis tools
-    console.log(
-      `🔍 Analyzing code for agent: ${context?.agentId || 'unknown'}`
+    // REAL IMPLEMENTATION REQUIRED - NO MOCK RESPONSES
+    throw new Error(
+      `Code analysis not implemented for agent: ${
+        context?.agentId || 'unknown'
+      }. Real static analysis integration required.`
     );
-
-    const analysis = {
-      quality: {
-        score: 8.5,
-        issues: [
-          'Consider adding more comments',
-          'Some functions are too long',
-        ],
-      },
-      security: { score: 9.0, issues: ['No security issues found'] },
-      performance: {
-        score: 7.5,
-        issues: ['Consider caching for repeated calculations'],
-      },
-      maintainability: {
-        score: 8.0,
-        issues: ['Consider breaking down large functions'],
-      },
-    };
-
-    return {
-      success: true,
-      data: { analysis, language: input.language, context: context?.projectId },
-      content: [
-        {
-          type: 'text',
-          text: `Code Analysis Results:\n${JSON.stringify(analysis, null, 2)}`,
-        },
-      ],
-    };
   }
 
   private async handleGenerateCode(
     input: any
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ): Promise<ToolResult> {
-    // Mock implementation - in real version would use ML providers
-    const generatedCode = `// Generated code for: ${input.specification}
-// Language: ${input.language}
-// Framework: ${input.framework || 'none'}
-
-function generatedFunction() {
-  // Implementation based on specification
-  return "Generated code placeholder";
-}
-
-export default generatedFunction;
-`;
-
-    return {
-      success: true,
-      data: {
-        code: generatedCode,
-        language: input.language,
-        outputPath: input.outputPath,
-      },
-      content: [
-        {
-          type: 'text',
-          text: `Generated ${input.language} code:\n\`\`\`${input.language}\n${generatedCode}\n\`\`\``,
-        },
-      ],
-    };
+    // REAL IMPLEMENTATION REQUIRED - NO MOCK CODE GENERATION
+    throw new Error(
+      `Code generation not implemented. Language: ${input.language}, Specification: ${input.specification}. Real ML provider integration required.`
+    );
   }
 
   private async handleExecuteTerminalCommand(
@@ -727,40 +676,14 @@ export default generatedFunction;
     input: any,
     context?: ToolExecutionContext
   ): Promise<ToolResult> {
-    // Mock implementation - would integrate with WorkflowEngineService
-    console.log(
-      `🔄 Executing workflow: ${input.workflowId || 'new'} for agent: ${
+    // REAL IMPLEMENTATION REQUIRED - NO MOCK WORKFLOW EXECUTION
+    throw new Error(
+      `Workflow execution not implemented. WorkflowId: ${
+        input.workflowId || 'new'
+      }, Agent: ${
         context?.agentId || 'system'
-      }`
+      }. Real WorkflowEngineService integration required.`
     );
-
-    const workflowResult = {
-      executionId: `exec_${Date.now()}`,
-      workflowId: input.workflowId,
-      status: 'completed',
-      context: context?.projectId,
-      steps: [
-        { name: 'Analysis', status: 'completed', duration: '2.5s' },
-        { name: 'Processing', status: 'completed', duration: '5.1s' },
-        { name: 'Output', status: 'completed', duration: '1.2s' },
-      ],
-      totalDuration: '8.8s',
-    };
-
-    return {
-      success: true,
-      data: workflowResult,
-      content: [
-        {
-          type: 'text',
-          text: `Workflow Execution Results:\n${JSON.stringify(
-            workflowResult,
-            null,
-            2
-          )}`,
-        },
-      ],
-    };
   }
 
   /**
